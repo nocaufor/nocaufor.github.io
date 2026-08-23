@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="nocau">
+  <!-- 数学几何标识：六边形 + 圆 + 三角 + 黄金螺旋 + 网格角点 -->
+  <path d="M32 4 L58.6 18 V46 L32 60 L5.4 46 V18 Z"/>
+  <circle cx="32" cy="32" r="15.5"/>
+  <path d="M32 15.5 L46.6 40.25 H17.4 Z"/>
+  <path d="M32 32 m0 -9.5 a9.5 9.5 0 0 1 9.5 9.5 a15.5 15.5 0 0 1 -15.5 15.5 a25.5 25.5 0 0 1 -25.5 -25.5"/>
+  <circle cx="32" cy="32" r="1.4"/>
+  <circle cx="32" cy="4" r="1.1"/>
+  <circle cx="58.6" cy="18" r="1.1"/>
+  <circle cx="58.6" cy="46" r="1.1"/>
+  <circle cx="32" cy="60" r="1.1"/>
+  <circle cx="5.4" cy="46" r="1.1"/>
+  <circle cx="5.4" cy="18" r="1.1"/>
+</svg>

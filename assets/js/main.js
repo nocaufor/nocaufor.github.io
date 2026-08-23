@@ -429,104 +429,7 @@
     });
   }
 
-  /* ============ 12f. 想法项目：投票（localStorage + 可配置远程聚合） ============ */
-  function initIdeaVotes() {
-    var votes = $all(".idea-vote");
-    if (!votes.length) return;
-    var STORE = "nocau-idea-stats";
-    var CHOICE = "nocau-idea-choice";
-    var stats = { items: {} };
-    var choice = {};
-    try {
-      var raw = localStorage.getItem(STORE);
-      if (raw) { var p = JSON.parse(raw); if (p && p.items) stats = p; }
-      var c = localStorage.getItem(CHOICE);
-      if (c) choice = JSON.parse(c);
-    } catch (e) { /* 隐私模式等场景忽略 */ }
-    /* 部署时配置 window.NOCAU_VOTE_ENDPOINT 即启用远程聚合；未配置时静默本地统计 */
-    var endpoint = window.NOCAU_VOTE_ENDPOINT || "";
-
-    function getItem(id) {
-      if (!stats.items[id]) stats.items[id] = { up: 0, down: 0 };
-      return stats.items[id];
-    }
-    function save() {
-      try { localStorage.setItem(STORE, JSON.stringify(stats)); } catch (e) {}
-    }
-    function render(id) {
-      var it = getItem(id);
-      votes.forEach(function (v) {
-        if (v.getAttribute("data-id") !== id) return;
-        var like = $(".vote-like", v), dis = $(".vote-dislike", v);
-        var lc = $(".vote-count", like), dc = $(".vote-count", dis);
-        if (lc) lc.textContent = String(it.up);
-        if (dc) dc.textContent = String(it.down);
-        var cur = choice[id] || 0;
-        if (like) { like.classList.toggle("active", cur === 1); like.setAttribute("aria-pressed", cur === 1 ? "true" : "false"); }
-        if (dis) { dis.classList.toggle("active", cur === -1); dis.setAttribute("aria-pressed", cur === -1 ? "true" : "false"); }
-      });
-      renderSummary();
-    }
-    function renderSummary() {
-      var total = 0, list = [];
-      Object.keys(stats.items).forEach(function (id) {
-        var it = stats.items[id];
-        total += it.up + it.down;
-        list.push({ id: id, up: it.up });
-      });
-      var totalEl = $("#vote-total");
-      if (totalEl) totalEl.textContent = String(total);
-      var topEl = $("#vote-top3");
-      if (!topEl) return;
-      list.sort(function (a, b) { return b.up - a.up; });
-      var top = list.slice(0, 3);
-      if (!top.length) { topEl.innerHTML = '<li class="vs-empty">投票后可查看</li>'; return; }
-      topEl.innerHTML = "";
-      top.forEach(function (it, i) {
-        var card = document.querySelector('.idea-card[data-id="' + it.id + '"]');
-        var name = card && card.querySelector("h2") ? card.querySelector("h2").textContent : it.id;
-        var li = document.createElement("li");
-        li.textContent = (i + 1) + ". " + name + "（" + it.up + " 人感兴趣）";
-        topEl.appendChild(li);
-      });
-    }
-    function pushRemote(id, vote) {
-      if (!endpoint) return;
-      try {
-        fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: id, vote: vote }),
-          keepalive: true
-        }).catch(function () {});
-      } catch (e) { /* 静默降级本地统计 */ }
-    }
-    votes.forEach(function (v) {
-      var id = v.getAttribute("data-id");
-      $all(".vote-btn", v).forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          var val = parseInt(btn.getAttribute("data-vote"), 10);
-          var prev = choice[id] || 0;
-          var it = getItem(id);
-          if (prev === val) {
-            choice[id] = 0;
-            it[val === 1 ? "up" : "down"] = Math.max(0, it[val === 1 ? "up" : "down"] - 1);
-            pushRemote(id, 0);
-          } else {
-            if (prev === 1) it.up = Math.max(0, it.up - 1);
-            if (prev === -1) it.down = Math.max(0, it.down - 1);
-            choice[id] = val;
-            it[val === 1 ? "up" : "down"] += 1;
-            pushRemote(id, val);
-          }
-          try { localStorage.setItem(CHOICE, JSON.stringify(choice)); } catch (e) {}
-          save();
-          render(id);
-        });
-      });
-      render(id);
-    });
-  }
+  /* ============ 12f. 想法项目：卡片筛选 ============
 
   /* ============ 13. 页面过渡（站内链接淡出） ============ */
   function initPageTransitions() {
@@ -702,8 +605,7 @@
     initHeroParallax();
     initIdeaFilters();
     initIdeaExpand();
-    initIdeaVotes();
-    initReveal();
+        initReveal();
     initPageTransitions();
     initParticles();
   });

@@ -15,13 +15,14 @@
 
   <!-- 极淡点阵背景 -->
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
+  <div class="bg-grid" aria-hidden="true"></div>
 
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
     <div class="container nav">
       <a href="index.html" class="brand">
-        <span class="brand-logo">nc</span>
-        <span class="brand-name">nocau</span>
+        <img class="brand-logo" src="assets/img/logo.svg" alt="nocau" width="30" height="30" />
+        <span class="brand-name">NOCAU</span>
       </a>
       <div class="nav-actions">
         <nav class="nav-links" id="nav-links">
@@ -61,23 +62,11 @@
     </section>
 
     <!-- ==================== 方案列表 ==================== -->
-    <section class="section" style="padding-top: 0">
-      <div class="container">
-        <div class="vote-summary reveal">
-          <div class="vote-summary-stat"><span class="vs-num" id="vote-total">0</span><span class="vs-label">总投票数</span></div>
-          <div class="vote-summary-top">
-            <span class="vs-top-label">最受欢迎 Top3</span>
-            <ol class="vote-top3" id="vote-top3"><li class="vs-empty">投票后可查看</li></ol>
-          </div>
-          <p class="vote-note">投票数据保存在本机浏览器（localStorage）；部署时可配置后端接口聚合真实数据。</p>
-        </div>
-      </div>
-    </section>
-
-<section class="section" style="padding-top: 40px">
+    <section class="section" style="padding-top: 40px">
       <div class="container ideas-list">
 <div class="filter-bar idea-filter-bar reveal" role="group" aria-label="按方向筛选方案">
           <button type="button" class="filter-btn idea-filter-btn active" data-direction="all">全部</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="实用代码">实用代码</button>
           <button type="button" class="filter-btn idea-filter-btn" data-direction="工具">工具</button>
           <button type="button" class="filter-btn idea-filter-btn" data-direction="AI应用">AI应用</button>
           <button type="button" class="filter-btn idea-filter-btn" data-direction="效率协作">效率协作</button>
@@ -226,11 +215,6 @@ void watchClipboard() {
             <span>预估周期：4-6 周（MVP）</span>
             <span>价值点：高频刚需工具，可做订阅制或一次性买断。</span>
           </div>
-            <div class="idea-vote" data-id="01">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -347,11 +331,6 @@ globalShortcut.register('CommandOrControl+Shift+A', () =&gt; {
             <span>预估周期：6-8 周（MVP）</span>
             <span>价值点：效率工具付费意愿强，可 Pro 订阅解锁离线与批量。</span>
           </div>
-            <div class="idea-vote" data-id="02">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -472,11 +451,6 @@ def match_score(profile: dict, jd: dict) -&gt; float:
             <span>预估周期：8-10 周</span>
             <span>价值点：B 端（HR 批量）与 C 端（求职者）双收费模型。</span>
           </div>
-            <div class="idea-vote" data-id="03">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -603,11 +577,6 @@ function notify(text) {
             <span>预估周期：6-8 周</span>
             <span>价值点：家庭刚需，可硬件联动（血压计）与家庭订阅。</span>
           </div>
-            <div class="idea-vote" data-id="04">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -730,11 +699,6 @@ server.serve_forever()</code></pre>
             <span>预估周期：5-7 周</span>
             <span>价值点：隐私传输卖点，可做专业版（批量、加密、记录）。</span>
           </div>
-            <div class="idea-vote" data-id="05">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -864,11 +828,6 @@ db.on('order_created', (order) =&gt; broadcast('new_order', order));</code></pre
             <span>预估周期：10-14 周</span>
             <span>价值点：按月订阅 + 支付分润，行业 SaaS 稳定现金流。</span>
           </div>
-            <div class="idea-vote" data-id="06">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -984,11 +943,6 @@ def summarize(segments, text):
             <span>预估周期：8-11 周</span>
             <span>价值点：按分钟计费 + 团队订阅，B 端付费空间大。</span>
           </div>
-            <div class="idea-vote" data-id="07">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -1115,11 +1069,6 @@ function autoClassifyWithFeedback(tx) {
             <span>预估周期：6-8 周</span>
             <span>价值点：一次买断 + 高级图表订阅，靠口碑传播。</span>
           </div>
-            <div class="idea-vote" data-id="08">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -1244,11 +1193,6 @@ export async function POST(req: Request) {
             <span>预估周期：10-14 周</span>
             <span>价值点：会员订阅 + 活动服务费，社区网络效应强。</span>
           </div>
-            <div class="idea-vote" data-id="09">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -1373,11 +1317,6 @@ import asyncio; asyncio.run(speak("从前有一只小兔子…"))</code></pre>
             <span>预估周期：6-8 周</span>
             <span>价值点：订阅制 + 家长付费意愿高，内容可沉淀为 IP。</span>
           </div>
-            <div class="idea-vote" data-id="10">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -1499,11 +1438,6 @@ def detect_damage(image_path: str):
             <span>预估周期：7-9 周</span>
             <span>价值点：CPS 分润 + 数据服务，与回收商合作分成。</span>
           </div>
-            <div class="idea-vote" data-id="11">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -1626,11 +1560,6 @@ def check_cert(url: str):
             <span>预估周期：7-9 周</span>
             <span>价值点：订阅制 + 免费额度获客，扩展监控生态。</span>
           </div>
-            <div class="idea-vote" data-id="12">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -1755,11 +1684,6 @@ export async function backupSaves(client: WebDAVClient, localDir: string) {
             <span>预估周期：8-11 周</span>
             <span>价值点：买断制 + 云备份订阅，硬核玩家付费意愿高。</span>
           </div>
-            <div class="idea-vote" data-id="13">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -1879,11 +1803,6 @@ def detect_fall(accel: list) -&gt; bool:
             <span>预估周期：12-16 周</span>
             <span>价值点：硬件 + 服务订阅，家庭安全付费意愿强。</span>
           </div>
-            <div class="idea-vote" data-id="14">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -2006,11 +1925,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             <span>预估周期：7-9 周</span>
             <span>价值点：Freemium 订阅，团队付费转化稳定。</span>
           </div>
-            <div class="idea-vote" data-id="15">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -2137,11 +2051,6 @@ ws.onmessage = (e) =&gt; {
             <span>预估周期：8-12 周（MVP 可先做 4 轴）</span>
             <span>价值点：教育套件与二次开发 API，可做订阅制课程。</span>
           </div>
-            <div class="idea-vote" data-id="16">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -2266,11 +2175,6 @@ def inspect(path: str):
             <span>预估周期：10-14 周（MVP 单航线）</span>
             <span>价值点：行业巡检服务按里程 / 面积付费，检测模型可授权。</span>
           </div>
-            <div class="idea-vote" data-id="17">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -2391,11 +2295,6 @@ def open_barrier(connection, state=True):
             <span>预估周期：6-9 周（MVP）</span>
             <span>价值点：停车场软硬件一体方案，SaaS 管理费按车位收费。</span>
           </div>
-            <div class="idea-vote" data-id="18">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -2512,11 +2411,6 @@ def capture_and_preprocess(save_dir, count=200):
             <span>预估周期：8-12 周（MVP）</span>
             <span>价值点：产线质检服务按检测量付费，缺陷数据可沉淀为行业资产。</span>
           </div>
-            <div class="idea-vote" data-id="19">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -2645,11 +2539,6 @@ actions = {"打开灯": "lights.on", "关灯": "lights.off",
             <span>预估周期：6-9 周（MVP）</span>
             <span>价值点：隐私卖点的订阅制，企业桌面语音定制。</span>
           </div>
-            <div class="idea-vote" data-id="20">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -2777,11 +2666,6 @@ if recognized_uid:
             <span>预估周期：7-10 周（MVP）</span>
             <span>价值点：软硬一体方案、企业考勤订阅服务。</span>
           </div>
-            <div class="idea-vote" data-id="21">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -2914,11 +2798,6 @@ def fatigue_score(frame):
             <span>预估周期：8-12 周（MVP）</span>
             <span>价值点：车队安全管理 SaaS，可与保险公司合作降保费。</span>
           </div>
-            <div class="idea-vote" data-id="22">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -3050,11 +2929,6 @@ class SimpleKF:
             <span>预估周期：4-8 周（原型）</span>
             <span>价值点：仅学习与研究价值，无商业变现空间。</span>
           </div>
-            <div class="idea-vote" data-id="23">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -3187,11 +3061,6 @@ hands.onResults((res) =&gt; {
             <span>预估周期：6-9 周（MVP）</span>
             <span>价值点：演示工具付费、无障碍辅助授权。</span>
           </div>
-            <div class="idea-vote" data-id="24">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -3323,11 +3192,6 @@ ros2 launch nav2_bringup bringup_launch.py map:=map.yaml</code></pre>
             <span>预估周期：12-16 周（MVP）</span>
             <span>价值点：机器人方案授权、教学套件与行业定制。</span>
           </div>
-            <div class="idea-vote" data-id="25">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -3458,11 +3322,6 @@ function sendCommand(dev, state) {
             <span>预估周期：6-9 周（MVP）</span>
             <span>价值点：成品套件销售、私有化部署服务。</span>
           </div>
-            <div class="idea-vote" data-id="26">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -3590,11 +3449,6 @@ def try_face_unlock(frame):
             <span>预估周期：7-10 周（MVP）</span>
             <span>价值点：民宿 / 短租管理 SaaS、安全认证溢价。</span>
           </div>
-            <div class="idea-vote" data-id="27">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -3725,11 +3579,6 @@ ros2 launch ldlidar_ros2_driver ld06.launch.py</code></pre>
             <span>预估周期：4-6 周（MVP）</span>
             <span>价值点：教育套件、课程授权与竞赛培训。</span>
           </div>
-            <div class="idea-vote" data-id="28">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
 
@@ -3856,13 +3705,800 @@ def check_food_level(weight_sensor):
             <span>预估周期：5-7 周（MVP）</span>
             <span>价值点：硬件 + 耗材 + 健康数据订阅模式。</span>
           </div>
-            <div class="idea-vote" data-id="29">
-              <span class="vote-label">你的选择</span>
-              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
-              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
-            </div>
           </div>
         </article>
+<article class="idea-card reveal code-card" data-id="30" data-direction="实用代码 机器自动化">
+          <div class="idea-head">
+            <span class="idea-index">30</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>自动化任务调度器</h2>
+              <p class="idea-subtitle">监控文件夹变化并自动执行任务，失败自动重试与告警。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">机器自动化</span><span class="tag">Python</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>生产与个人脚本中，文件落地即触发处理（转码、压缩、上传），或按时间表执行批处理任务。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>按文件事件触发（新增/修改/删除）</li><li>内置调度表与失败重试、并发限制</li><li>执行日志落盘并可选邮件/Webhook 告警</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">Python 3.11</span><span class="tag">watchdog</span><span class="tag">APScheduler</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">文件事件监听主循环</p>
+<pre><code class="language-python">import time
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+
+class Handler(FileSystemEventHandler):
+    def on_created(self, event):
+        if event.is_directory:
+            return
+        print(f&quot;[created] {event.src_path}&quot;)
+        dispatch(event.src_path)
+
+observer = Observer()
+observer.schedule(Handler(), watch_dir, recursive=True)
+observer.start()
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    observer.stop()
+observer.join()</code></pre>
+<p class="code-caption">定时任务调度</p>
+<pre><code class="language-python">from apscheduler.schedulers.blocking import BlockingScheduler
+
+sched = BlockingScheduler()
+
+@sched.scheduled_job(&quot;interval&quot;, minutes=30)
+def backup_job():
+    run_backup()  # 你的业务函数
+
+@sched.scheduled_job(&quot;cron&quot;, hour=3, minute=0)
+def daily_report():
+    send_report()
+
+sched.start()</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://pypi.org/project/watchdog/" target="_blank" rel="noopener">watchdog</a>：跨平台文件系统事件监听库，本例事件循环直接基于它。</li><li><a href="https://apscheduler.readthedocs.io/" target="_blank" rel="noopener">APScheduler</a>：Python 定时任务调度库，支持 cron / interval / date 触发。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install watchdog apscheduler</li><li>创建任务函数与日志目录</li></ol>
+<h4 class="step-phase">阶段：联调</h4>
+<ol class="flow"><li>先监听测试目录确认事件触发</li><li>再叠加调度器，观察两个任务并行运行不互相阻塞</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：1 天（MVP）</span><span>价值点：批量运维与文件流水线的基础组件，可复用进任何项目。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="31" data-direction="实用代码 前沿开源">
+          <div class="idea-head">
+            <span class="idea-index">31</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>大模型 RAG 知识问答</h2>
+              <p class="idea-subtitle">把私有文档切片入库，让大模型基于检索结果回答，告别幻觉。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">前沿开源</span><span class="tag">LLM</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>企业知识库、产品文档问答：模型不知道的内部资料，先检索再生成。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>文档加载与切分（chunk）</li><li>向量化写入向量库</li><li>检索 top-k 后拼 Prompt 交给 LLM</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">LangChain</span><span class="tag">OpenAI API</span><span class="tag">Chroma / FAISS</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">文档切片 + 向量化入库</p>
+<pre><code class="language-python">from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings
+
+loader = TextLoader(&quot;docs.txt&quot;)
+docs = loader.load()
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=80)
+chunks = splitter.split_documents(docs)
+db = FAISS.from_documents(chunks, OpenAIEmbeddings())
+db.save_local(&quot;faiss_index&quot;)</code></pre>
+<p class="code-caption">检索 + 生成回答</p>
+<pre><code class="language-python">from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate
+
+db = FAISS.load_local(&quot;faiss_index&quot;, OpenAIEmbeddings(),
+                      allow_dangerous_deserialization=True)
+retriever = db.as_retriever(search_kwargs={&quot;k&quot;: 4})
+
+prompt = ChatPromptTemplate.from_messages([
+    (&quot;system&quot;, &quot;只依据上下文回答，不知道就说不知道。上下文：\n{context}&quot;),
+    (&quot;human&quot;, &quot;{input}&quot;)
+])
+chain = create_stuff_documents_chain(ChatOpenAI(model=&quot;gpt-4o-mini&quot;), prompt)
+rag = create_retrieval_chain(retriever, chain)
+print(rag.invoke({&quot;input&quot;: &quot;项目部署需要什么环境？&quot;}))</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://python.langchain.com/docs" target="_blank" rel="noopener">LangChain 官方文档</a>：RAG 链路（loader/splitter/vectorstore/chain）的标准用法。</li><li><a href="https://github.com/facebookresearch/faiss" target="_blank" rel="noopener">FAISS</a>：Meta 开源向量检索引擎，支持亿级向量近似检索。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install langchain langchain-community langchain-openai faiss-cpu</li><li>配置 OPENAI_API_KEY 环境变量</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>准备一份文档建索引</li><li>问一个文档内问题，确认回答带来源；再问文档外问题，确认模型拒绝回答</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：1-2 天（原型）</span><span>价值点：当前最热的大模型落地范式，知识库问答直接可用。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="32" data-direction="实用代码 前沿开源">
+          <div class="idea-head">
+            <span class="idea-index">32</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>AI Agent 工具调用</h2>
+              <p class="idea-subtitle">让大模型自主决定调用哪个函数，构建可执行动作的 Agent。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">前沿开源</span><span class="tag">Agent</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>需要大模型执行真实动作（查天气、下单、操作数据库）的 Agent 应用。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>定义可被调用的工具 schema</li><li>模型返回结构化 tool_call</li><li>执行工具并把结果回填给模型</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">OpenAI SDK</span><span class="tag">JSON Schema</span><span class="tag">Python</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">工具定义与调用循环</p>
+<pre><code class="language-python">import json
+from openai import OpenAI
+
+client = OpenAI()
+
+def get_weather(city: str) -&gt; str:
+    return f&quot;{city} 晴，24°C&quot;  # 替换为真实 API
+
+tools = [{
+    &quot;type&quot;: &quot;function&quot;,
+    &quot;function&quot;: {
+        &quot;name&quot;: &quot;get_weather&quot;,
+        &quot;description&quot;: &quot;查询城市天气&quot;,
+        &quot;parameters&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {&quot;city&quot;: {&quot;type&quot;: &quot;string&quot;}},
+            &quot;required&quot;: [&quot;city&quot;]
+        }
+    }
+}]
+
+messages = [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;北京天气如何？&quot;}]
+resp = client.chat.completions.create(
+    model=&quot;gpt-4o-mini&quot;, messages=messages, tools=tools)
+
+tool_call = resp.choices[0].message.tool_calls[0]
+args = json.loads(tool_call.function.arguments)
+result = get_weather(**args)
+
+messages.append(resp.choices[0].message)
+messages.append({
+    &quot;role&quot;: &quot;tool&quot;,
+    &quot;tool_call_id&quot;: tool_call.id,
+    &quot;content&quot;: result
+})
+final = client.chat.completions.create(
+    model=&quot;gpt-4o-mini&quot;, messages=messages)
+print(final.choices[0].message.content)</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://platform.openai.com/docs/guides/function-calling" target="_blank" rel="noopener">OpenAI Function Calling 指南</a>：工具定义与 tool_call 回填协议官方说明。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install openai</li><li>配置 OPENAI_API_KEY</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>运行示例确认模型正确调用 get_weather 并组织成自然语言回答</li><li>增加第二个工具，观察模型按需选择</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：1 天</span><span>价值点：Agent 应用的核心机制，从 Chatbot 升级为执行者。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="33" data-direction="实用代码 控制系统">
+          <div class="idea-head">
+            <span class="idea-index">33</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>PID 闭环控制器</h2>
+              <p class="idea-subtitle">比例-积分-微分控制，温控、速度、位姿调节的经典算法。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">控制系统</span><span class="tag">控制算法</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>温度恒温、电机转速稳定、无人机悬停、平衡小车等一切需要闭环反馈的场景。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>离散 PID 增量式实现</li><li>抗积分饱和（clamp）</li><li>参数整定（Ziegler-Nichols 或手工调参）</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">Python 模拟</span><span class="tag">matplotlib</span><span class="tag">嵌入式 C 移植</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">增量式 PID 实现</p>
+<pre><code class="language-python">class PID:
+    def __init__(self, kp, ki, kd, dt=0.1, out_min=-100.0, out_max=100.0):
+        self.kp, self.ki, self.kd = kp, ki, kd
+        self.dt = dt
+        self.out_min, self.out_max = out_min, out_max
+        self.prev_err = 0.0
+        self.integral = 0.0
+
+    def update(self, setpoint, measurement):
+        err = setpoint - measurement
+        self.integral += err * self.dt
+        self.integral = max(self.out_min, min(self.out_max, self.integral))
+        derivative = (err - self.prev_err) / self.dt
+        output = (self.kp * err
+                  + self.ki * self.integral
+                  + self.kd * derivative)
+        self.prev_err = err
+        return max(self.out_min, min(self.out_max, output))
+
+# 示例：加热器温度控制（plant 为被控对象）
+pid = PID(kp=8.0, ki=0.4, kd=1.2, dt=0.1)
+temp = 20.0
+for t in range(200):
+    u = pid.update(setpoint=60.0, measurement=temp)
+    temp += u * 0.02 - (temp - 22.0) * 0.01  # 简化热模型
+    if t % 20 == 0:
+        print(f&quot;t={t:3d} temp={temp:6.2f} u={u:7.2f}&quot;)</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://en.wikipedia.org/wiki/PID_controller" target="_blank" rel="noopener">Wikipedia PID controller</a>：PID 数学原理与整定方法权威参考。</li><li><a href="http://brettbeauregard.com/blog/2011/04/improving-the-beginners-pid-introduction/" target="_blank" rel="noopener">Brett Beauregard 系列</a>：Arduino PID 库作者对积分饱和、微分突变的工程化讲解。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install matplotlib（可视化调参用）</li></ol>
+<h4 class="step-phase">阶段：整定</h4>
+<ol class="flow"><li>先设 ki=kd=0 调 kp 至临界振荡</li><li>再加 kd 抑制超调，最后 ki 消除稳态误差</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：1 天（含模拟）</span><span>价值点：控制系统的通用内核，硬件与仿真场景皆可复用。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="34" data-direction="实用代码 控制系统">
+          <div class="idea-head">
+            <span class="idea-index">34</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>ROS 机器人运动控制</h2>
+              <p class="idea-subtitle">话题发布/订阅 + 速度指令，搭建机器人运动控制最小闭环。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">控制系统</span><span class="tag">ROS</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>ROS/ROS2 机器人：底盘运动、机械臂关节控制、传感器数据流。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>发布 cmd_vel 速度指令</li><li>订阅里程计 odom 反馈</li><li>使用 tf 进行坐标变换</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">ROS2 (Humble)</span><span class="tag">rclpy</span><span class="tag">geometry_msgs</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">ROS2 速度控制发布者</p>
+<pre><code class="language-python">import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+
+class MoveNode(Node):
+    def __init__(self):
+        super().__init__(&quot;move_node&quot;)
+        self.pub = self.create_publisher(Twist, &quot;cmd_vel&quot;, 10)
+        self.timer = self.create_timer(0.1, self.tick)
+        self.t = 0
+
+    def tick(self):
+        msg = Twist()
+        # 先直线前进 5 秒，再原地旋转 3 秒，然后停止
+        if self.t &lt; 50:
+            msg.linear.x = 0.3
+        elif self.t &lt; 80:
+            msg.angular.z = 0.8
+        else:
+            msg.linear.x = 0.0
+        self.pub.publish(msg)
+        self.t += 1
+        self.get_logger().info(
+            f&quot;cmd vx={msg.linear.x:.2f} wz={msg.angular.z:.2f}&quot;)
+
+def main():
+    rclpy.init()
+    node = MoveNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://docs.ros.org/en/humble/Tutorials.html" target="_blank" rel="noopener">ROS2 官方教程</a>：创建包、话题、tf 的官方入门。</li><li><a href="https://docs.ros.org/en/humble/p/geometry_msgs/generated/geometry_msgs/msg/Twist.html" target="_blank" rel="noopener">geometry_msgs/Twist</a>：速度消息定义：linear 线速度与 angular 角速度。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>安装 ROS2 Humble（Ubuntu 22.04）</li><li>source /opt/ros/humble/setup.bash</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>ros2 run demo 观察 cmd_vel 输出</li><li>用 ros2 topic echo /cmd_vel 确认消息频率与数值</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：2-3 天（含环境）</span><span>价值点：进入机器人开发的必备入口，后续可扩展导航与机械臂。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="35" data-direction="实用代码 前沿开源">
+          <div class="idea-head">
+            <span class="idea-index">35</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>多模态图文理解</h2>
+              <p class="idea-subtitle">一张图 + 一个问题，让多模态大模型输出结构化答案。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">前沿开源</span><span class="tag">多模态</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>OCR 票据识别、图像描述、UI 截图分析、质检图片理解。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>图像 base64 编码传参</li><li>图文混合 Prompt</li><li>JSON 结构化输出</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">OpenAI Vision / Qwen-VL</span><span class="tag">Pillow</span><span class="tag">Python</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">图片 + 文本统一调用</p>
+<pre><code class="language-python">import base64
+from openai import OpenAI
+
+client = OpenAI()
+
+def encode_image(path):
+    with open(path, &quot;rb&quot;) as f:
+        return base64.b64encode(f.read()).decode()
+
+img = encode_image(&quot;invoice.jpg&quot;)
+resp = client.chat.completions.create(
+    model=&quot;gpt-4o-mini&quot;,
+    messages=[{
+        &quot;role&quot;: &quot;user&quot;,
+        &quot;content&quot;: [
+            {&quot;type&quot;: &quot;text&quot;,
+             &quot;text&quot;: &quot;提取发票关键信息，返回 JSON：金额、开票日期、税号&quot;},
+            {&quot;type&quot;: &quot;image_url&quot;,
+             &quot;image_url&quot;: {&quot;url&quot;: f&quot;data:image/jpeg;base64,{img}&quot;}}
+        ]
+    }])
+print(resp.choices[0].message.content)</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://platform.openai.com/docs/guides/vision" target="_blank" rel="noopener">OpenAI Vision 文档</a>：图像输入格式与多模态请求示例。</li><li><a href="https://github.com/QwenLM/Qwen-VL" target="_blank" rel="noopener">Qwen-VL</a>：开源多模态模型，可本地/API 部署替代方案。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install openai pillow</li><li>准备测试图片</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>对发票/截图/自然图片各测一次</li><li>用 JSON mode 约束输出字段，方便下游直接解析</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：1 天</span><span>价值点：多模态是当前最前沿方向，一条 API 即可做出识别类产品。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="36" data-direction="实用代码 前沿开源">
+          <div class="idea-head">
+            <span class="idea-index">36</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>向量数据库本地检索</h2>
+              <p class="idea-subtitle">FAISS 构建语义检索：文本/图片嵌入后按相似度召回。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">前沿开源</span><span class="tag">向量库</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>推荐系统、语义搜索、去重、聚类等需要相似度计算的应用。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>Embedding 批量入库</li><li>IndexFlatL2 精确检索</li><li>持久化索引文件</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">FAISS</span><span class="tag">sentence-transformers</span><span class="tag">numpy</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">本地语义检索</p>
+<pre><code class="language-python">import numpy as np
+import faiss
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer(&quot;BAAI/bge-small-zh-v1.5&quot;)
+texts = [&quot;今天天气不错&quot;, &quot;人工智能的发展&quot;, &quot;晚饭吃什么&quot;]
+vecs = model.encode(texts).astype(&quot;float32&quot;)
+
+index = faiss.IndexFlatL2(vecs.shape[1])
+index.add(vecs)                 # 入库
+faiss.write_index(index, &quot;idx.faiss&quot;)
+
+index2 = faiss.read_index(&quot;idx.faiss&quot;)
+q = model.encode([&quot;适合出游吗&quot;]).astype(&quot;float32&quot;)
+scores, ids = index2.search(q, k=2)  # 返回 top2
+for sid, score in zip(ids[0], scores[0]):
+    print(f&quot;相似度 {score:.3f} -&gt; {texts[sid]}&quot;)</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://github.com/facebookresearch/faiss" target="_blank" rel="noopener">FAISS 官方</a>：Meta 向量检索引擎，支持 CPU/GPU 与多种索引类型。</li><li><a href="https://huggingface.co/BAAI/bge-small-zh-v1.5" target="_blank" rel="noopener">bge 模型</a>：中文语义向量模型，MIT 许可，适合离线部署。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install faiss-cpu sentence-transformers</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>运行示例确认检索排序合理</li><li>换成 IndexHNSWFlat 对比召回速度与精度</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：0.5 天</span><span>价值点：本地部署、隐私安全，是 RAG 与推荐系统的地基。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="37" data-direction="实用代码 机器自动化">
+          <div class="idea-head">
+            <span class="idea-index">37</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>PLC/Modbus 工业采集</h2>
+              <p class="idea-subtitle">Python 直连 PLC 与传感器，读取寄存器、写入控制点。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">机器自动化</span><span class="tag">工业控制</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>工厂数据采集、设备状态监控、MES 系统对接 PLC。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>RTU 串口/TCP 两种连接</li><li>读保持寄存器（3x/4x）</li><li>写线圈与寄存器控制</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">minimalmodbus</span><span class="tag">pymodbus</span><span class="tag">Modbus RTU/TCP</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">Modbus RTU 读取</p>
+<pre><code class="language-python">import minimalmodbus
+
+# 串口连接：设备地址 1，波特率 9600
+instrument = minimalmodbus.Instrument(&quot;COM3&quot;, 1)
+instrument.serial.baudrate = 9600
+instrument.serial.timeout = 1
+
+# 读取保持寄存器：地址 100 起 4 个，每寄存器 2 字节
+values = instrument.read_registers(100, 4, functioncode=3)
+print(&quot;温度:&quot;, values[0] / 10.0)   # 0.1°C 分辨率
+print(&quot;压力:&quot;, values[1] / 100.0)  # 0.01 MPa 分辨率
+
+# 写单个线圈（启停设备）
+instrument.write_bit(0, True)</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://minimalmodbus.readthedocs.io/" target="_blank" rel="noopener">minimalmodbus</a>：轻量 Modbus RTU 库，串口仪表首选。</li><li><a href="https://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf" target="_blank" rel="noopener">Modbus 协议规范</a>：寄存器模型与功能码官方定义。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install minimalmodbus</li><li>准备 USB-RS485 转换器与设备</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>用 Modbus Poll 软件先手动确认寄存器地址</li><li>脚本只读测试，确认数值与手测一致后再开放写入</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：1-2 天</span><span>价值点：工业物联网最常见的接入协议，替代人工抄表巡检。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="38" data-direction="实用代码 前沿开源">
+          <div class="idea-head">
+            <span class="idea-index">38</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>边缘端模型推理</h2>
+              <p class="idea-subtitle">把训练好的模型转 ONNX，在树莓派/工控机上离线推理。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">前沿开源</span><span class="tag">边缘计算</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>摄像头识别、语音唤醒等低延迟、断网环境下的模型部署。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>PyTorch 导出 ONNX</li><li>onnxruntime CPU 推理</li><li>预处理与后处理管线</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">PyTorch</span><span class="tag">onnxruntime</span><span class="tag">OpenCV</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">导出 + 推理</p>
+<pre><code class="language-python">import torch
+import onnxruntime as ort
+import numpy as np
+
+# 1) 导出：PyTorch -&gt; ONNX
+model = torch.hub.load(&quot;ultralytics/yolov5&quot;, &quot;yolov5s&quot;)
+dummy = torch.zeros(1, 3, 640, 640)
+torch.onnx.export(model.model, dummy, &quot;yolov5s.onnx&quot;,
+                  input_names=[&quot;images&quot;], output_names=[&quot;output&quot;],
+                  dynamic_axes={&quot;images&quot;: {0: &quot;batch&quot;}})
+
+# 2) 推理：onnxruntime CPU
+sess = ort.InferenceSession(&quot;yolov5s.onnx&quot;,
+                            providers=[&quot;CPUExecutionProvider&quot;])
+img = np.zeros((1, 3, 640, 640), dtype=np.float32)
+out = sess.run(None, {&quot;images&quot;: img})[0]
+print(&quot;检测输出 shape:&quot;, out.shape)  # [1, 25200, 85]</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://onnxruntime.ai/" target="_blank" rel="noopener">ONNX Runtime</a>：跨平台推理引擎，CPU/GPU/NPU 加速，边缘设备标准选择。</li><li><a href="https://pytorch.org/tutorials/advanced/super_resolution_script_serialization.html" target="_blank" rel="noopener">PyTorch 导出教程</a>：torch.onnx.export 参数与 dynamic_axes 说明。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install onnxruntime torch</li><li>树莓派 4B 可运行 CPU 版本</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>先在本机导出并推理成功</li><li>拷贝 onnx 到边缘设备，对比帧率与精度</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：2-3 天</span><span>价值点：边缘计算是 AI 落地最后一公里，断网可用的关键。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="39" data-direction="实用代码 机器自动化">
+          <div class="idea-head">
+            <span class="idea-index">39</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>桌面 GUI 自动化</h2>
+              <p class="idea-subtitle">模拟键盘鼠标操作软件界面，批量录入与流程自动化。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">机器自动化</span><span class="tag">RPA</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>重复性办公流程：批量导入数据、报表生成、旧系统界面录入。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>屏幕坐标定位与图像识别点击</li><li>键盘输入与快捷键</li><li>异常截图与日志</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">pyautogui</span><span class="tag">opencv-python</span><span class="tag">Python</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">图像识别点击 + 输入</p>
+<pre><code class="language-python">import pyautogui
+import time
+
+pyautogui.FAILSAFE = True  # 鼠标移到屏幕左上角可急停
+pyautogui.PAUSE = 0.5
+
+# 按图像找按钮（提前截图保存为 btn.png）
+btn = pyautogui.locateOnScreen(&quot;btn.png&quot;, confidence=0.8)
+if btn:
+    pyautogui.click(pyautogui.center(btn))
+else:
+    raise RuntimeError(&quot;未找到按钮，请检查截图与分辨率&quot;)
+
+# 输入内容并回车
+pyautogui.write(&quot;nocau&quot;, interval=0.05)
+pyautogui.press(&quot;enter&quot;)
+time.sleep(2)
+# 失败兜底：全屏截图留证
+pyautogui.screenshot(&quot;audit.png&quot;)</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://pyautogui.readthedocs.io/" target="_blank" rel="noopener">pyautogui</a>：跨平台 GUI 自动化库，含安全急停设计。</li><li><a href="https://docs.opencv.org/4.x/d4/dc6/tutorial_py_template_matching.html" target="_blank" rel="noopener">OpenCV 模板匹配</a>：locateOnScreen 底层原理与置信度参数。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>pip install pyautogui opencv-python</li><li>按分辨率截图保存模板</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>先在小窗口内测单步点击</li><li>加失败重试与截图审计后再全流程跑</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：1-2 天</span><span>价值点：无 API 的老系统的唯一自动化通道，RPA 最小实现。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="40" data-direction="实用代码 控制系统">
+          <div class="idea-head">
+            <span class="idea-index">40</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>嵌入式按键状态机</h2>
+              <p class="idea-subtitle">C 语言实现按键消抖与多状态流转，稳定不跑飞。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">控制系统</span><span class="tag">嵌入式</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>单片机按键、LED、门禁、洗衣机等需要稳定状态切换的嵌入式应用。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>防抖采样（10ms 周期）</li><li>状态机迁移表</li><li>超时/异常复位</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">C</span><span class="tag">STM32/Arduino</span><span class="tag">状态机</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">按键状态机（C）</p>
+<pre><code class="language-python">#define DEBOUNCE_MS 20
+typedef enum { IDLE, PRESSED, LONG_PRESS } KeyState;
+
+KeyState key_state = IDLE;
+uint32_t press_ms = 0;
+
+void key_scan(uint32_t now_ms, uint8_t level) {
+    switch (key_state) {
+        case IDLE:
+            if (level == 0) {           // 按下
+                key_state = PRESSED;
+                press_ms = now_ms;
+            }
+            break;
+        case PRESSED:
+            if (level == 1) {           // 松开：短按
+                key_state = IDLE;
+                on_short_press();
+            } else if (now_ms - press_ms &gt; 1000) {
+                key_state = LONG_PRESS; // 长按判定
+                on_long_press();
+            }
+            break;
+        case LONG_PRESS:
+            if (level == 1) key_state = IDLE;
+            break;
+    }
+}
+// 主循环每 10ms 调用 key_scan(now_ms, GPIO_ReadPin())</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://en.wikipedia.org/wiki/State_pattern" target="_blank" rel="noopener">状态机设计模式</a>：状态迁移建模的通用参考。</li><li><a href="https://github.com/STMicroelectronics/STM32Cube" target="_blank" rel="noopener">STM32 按键例程</a>：HAL 库 GPIO 读取与定时器实现样例。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>STM32CubeIDE 或 Arduino IDE</li><li>准备按键与 LED 开发板</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>串口打印状态迁移日志</li><li>测试单击/长按/快速连按，确认无抖动误触发</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：1-2 天</span><span>价值点：嵌入式最常用的稳定交互骨架，可扩展到菜单与流程控制。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal code-card" data-id="41" data-direction="实用代码 前沿开源">
+          <div class="idea-head">
+            <span class="idea-index">41</span>
+            <div class="idea-head-main">
+              <span class="code-card-badge">实用代码</span>
+              <h2>本地大模型推理部署</h2>
+              <p class="idea-subtitle">llama.cpp 量化部署开源大模型，离线可用、隐私安全。</p>
+              <div class="idea-tags"><span class="tag">实用代码</span><span class="tag">前沿开源</span><span class="tag">本地部署</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>私有化 LLM 服务：聊天、代码补全、离线助手，数据不出内网。</p></div>
+            <div class="idea-section"><h3>核心功能</h3><ul><li>GGUF 量化模型加载</li><li>HTTP server 对外提供 API</li><li>OpenAI 兼容接口</li></ul></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">llama.cpp</span><span class="tag">GGUF</span><span class="tag">C++ / llama-server</span></div></div>
+            <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">llama-server 启动与调用</p>
+<pre><code class="language-python"># 1) 下载量化模型（如 Qwen2.5-7B-Instruct Q4_K_M）
+# huggingface-cli download Qwen/Qwen2.5-7B-Instruct-GGUF \
+#     qwen2.5-7b-instruct-q4_k_m.gguf --local-dir ./model
+
+# 2) 启动 OpenAI 兼容服务
+# ./llama-server -m model/qwen2.5-7b-instruct-q4_k_m.gguf \
+#     --host 0.0.0.0 --port 8080 -c 4096 -ngl 99
+
+# 3) Python 调用（兼容 openai 客户端）
+from openai import OpenAI
+
+client = OpenAI(base_url=&quot;http://127.0.0.1:8080/v1&quot;,
+                api_key=&quot;sk-noop&quot;)
+resp = client.chat.completions.create(
+    model=&quot;qwen2.5-7b-instruct&quot;,
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;用一句话解释什么是向量数据库&quot;}])
+print(resp.choices[0].message.content)</code></pre>
+</div>
+            <div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list"><li><a href="https://github.com/ggml-org/llama.cpp" target="_blank" rel="noopener">llama.cpp</a>：C/C++ 大模型推理引擎，GGUF 量化与 llama-server 开源实现。</li><li><a href="https://huggingface.co/Qwen" target="_blank" rel="noopener">Qwen GGUF</a>：通义千问官方 GGUF 量化模型仓库。</li></ul>
+</div>
+            <div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow"><li>cmake 编译 llama.cpp 或下载 release 二进制</li><li>下载 Q4_K_M 量化 GGUF 模型（约 4-5GB）</li></ol>
+<h4 class="step-phase">阶段：验证</h4>
+<ol class="flow"><li>llama-server 启动后 curl 测试 /v1/chat/completions</li><li>用 openai 客户端接入自己的 Python 项目</li></ol>
+</div>
+            <div class="idea-meta"><span>预估周期：半天（含下载）</span><span>价值点：本地化部署消除数据外泄风险，是私有化 AI 的基石。</span></div>
+          </div>
+        </article>
+
+<article class="idea-card reveal" data-id="42" data-direction="AI应用 工具">
+          <div class="idea-head">
+            <span class="idea-index">42</span>
+            <div class="idea-head-main">
+              <h2>AI hub · 统一 AI 工具平台</h2>
+              <p class="idea-subtitle">聚合 AI 工具市场、资源监管与部署中心的统一入口，让工具找得到、资源管得住、模型部署快。</p>
+              <div class="idea-tags"><span class="tag">AI应用</span><span class="tag">工具</span><span class="tag">平台</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>功能模块</h3><ul>
+              <li><b>工具市场</b>：聚合主流 AI 工具与模型，分类检索、一键接入。</li>
+              <li><b>资源监管</b>：统一管理 API Key、配额、用量与权限，成本与安全可控。</li>
+              <li><b>部署中心</b>：从容器到边缘的一键部署，兼容云端与私有化环境。</li>
+            </ul></div>
+            <div class="idea-section"><h3>产品定位</h3><p>面向个人开发者的轻量 AI 中台：把散落各处的工具、凭证与部署流程收敛到一个控制面，解决"工具太多、管理太散、部署太重"的问题。</p></div>
+            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">Next.js</span><span class="tag">Node.js</span><span class="tag">Docker</span><span class="tag">OpenAI API</span></div></div>
+            <div class="idea-section"><h3>开发代码示例</h3>
+              <p class="code-caption">工具市场注册表（核心数据模型）</p>
+              <pre><code class="language-typescript">// tool registry：统一描述一个 AI 工具
+interface ToolEntry {
+  id: string;            // 工具唯一标识
+  name: string;
+  category: "llm" | "image" | "voice" | "agent";
+  endpoint: string;      // 调用地址
+  authType: "apiKey" | "oauth" | "none";
+  quota?: { monthly: number; used: number };
+  status: "active" | "deprecated";
+}
+// 示例：注册一个新工具
+const entry: ToolEntry = {
+  id: "qwen-plus",
+  name: "通义千问 Plus",
+  category: "llm",
+  endpoint: "https://dashscope.aliyuncs.com/api/v1",
+  authType: "apiKey",
+  quota: { monthly: 1000000, used: 0 },
+  status: "active",
+};
+registry.upsert(entry);  // 写库并同步索引</code></pre>
+            </div>
+            <div class="idea-section"><h3>来源与参考</h3>
+              <ul class="src-list">
+                <li><a href="https://platform.openai.com/docs" target="_blank" rel="noopener">OpenAI API</a>：工具注册与配额模型参照其 usage 接口设计。</li>
+                <li><a href="https://docs.docker.com/" target="_blank" rel="noopener">Docker</a>：部署中心底层容器化标准。</li>
+              </ul>
+            </div>
+            <div class="idea-section"><h3>开发操作步骤与流程</h3>
+              <h4 class="step-phase">阶段：MVP</h4>
+              <ol class="flow"><li>实现工具注册表 CRUD 与用量统计</li><li>接入 3 个真实模型 API 验证统一调用层</li><li>做部署中心最小版本：一条命令拉起本地推理容器</li></ol>
+            </div>
+            <div class="idea-meta"><span>预估周期：2-3 周</span><span>价值点：个人 AI 工具的中枢入口，与首页/作品集展示一致</span></div>
+          </div>
+        </article>
+
+
 
       </div>
     </section>
@@ -3873,8 +4509,9 @@ def check_food_level(weight_sensor):
   <footer class="site-footer">
     <div class="container footer-inner">
       <span class="footer-brand">
-        <span class="mini-logo">nc</span>
+        <img class="mini-logo" src="assets/img/logo.svg" alt="nocau" width="16" height="16" />
         © <span id="year">2026</span> nocau.com
+        <span class="footer-slogan"><em>让科技引领文明进步</em> · Let Technology Lead Civilization Forward</span>
       </span>
       <nav class="footer-links">
         <a href="projects.html">作品集</a>

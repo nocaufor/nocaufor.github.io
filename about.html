@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>关于 · nocau</title>
-  <meta name="description" content="关于 nocau：软件产品实践、开发理念与可提供的服务。" />
+  <meta name="description" content="关于 nocau：独立开发者、软件产品实践与技术方向。" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
@@ -14,13 +14,14 @@
 <body>
 
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
+  <div class="bg-grid" aria-hidden="true"></div>
 
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
     <div class="container nav">
       <a href="index.html" class="brand">
-        <span class="brand-logo">nc</span>
-        <span class="brand-name">nocau</span>
+        <img class="brand-logo" src="assets/img/logo.svg" alt="nocau" width="30" height="30" />
+        <span class="brand-name">NOCAU</span>
       </a>
       <div class="nav-actions">
         <nav class="nav-links" id="nav-links">
@@ -51,95 +52,81 @@
           <span class="section-tag">About</span>
           <div class="section-divider"></div>
           <h1 class="section-title">关于<span class="gradient-text">nocau</span></h1>
-          <p class="section-desc">聚焦可落地的软件产品，从想法到上线。</p>
+          <p class="section-desc">独立开发者。只做简单、可靠、能解决真实问题的产品。</p>
         </div>
 
-        <div class="about-layout">
-          <!-- 个人名片 -->
-          <aside class="about-avatar reveal">
-            <div class="avatar-box">nc</div>
-            <h3>nocau</h3>
-            <p class="role">软件产品开发</p>
-            <p class="bio">
-              承接移动端与 AI 工具类软件产品的完整开发，从需求到上线、再到迭代。
-            </p>
-            <div class="skills-list" style="justify-content: center; margin-top: 18px">
-              <span class="skill-tag">微信小程序</span>
-              <span class="skill-tag">Android</span>
-              <span class="skill-tag">AI 平台</span>
+        <div class="about-hero-grid">
+          <!-- 左：身份 -->
+          <div class="about-profile reveal corner-frame">
+            <img class="about-avatar-lg" src="assets/img/logo.svg" alt="nocau" />
+            <p class="about-role-en">Independent Developer · nocau</p>
+            <div class="about-motto">
+              让科技引领文明进步
+              <small>Let Technology Lead Civilization Forward</small>
             </div>
-          </aside>
+          </div>
 
-          <!-- 详细介绍 -->
+          <!-- 右：详述 -->
           <div class="about-info reveal">
             <h3>简介</h3>
             <p class="text">
-              这里沉淀了多款从想法到上线的软件产品实践：微信小程序「衣件通」、Android 应用
-              「好友检测」「LINGO 广告拦截」以及 AI 平台「AI hub」，覆盖工具、社交、安全与
-              AI 基础设施等方向。每个项目都坚持解决真实问题，并保持简单、可靠、可持续。
+              从移动端工具到 AI 平台，这里沉淀了多款从想法到上线的产品实践：微信小程序
+              「衣件通」、Android 应用「好友检测」「LINGO 广告拦截」、统一 AI 工具平台
+              「AI hub」。每一条代码都服务于一个真实问题，不堆砌概念、不追逐噪音。
             </p>
 
-            <h3>技能</h3>
-            <div class="skill-item">
-              <div class="skill-head">
-                <span class="skill-name">微信小程序开发</span>
-                <span class="skill-pct">92%</span>
-              </div>
-              <div class="skill-bar"><div class="fill" data-progress="92"></div></div>
-            </div>
-            <div class="skill-item">
-              <div class="skill-head">
-                <span class="skill-name">Kotlin / Android</span>
-                <span class="skill-pct">88%</span>
-              </div>
-              <div class="skill-bar"><div class="fill" data-progress="88"></div></div>
-            </div>
-            <div class="skill-item">
-              <div class="skill-head">
-                <span class="skill-name">JavaScript / TypeScript</span>
-                <span class="skill-pct">85%</span>
-              </div>
-              <div class="skill-bar"><div class="fill" data-progress="85"></div></div>
-            </div>
-            <div class="skill-item">
-              <div class="skill-head">
-                <span class="skill-name">Python / 工具脚本</span>
-                <span class="skill-pct">82%</span>
-              </div>
-              <div class="skill-bar"><div class="fill" data-progress="82"></div></div>
-            </div>
-            <div class="skill-item">
-              <div class="skill-head">
-                <span class="skill-name">AI 模型集成</span>
-                <span class="skill-pct">80%</span>
-              </div>
-              <div class="skill-bar"><div class="fill" data-progress="80"></div></div>
+            <div class="about-title-row"><span class="row-line"></span><h3>技术方向</h3><span class="row-line"></span></div>
+            <div class="about-values">
+              <span>微信小程序</span><span>Android / Kotlin</span><span>Web 前端</span>
+              <span>Python 自动化</span><span>AI 模型集成</span><span>边缘计算</span><span>控制系统</span>
             </div>
 
-            <h3>经历</h3>
+            <div class="about-title-row"><span class="row-line"></span><h3>实践轨迹</h3><span class="row-line"></span></div>
             <div class="timeline">
               <div class="timeline-item">
-                <span class="time">近期</span>
-                <h4>AI hub 平台建设</h4>
-                <p>建设统一 AI 工具入口与资源监管平台，覆盖工具市场、资源监管与部署中心。</p>
+                <span class="time">2023</span>
+                <h4>移动端工具起步</h4>
+                <p>「衣件通」服装管理小程序、「好友检测」Android 应用上线。</p>
               </div>
               <div class="timeline-item">
-                <span class="time">近期</span>
-                <h4>LINGO / 广告拦截</h4>
-                <p>开发面向老年用户的本地广告拦截与风险检测应用。</p>
+                <span class="time">2024</span>
+                <h4>安全与适老化</h4>
+                <p>「LINGO」广告拦截与风险检测，面向老年用户降低误触与诈骗风险。</p>
               </div>
               <div class="timeline-item">
-                <span class="time">早期</span>
-                <h4>移动端工具产品</h4>
-                <p>开发「衣件通」服装管理小程序与「好友检测」Android 应用。</p>
+                <span class="time">2025</span>
+                <h4>内容与社区化</h4>
+                <p>建设 fun 娱乐子站与 29 个想法方案库，探索开发者的表达方式。</p>
+              </div>
+              <div class="timeline-item">
+                <span class="time">2026</span>
+                <h4>AI 基础设施</h4>
+                <p>建设「AI hub」统一工具平台，并持续补充自动化与前沿开源代码实践。</p>
               </div>
             </div>
 
-            <h3>理念</h3>
-            <p class="text">
-              产品要解决真实问题，并保持简单、可靠、可持续。
-            </p>
+            <div class="about-title-row"><span class="row-line"></span><h3>价值观</h3><span class="row-line"></span></div>
+            <div class="about-principles">
+              <div class="about-principle">
+                <b>克制</b>
+                <p>少即是多。不添加无用的功能，不追逐浮躁的技术。</p>
+              </div>
+              <div class="about-principle">
+                <b>可靠</b>
+                <p>上线只是开始，稳定运行与可维护性才是长期价值。</p>
+              </div>
+              <div class="about-principle">
+                <b>真实</b>
+                <p>每个产品对应一个真实问题，用数据与用户反馈说话。</p>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <!-- 标语横幅 -->
+        <div class="about-banner reveal">
+          <p class="cn">让科技引领文明进步</p>
+          <p class="en">Let Technology Lead Civilization Forward</p>
         </div>
       </div>
     </section>
@@ -150,8 +137,9 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <span class="footer-brand">
-        <span class="mini-logo">nc</span>
+        <img class="mini-logo" src="assets/img/logo.svg" alt="nocau" width="16" height="16" />
         © <span id="year">2026</span> nocau.com
+        <span class="footer-slogan"><em>让科技引领文明进步</em> · Let Technology Lead Civilization Forward</span>
       </span>
       <nav class="footer-links">
         <a href="index.html">首页</a>
