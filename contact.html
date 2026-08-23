@@ -6,6 +6,10 @@
   <title>联系 · nocau</title>
   <meta name="description" content="联系 nocau：邮箱、社交、留言表单。" />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
 </head>
 <body>
 
@@ -23,15 +27,18 @@
         <span class="brand-name">nocau</span>
       </a>
       <div class="nav-actions">
-        <nav class="nav-links">
+        <nav class="nav-links" id="nav-links">
           <a href="index.html">首页</a>
           <a href="projects.html">作品集</a>
           <a href="about.html">关于</a>
           <a href="contact.html">联系</a>
         </nav>
         <button id="visual-toggle" class="visual-toggle" aria-label="切换渐变风格">MONO</button>
-        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg></button>
-        <button class="nav-toggle" aria-label="切换导航菜单">
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+        </button>
+        <button class="nav-toggle" aria-label="切换导航菜单" aria-expanded="false" aria-controls="nav-links">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -82,15 +89,15 @@
             <form id="contact-form" novalidate>
               <div class="form-group">
                 <label for="name">姓名</label>
-                <input type="text" id="name" class="form-control" placeholder="你的名字" />
+                <input type="text" id="name" name="name" class="form-control" placeholder="你的名字" autocomplete="name" maxlength="50" required />
               </div>
               <div class="form-group">
                 <label for="email">邮箱</label>
-                <input type="email" id="email" class="form-control" placeholder="your@email.com" />
+                <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" autocomplete="email" maxlength="120" required />
               </div>
               <div class="form-group">
                 <label for="message">留言内容</label>
-                <textarea id="message" class="form-control" placeholder="想聊点什么？"></textarea>
+                <textarea id="message" name="message" class="form-control" placeholder="想聊点什么？" rows="5" maxlength="1000" required></textarea>
               </div>
               <button type="submit" class="btn btn-primary">发送留言</button>
               <p id="form-message" class="form-message"></p>

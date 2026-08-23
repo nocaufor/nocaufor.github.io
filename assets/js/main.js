@@ -39,7 +39,10 @@
     var toggle = document.getElementById("theme-toggle");
     if (!toggle) return;
     var isLight = document.documentElement.getAttribute("data-theme") === "light";
-    toggle.textContent = isLight ? "🌙" : "☀️";
+    var sun = toggle.querySelector(".icon-sun");
+    var moon = toggle.querySelector(".icon-moon");
+    if (sun) sun.style.display = isLight ? "none" : "";
+    if (moon) moon.style.display = isLight ? "" : "none";
   }
 
   /* ---------- 2. 汉堡导航 ---------- */
@@ -49,8 +52,9 @@
     if (!toggle || !links) return;
 
     toggle.addEventListener("click", function () {
-      toggle.classList.toggle("open");
+      var open = toggle.classList.toggle("open");
       links.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
     });
 
     links.querySelectorAll("a").forEach(function (link) {
@@ -68,6 +72,14 @@
       if (link.getAttribute("href") === path) {
         link.classList.add("active");
       }
+    });
+  }
+
+  /* ---------- 3.5 禁用占位链接（aria-disabled，阻止跳转） ---------- */
+  function initDisabledLinks() {
+    document.addEventListener("click", function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a[aria-disabled="true"]') : null;
+      if (a) e.preventDefault();
     });
   }
 
@@ -427,21 +439,24 @@
       var message = document.getElementById("message");
 
       var ok = true;
+      var nameVal = name.value.trim();
+      var emailVal = email.value.trim();
+      var msgVal = message.value.trim();
 
-      if (!name.value.trim()) {
+      if (!nameVal || nameVal.length > 50) {
         setError(name, true); ok = false;
       } else {
         setError(name, false);
       }
 
       var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email.value.trim() || !emailRe.test(email.value.trim())) {
+      if (!emailVal || emailVal.length > 120 || !emailRe.test(emailVal)) {
         setError(email, true); ok = false;
       } else {
         setError(email, false);
       }
 
-      if (!message.value.trim() || message.value.trim().length < 5) {
+      if (!msgVal || msgVal.length < 5 || msgVal.length > 1000) {
         setError(message, true); ok = false;
       } else {
         setError(message, false);
@@ -641,6 +656,7 @@
     initVisualToggle();
     initNavToggle();
     initActiveNav();
+    initDisabledLinks();
     initReveal();
     initParticles();
     initTypewriter();
