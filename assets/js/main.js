@@ -196,48 +196,43 @@
     update();
   }
 
-  /* ============ 11. 光标跟随（桌面端，低透明度无辉光） ============ */
+  /* ============ 11. 光标微光发散（桌面端，柔和光晕无硬边） ============ */
   function initCursorFX() {
     if (prefersReduced || !finePointer) return;
-    var dot = document.createElement("div");
-    dot.className = "cursor-dot";
-    var ring = document.createElement("div");
-    ring.className = "cursor-ring";
-    dot.setAttribute("aria-hidden", "true");
-    ring.setAttribute("aria-hidden", "true");
-    document.body.appendChild(dot);
-    document.body.appendChild(ring);
+    var glow = document.createElement("div");
+    glow.className = "cursor-glow";
+    glow.setAttribute("aria-hidden", "true");
+    document.body.appendChild(glow);
     document.body.classList.add("cursor-on");
 
-    var mx = 0, my = 0, rx = 0, ry = 0;
+    var mx = 0, my = 0, cx = 0, cy = 0;
     var hoverable = "a, button, .filter-btn, .skill-tag, .tag, .theme-toggle, .project-link, .back-to-top, input, textarea, .contact-method";
-
-    document.addEventListener("mousemove", function (e) {
-      mx = e.clientX; my = e.clientY;
-      dot.style.left = mx + "px";
-      dot.style.top = my + "px";
-    }, { passive: true });
 
     var raf = null;
     function loop() {
-      rx += (mx - rx) * 0.14;
-      ry += (my - ry) * 0.14;
-      ring.style.left = rx + "px";
-      ring.style.top = ry + "px";
-      raf = requestAnimationFrame(loop);
+      cx += (mx - cx) * 0.22;
+      cy += (my - cy) * 0.22;
+      if (Math.abs(mx - cx) > 0.1 || Math.abs(my - cy) > 0.1) {
+        glow.style.transform = "translate3d(" + cx.toFixed(1) + "px, " + cy.toFixed(1) + "px, 0)";
+        raf = requestAnimationFrame(loop);
+      } else {
+        glow.style.transform = "translate3d(" + mx.toFixed(1) + "px, " + my.toFixed(1) + "px, 0)";
+        raf = null;
+      }
     }
-    loop();
+    document.addEventListener("mousemove", function (e) {
+      mx = e.clientX; my = e.clientY;
+      if (raf === null) raf = requestAnimationFrame(loop);
+    }, { passive: true });
 
     document.addEventListener("mouseover", function (e) {
       if (e.target && e.target.closest && e.target.closest(hoverable)) {
-        dot.classList.add("cursor-hover");
-        ring.classList.add("cursor-hover");
+        glow.classList.add("cursor-hover");
       }
     }, { passive: true });
     document.addEventListener("mouseout", function (e) {
       if (e.target && e.target.closest && e.target.closest(hoverable)) {
-        dot.classList.remove("cursor-hover");
-        ring.classList.remove("cursor-hover");
+        glow.classList.remove("cursor-hover");
       }
     }, { passive: true });
   }
@@ -302,8 +297,8 @@
       }
     }
     document.addEventListener("mousemove", function (e) {
-      ox = (e.clientX / window.innerWidth - 0.5) * 2 * 22;
-      oy = (e.clientY / window.innerHeight - 0.5) * 2 * 18;
+      ox = (e.clientX / window.innerWidth - 0.5) * 2 * 14;
+      oy = (e.clientY / window.innerHeight - 0.5) * 2 * 12;
       if (raf === null) raf = requestAnimationFrame(loop);
     }, { passive: true });
   }
@@ -333,52 +328,9 @@
     els.forEach(function (el) { io.observe(el); });
   }
 
-  /* ============ 12b. 惯性平滑滚动（桌面滚轮，rAF 克制缓动） ============ */
-  function initSmoothScroll() {
-    if (prefersReduced || !finePointer) return;
-    var target = window.scrollY || document.documentElement.scrollTop;
-    var current = target;
-    var raf = null;
-    var max = 0;
-
-    function updateMax() {
-      max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    }
-    function loop() {
-      var diff = target - current;
-      if (Math.abs(diff) < 0.5) {
-        window.scrollTo(0, Math.round(target));
-        raf = null;
-        return;
-      }
-      current += diff * 0.09;
-      window.scrollTo(0, Math.round(current));
-      raf = requestAnimationFrame(loop);
-    }
-    function kick() {
-      if (raf === null) raf = requestAnimationFrame(loop);
-    }
-    window.addEventListener("wheel", function (e) {
-      if (e.ctrlKey || e.shiftKey) return; /* 保留浏览器缩放 / 横向行为 */
-      if (max <= 0) return;
-      e.preventDefault();
-      var delta = e.deltaY;
-      if (e.deltaMode === 1) delta *= 16;
-      else if (e.deltaMode === 2) delta *= window.innerHeight;
-      target += delta;
-      target = Math.max(0, Math.min(target, max));
-      kick();
-    }, { passive: false });
-    /* 键盘 / 锚点 / 触摸等原生滚动期间，同步基准避免跳动 */
-    window.addEventListener("scroll", function () {
-      if (raf !== null) return;
-      var y = window.scrollY || document.documentElement.scrollTop;
-      current = y;
-      target = y;
-    }, { passive: true });
-    window.addEventListener("resize", updateMax, { passive: true });
-    updateMax();
-  }
+  /* ============ 12b. 滚动策略：移除自定义 rAF 惯性缓动，恢复浏览器原生滚动 ============
+     说明：自定义平滑滚动会在滚轮事件中 preventDefault + rAF 缓动，
+     造成明显延迟、不跟手与不受控；这里直接移除该逻辑，滚轮零延迟。 */
 
   /* ============ 12c. Hero 视差（标题与按钮轻微上移淡出） ============ */
   function initHeroParallax() {
@@ -386,8 +338,9 @@
     if (!hero || prefersReduced || !finePointer) return;
     var items = $all(".hero .display-title, .hero .type-line, .hero .hero-actions");
     if (!items.length) return;
-    var maxY = 240;
+    var maxY = 200;
     var ticking = false;
+    var prev = items.map(function () { return { y: -1, o: -1 }; });
     function update() {
       var y = window.scrollY || document.documentElement.scrollTop;
       if (y > 0) {
@@ -398,16 +351,25 @@
         var p = Math.min(y / maxY, 1);
         var eased = 1 - Math.pow(1 - p, 2);
         items.forEach(function (el, i) {
-          var factor = 0.14 + i * 0.05;
-          el.style.transform = "translateY(" + (eased * factor * y).toFixed(1) + "px)";
-          el.style.opacity = String(Math.max(0, 1 - eased * 0.7));
+          var factor = 0.09 + i * 0.035;
+          var ty = eased * factor * y;
+          var op = Math.max(0, 1 - eased * 0.7);
+          if (Math.abs(ty - prev[i].y) > 0.6) {
+            el.style.transform = "translateY(" + ty.toFixed(1) + "px)";
+            prev[i].y = ty;
+          }
+          if (Math.abs(op - prev[i].o) > 0.02) {
+            el.style.opacity = String(op);
+            prev[i].o = op;
+          }
         });
       } else {
         hero.classList.remove("parallax-on");
-        items.forEach(function (el) {
+        items.forEach(function (el, i) {
           el.classList.remove("parallax-live");
           el.style.transform = "";
           el.style.opacity = "";
+          prev[i].y = -1; prev[i].o = -1;
         });
       }
       ticking = false;
@@ -416,6 +378,154 @@
       if (!ticking) { ticking = true; requestAnimationFrame(update); }
     }, { passive: true });
     update();
+  }
+
+  /* ============ 12d. 想法项目：方向筛选（多选，单选全部） ============ */
+  function initIdeaFilters() {
+    var bar = $(".idea-filter-bar");
+    var cards = $all(".idea-card");
+    if (!bar || !cards.length) return;
+    var btns = $all(".idea-filter-btn", bar);
+    var tip = $("#idea-empty-tip");
+    var active = {};
+    function apply() {
+      var keys = Object.keys(active);
+      var showAll = keys.length === 0;
+      var shown = 0;
+      cards.forEach(function (card) {
+        var dirs = (card.getAttribute("data-direction") || "").split(" ");
+        var match = showAll || dirs.some(function (d) { return active[d]; });
+        card.classList.toggle("hide", !match);
+        if (match) shown++;
+      });
+      if (tip) tip.style.display = shown === 0 ? "block" : "none";
+    }
+    btns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var d = b.getAttribute("data-direction");
+        if (d === "all") { active = {}; }
+        else if (active[d]) { delete active[d]; }
+        else { active[d] = true; }
+        btns.forEach(function (x) {
+          var xd = x.getAttribute("data-direction");
+          var on = xd === "all" ? Object.keys(active).length === 0 : !!active[xd];
+          x.classList.toggle("active", on);
+        });
+        apply();
+      });
+    });
+  }
+
+  /* ============ 12e. 想法项目：卡片展开 / 收起 ============ */
+  function initIdeaExpand() {
+    $all(".idea-card").forEach(function (card) {
+      var head = $(".idea-head", card);
+      if (!head) return;
+      head.addEventListener("click", function () {
+        var open = card.classList.toggle("open");
+        var toggle = $(".idea-toggle", head);
+        if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+  }
+
+  /* ============ 12f. 想法项目：投票（localStorage + 可配置远程聚合） ============ */
+  function initIdeaVotes() {
+    var votes = $all(".idea-vote");
+    if (!votes.length) return;
+    var STORE = "nocau-idea-stats";
+    var CHOICE = "nocau-idea-choice";
+    var stats = { items: {} };
+    var choice = {};
+    try {
+      var raw = localStorage.getItem(STORE);
+      if (raw) { var p = JSON.parse(raw); if (p && p.items) stats = p; }
+      var c = localStorage.getItem(CHOICE);
+      if (c) choice = JSON.parse(c);
+    } catch (e) { /* 隐私模式等场景忽略 */ }
+    /* 部署时配置 window.NOCAU_VOTE_ENDPOINT 即启用远程聚合；未配置时静默本地统计 */
+    var endpoint = window.NOCAU_VOTE_ENDPOINT || "";
+
+    function getItem(id) {
+      if (!stats.items[id]) stats.items[id] = { up: 0, down: 0 };
+      return stats.items[id];
+    }
+    function save() {
+      try { localStorage.setItem(STORE, JSON.stringify(stats)); } catch (e) {}
+    }
+    function render(id) {
+      var it = getItem(id);
+      votes.forEach(function (v) {
+        if (v.getAttribute("data-id") !== id) return;
+        var like = $(".vote-like", v), dis = $(".vote-dislike", v);
+        var lc = $(".vote-count", like), dc = $(".vote-count", dis);
+        if (lc) lc.textContent = String(it.up);
+        if (dc) dc.textContent = String(it.down);
+        var cur = choice[id] || 0;
+        if (like) { like.classList.toggle("active", cur === 1); like.setAttribute("aria-pressed", cur === 1 ? "true" : "false"); }
+        if (dis) { dis.classList.toggle("active", cur === -1); dis.setAttribute("aria-pressed", cur === -1 ? "true" : "false"); }
+      });
+      renderSummary();
+    }
+    function renderSummary() {
+      var total = 0, list = [];
+      Object.keys(stats.items).forEach(function (id) {
+        var it = stats.items[id];
+        total += it.up + it.down;
+        list.push({ id: id, up: it.up });
+      });
+      var totalEl = $("#vote-total");
+      if (totalEl) totalEl.textContent = String(total);
+      var topEl = $("#vote-top3");
+      if (!topEl) return;
+      list.sort(function (a, b) { return b.up - a.up; });
+      var top = list.slice(0, 3);
+      if (!top.length) { topEl.innerHTML = '<li class="vs-empty">投票后可查看</li>'; return; }
+      topEl.innerHTML = "";
+      top.forEach(function (it, i) {
+        var card = document.querySelector('.idea-card[data-id="' + it.id + '"]');
+        var name = card && card.querySelector("h2") ? card.querySelector("h2").textContent : it.id;
+        var li = document.createElement("li");
+        li.textContent = (i + 1) + ". " + name + "（" + it.up + " 人感兴趣）";
+        topEl.appendChild(li);
+      });
+    }
+    function pushRemote(id, vote) {
+      if (!endpoint) return;
+      try {
+        fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: id, vote: vote }),
+          keepalive: true
+        }).catch(function () {});
+      } catch (e) { /* 静默降级本地统计 */ }
+    }
+    votes.forEach(function (v) {
+      var id = v.getAttribute("data-id");
+      $all(".vote-btn", v).forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var val = parseInt(btn.getAttribute("data-vote"), 10);
+          var prev = choice[id] || 0;
+          var it = getItem(id);
+          if (prev === val) {
+            choice[id] = 0;
+            it[val === 1 ? "up" : "down"] = Math.max(0, it[val === 1 ? "up" : "down"] - 1);
+            pushRemote(id, 0);
+          } else {
+            if (prev === 1) it.up = Math.max(0, it.up - 1);
+            if (prev === -1) it.down = Math.max(0, it.down - 1);
+            choice[id] = val;
+            it[val === 1 ? "up" : "down"] += 1;
+            pushRemote(id, val);
+          }
+          try { localStorage.setItem(CHOICE, JSON.stringify(choice)); } catch (e) {}
+          save();
+          render(id);
+        });
+      });
+      render(id);
+    });
   }
 
   /* ============ 13. 页面过渡（站内链接淡出） ============ */
@@ -434,7 +544,7 @@
     });
   }
 
-  /* ============ 14. 极淡粒子点阵（黑白灰、无连线、无辉光） ============ */
+  /* ============ 14. 极淡粒子点阵（黑白灰、无连线、无辉光，低负载） ============ */
   function initParticles() {
     var canvas = $("#particle-canvas");
     if (!canvas) return;
@@ -442,7 +552,8 @@
     var dark = document.documentElement.getAttribute("data-theme") !== "light";
     var dots = [];
     var W = 0, H = 0;
-    var DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    var frame = 0;
 
     function resize() {
       W = window.innerWidth; H = window.innerHeight;
@@ -455,20 +566,23 @@
     }
 
     function build() {
-      var count = Math.min(60, Math.floor((W * H) / 26000));
+      var count = Math.min(40, Math.floor((W * H) / 32000));
       dots = [];
       for (var i = 0; i < count; i++) {
         dots.push({
           x: Math.random() * W,
           y: Math.random() * H,
-          r: Math.random() * 1.2 + 0.5,
-          vx: (Math.random() - 0.5) * 0.08,
-          vy: (Math.random() - 0.5) * 0.08
+          r: Math.random() * 1.1 + 0.5,
+          vx: (Math.random() - 0.5) * 0.07,
+          vy: (Math.random() - 0.5) * 0.07
         });
       }
     }
 
     function draw() {
+      frame++;
+      /* 隔帧绘制：绘制频率减半，肉眼几乎无感但显著降低 CPU 占用 */
+      if (frame % 2 === 0) { requestAnimationFrame(draw); return; }
       ctx.clearRect(0, 0, W, H);
       var alpha = dark ? 0.28 : 0.4;
       dots.forEach(function (d) {
@@ -487,10 +601,6 @@
     function onResize() { if (ro) return; ro = setTimeout(function () { ro = null; resize(); }, 200); }
     window.addEventListener("resize", onResize, { passive: true });
     resize();
-    if (prefersReduced) {
-      draw();
-      return;
-    }
     draw();
   }
 
@@ -521,8 +631,10 @@
     initTilt();
     initRipple();
     initHeroOrb();
-    initSmoothScroll();
     initHeroParallax();
+    initIdeaFilters();
+    initIdeaExpand();
+    initIdeaVotes();
     initReveal();
     initPageTransitions();
     initParticles();

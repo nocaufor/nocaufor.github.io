@@ -54,16 +54,46 @@
           <p class="section-desc">一系列可供实现的软件项目方案。每个方案都标明了全流程的困难与难点，供评估与选择。</p>
         </div>
         <p class="idea-note reveal">
-          方案覆盖工具、AI 应用、社交、效率与本地应用等方向，标注预估周期与价值点。欢迎交流探讨，可选择其中任意一个进入需求梳理与落地。
+          方案覆盖工具、AI 应用、社交、效率与硬件智能（机器人、无人机、视觉语音识别等）方向，标注预估周期与价值点。硬件类方案已注明选型、精度、功耗与安全合规风险。欢迎交流探讨，可选择其中任意一个进入需求梳理与落地。
         </p>
       </div>
     </section>
 
     <!-- ==================== 方案列表 ==================== -->
-    <section class="section" style="padding-top: 40px">
-      <div class="container ideas-list">
+    <section class="section" style="padding-top: 0">
+      <div class="container">
+        <div class="vote-summary reveal">
+          <div class="vote-summary-stat"><span class="vs-num" id="vote-total">0</span><span class="vs-label">总投票数</span></div>
+          <div class="vote-summary-top">
+            <span class="vs-top-label">最受欢迎 Top3</span>
+            <ol class="vote-top3" id="vote-top3"><li class="vs-empty">投票后可查看</li></ol>
+          </div>
+          <p class="vote-note">投票数据保存在本机浏览器（localStorage）；部署时可配置后端接口聚合真实数据。</p>
+        </div>
+      </div>
+    </section>
 
-        <article class="idea-card reveal">
+<section class="section" style="padding-top: 40px">
+      <div class="container ideas-list">
+<div class="filter-bar idea-filter-bar reveal" role="group" aria-label="按方向筛选方案">
+          <button type="button" class="filter-btn idea-filter-btn active" data-direction="all">全部</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="工具">工具</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="AI应用">AI应用</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="效率协作">效率协作</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="硬件">硬件</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="机器人">机器人</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="无人机">无人机</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="图像识别">图像识别</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="语音">语音</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="人脸">人脸</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="物联网">物联网</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="目标检测">目标检测</button>
+          <button type="button" class="filter-btn idea-filter-btn" data-direction="手势识别">手势识别</button>
+        </div>
+        <p class="empty-tip" id="idea-empty-tip">没有符合条件的方案，换个方向试试。</p>
+
+
+        <article class="idea-card reveal" data-id="01" data-direction="工具">
           <div class="idea-head">
             <span class="idea-index">01</span>
             <div class="idea-head-main">
@@ -71,8 +101,12 @@
               <p class="idea-subtitle">在手机、电脑、平板之间无缝同步剪贴板文字与图片。</p>
               <div class="idea-tags"><span class="tag">工具</span><span class="tag">多端</span><span class="tag">3-5 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>经常在电脑与手机之间搬运链接、验证码、图片的用户；远程办公与多设备工作者。典型场景：电脑复制验证码、手机直接粘贴。</p>
           </div>
@@ -113,9 +147,15 @@
             <span>预估周期：4-6 周（MVP）</span>
             <span>价值点：高频刚需工具，可做订阅制或一次性买断。</span>
           </div>
+            <div class="idea-vote" data-id="01">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="02" data-direction="AI应用 图像识别">
           <div class="idea-head">
             <span class="idea-index">02</span>
             <div class="idea-head-main">
@@ -123,8 +163,12 @@
               <p class="idea-subtitle">截图即识别，本地 OCR 与联网翻译结合的桌面效率工具。</p>
               <div class="idea-tags"><span class="tag">效率</span><span class="tag">AI</span><span class="tag">桌面</span><span class="tag">4-6 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>阅读外文文档、看剧、处理图片文字的学生与办公人群；需要快速提取图片中表格文字的运营人员。</p>
           </div>
@@ -165,9 +209,15 @@
             <span>预估周期：6-8 周（MVP）</span>
             <span>价值点：效率工具付费意愿强，可 Pro 订阅解锁离线与批量。</span>
           </div>
+            <div class="idea-vote" data-id="02">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="03" data-direction="AI应用">
           <div class="idea-head">
             <span class="idea-index">03</span>
             <div class="idea-head-main">
@@ -175,8 +225,12 @@
               <p class="idea-subtitle">上传简历自动解析技能画像，与岗位 JD 匹配并给出改进建议。</p>
               <div class="idea-tags"><span class="tag">AI 应用</span><span class="tag">Web</span><span class="tag">6-8 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>求职者批量投递前想了解简历匹配度；HR 与猎头快速筛选大量简历；职业规划服务机构的效率工具。</p>
           </div>
@@ -217,9 +271,15 @@
             <span>预估周期：8-10 周</span>
             <span>价值点：B 端（HR 批量）与 C 端（求职者）双收费模型。</span>
           </div>
+            <div class="idea-vote" data-id="03">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="04" data-direction="工具">
           <div class="idea-head">
             <span class="idea-index">04</span>
             <div class="idea-head-main">
@@ -227,8 +287,12 @@
               <p class="idea-subtitle">面向老人家庭的用药提醒、血压血糖记录与电子健康档案。</p>
               <div class="idea-tags"><span class="tag">本地</span><span class="tag">适老</span><span class="tag">4-6 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>需要长期服药的老年人及其子女；慢性病管理家庭。子女远程查看父母用药与健康数据。</p>
           </div>
@@ -269,9 +333,15 @@
             <span>预估周期：6-8 周</span>
             <span>价值点：家庭刚需，可硬件联动（血压计）与家庭订阅。</span>
           </div>
+            <div class="idea-vote" data-id="04">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="05" data-direction="工具">
           <div class="idea-head">
             <span class="idea-index">05</span>
             <div class="idea-head-main">
@@ -279,8 +349,12 @@
               <p class="idea-subtitle">同一 WiFi 下手机与电脑无需联网即可高速互传文件。</p>
               <div class="idea-tags"><span class="tag">工具</span><span class="tag">本地</span><span class="tag">3-5 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>无数据线、外网慢或需要私密的传输场景；团队内大文件分发；不信任第三方云盘的用户。</p>
           </div>
@@ -321,9 +395,15 @@
             <span>预估周期：5-7 周</span>
             <span>价值点：隐私传输卖点，可做专业版（批量、加密、记录）。</span>
           </div>
+            <div class="idea-vote" data-id="05">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="06" data-direction="效率协作">
           <div class="idea-head">
             <span class="idea-index">06</span>
             <div class="idea-head-main">
@@ -331,8 +411,12 @@
               <p class="idea-subtitle">小餐饮店扫码点餐、后厨接单与经营统计的一体化轻 SaaS。</p>
               <div class="idea-tags"><span class="tag">工具</span><span class="tag">SaaS</span><span class="tag">8-12 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>缺少 IT 人员的小型餐饮店、奶茶店、咖啡店；希望减少点餐人力、沉淀菜品数据与复购经营。</p>
           </div>
@@ -373,9 +457,15 @@
             <span>预估周期：10-14 周</span>
             <span>价值点：按月订阅 + 支付分润，行业 SaaS 稳定现金流。</span>
           </div>
+            <div class="idea-vote" data-id="06">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="07" data-direction="AI应用 语音 效率协作">
           <div class="idea-head">
             <span class="idea-index">07</span>
             <div class="idea-head-main">
@@ -383,8 +473,12 @@
               <p class="idea-subtitle">本地录音自动转文字、分人识别并生成结构化会议纪要。</p>
               <div class="idea-tags"><span class="tag">AI</span><span class="tag">效率</span><span class="tag">6-9 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>高频开会的产品、项目与管理人员；记者与访谈者；需要留存会议结论的团队。</p>
           </div>
@@ -425,9 +519,15 @@
             <span>预估周期：8-11 周</span>
             <span>价值点：按分钟计费 + 团队订阅，B 端付费空间大。</span>
           </div>
+            <div class="idea-vote" data-id="07">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="08" data-direction="AI应用 工具">
           <div class="idea-head">
             <span class="idea-index">08</span>
             <div class="idea-head-main">
@@ -435,8 +535,12 @@
               <p class="idea-subtitle">无广告、本地优先的记账应用，自动分类与月度预算趋势分析。</p>
               <div class="idea-tags"><span class="tag">效率</span><span class="tag">本地</span><span class="tag">4-6 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>有记账习惯但嫌繁琐的年轻人；希望看清消费结构、控制预算的上班族；隐私敏感用户。</p>
           </div>
@@ -477,9 +581,15 @@
             <span>预估周期：6-8 周</span>
             <span>价值点：一次买断 + 高级图表订阅，靠口碑传播。</span>
           </div>
+            <div class="idea-vote" data-id="08">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="09" data-direction="效率协作">
           <div class="idea-head">
             <span class="idea-index">09</span>
             <div class="idea-head-main">
@@ -487,8 +597,12 @@
               <p class="idea-subtitle">围绕具体兴趣（摄影、骑行、读书）的小型私密社区。</p>
               <div class="idea-tags"><span class="tag">社交</span><span class="tag">Web/小程序</span><span class="tag">8-12 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>有共同兴趣、厌倦大平台信息噪音的用户；同城线下活动组织者；希望沉淀内容的小圈子。</p>
           </div>
@@ -529,9 +643,15 @@
             <span>预估周期：10-14 周</span>
             <span>价值点：会员订阅 + 活动服务费，社区网络效应强。</span>
           </div>
+            <div class="idea-vote" data-id="09">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="10" data-direction="AI应用">
           <div class="idea-head">
             <span class="idea-index">10</span>
             <div class="idea-head-main">
@@ -539,8 +659,12 @@
               <p class="idea-subtitle">输入孩子名字与喜好，生成专属睡前故事并朗读。</p>
               <div class="idea-tags"><span class="tag">AI 应用</span><span class="tag">内容</span><span class="tag">4-6 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>睡前需要新鲜故事的家长；希望孩子减少屏幕时间的家庭；幼儿教育内容创作者。</p>
           </div>
@@ -581,9 +705,15 @@
             <span>预估周期：6-8 周</span>
             <span>价值点：订阅制 + 家长付费意愿高，内容可沉淀为 IP。</span>
           </div>
+            <div class="idea-vote" data-id="10">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="11" data-direction="AI应用 工具">
           <div class="idea-head">
             <span class="idea-index">11</span>
             <div class="idea-head-main">
@@ -591,8 +721,12 @@
               <p class="idea-subtitle">拍照/选型号即可估算手机、平板、电脑回收价与回收渠道。</p>
               <div class="idea-tags"><span class="tag">工具</span><span class="tag">商业化</span><span class="tag">5-7 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>想卖旧设备的个人用户；二手回收商家与维修店；需要设备折旧评估的企采部门。</p>
           </div>
@@ -633,9 +767,15 @@
             <span>预估周期：7-9 周</span>
             <span>价值点：CPS 分润 + 数据服务，与回收商合作分成。</span>
           </div>
+            <div class="idea-vote" data-id="11">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="12" data-direction="工具">
           <div class="idea-head">
             <span class="idea-index">12</span>
             <div class="idea-head-main">
@@ -643,8 +783,12 @@
               <p class="idea-subtitle">定时探测网站与 API 可用性，异常时多渠道告警并出具报告。</p>
               <div class="idea-tags"><span class="tag">工具</span><span class="tag">SaaS</span><span class="tag">5-7 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>有线上业务但无专职运维的中小团队；独立开发者与站长；需要 SLA 报告的交付团队。</p>
           </div>
@@ -685,9 +829,15 @@
             <span>预估周期：7-9 周</span>
             <span>价值点：订阅制 + 免费额度获客，扩展监控生态。</span>
           </div>
+            <div class="idea-vote" data-id="12">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="13" data-direction="工具">
           <div class="idea-head">
             <span class="idea-index">13</span>
             <div class="idea-head-main">
@@ -695,8 +845,12 @@
               <p class="idea-subtitle">桌面端集中管理多平台游戏成就、时长与云端存档备份。</p>
               <div class="idea-tags"><span class="tag">本地</span><span class="tag">桌面</span><span class="tag">5-8 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>多平台玩家（Steam/Epic/主机模拟器）想汇总成就；担心存档丢失的硬核玩家；游戏收藏整理爱好者。</p>
           </div>
@@ -737,9 +891,15 @@
             <span>预估周期：8-11 周</span>
             <span>价值点：买断制 + 云备份订阅，硬核玩家付费意愿高。</span>
           </div>
+            <div class="idea-vote" data-id="13">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="14" data-direction="硬件 物联网">
           <div class="idea-head">
             <span class="idea-index">14</span>
             <div class="idea-head-main">
@@ -747,8 +907,12 @@
               <p class="idea-subtitle">配合定位设备的老人安全工具：电子围栏、跌倒预警与一键求助。</p>
               <div class="idea-tags"><span class="tag">本地</span><span class="tag">适老</span><span class="tag">IoT</span><span class="tag">8-12 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>有认知障碍或独居老人的家庭；养老机构；需要常规定位安全的照护场景。</p>
           </div>
@@ -789,9 +953,15 @@
             <span>预估周期：12-16 周</span>
             <span>价值点：硬件 + 服务订阅，家庭安全付费意愿强。</span>
           </div>
+            <div class="idea-vote" data-id="14">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
         </article>
 
-        <article class="idea-card reveal">
+        <article class="idea-card reveal" data-id="15" data-direction="效率协作">
           <div class="idea-head">
             <span class="idea-index">15</span>
             <div class="idea-head-main">
@@ -799,8 +969,12 @@
               <p class="idea-subtitle">轻量看板与待办协作，适合 3-10 人小团队，上手零成本。</p>
               <div class="idea-tags"><span class="tag">效率</span><span class="tag">协作</span><span class="tag">5-7 周</span></div>
             </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
-          <div class="idea-section">
+          <div class="idea-detail">
+            <div class="idea-section">
             <h3>目标用户与场景</h3>
             <p>被大型协作工具劝退的小团队；临时项目组；需要轻量任务分配的自由职业者协作圈。</p>
           </div>
@@ -840,6 +1014,881 @@
           <div class="idea-meta">
             <span>预估周期：7-9 周</span>
             <span>价值点：Freemium 订阅，团队付费转化稳定。</span>
+          </div>
+            <div class="idea-vote" data-id="15">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="16" data-direction="机器人 硬件">
+          <div class="idea-head">
+            <span class="idea-index">16</span>
+            <div class="idea-head-main">
+              <h2>桌面六轴机械臂控制平台</h2>
+              <p class="idea-subtitle">在浏览器中实时控制桌面机械臂，支持示教、路径回放与视觉抓取。</p>
+              <div class="idea-tags"><span class="tag">机器人</span><span class="tag">硬件</span><span class="tag">8-12 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>创客、实验室与自动化爱好者；教学演示、桌面级分拣与小型自动化产线预研。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>浏览器 WebSocket 实时控制（关节角度 / 末端坐标）</li>
+              <li>示教编程与路径回放、点位库管理</li>
+              <li>视觉识别定位抓取（颜色 / ArUco 码）</li>
+              <li>安全限位、碰撞保护、急停与断电保持</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">ROS 2</span><span class="tag">Python</span><span class="tag">OpenCV</span><span class="tag">STM32+步进</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：确定自由度、负载与安全边界，输出关节行程与抓取规格。</li>
+              <li><strong>原型设计</strong>：舵机/步进电机选型，3D 打印骨架与末端执行器方案。</li>
+              <li><strong>UI 设计</strong>：控制面板、姿态可视化与示教回放时间轴。</li>
+              <li><strong>开发</strong>：固件驱动 → 逆运动学解算 → 上位机通信 → 视觉抓取链路。</li>
+              <li><strong>测试</strong>：重复定位精度、堵转保护、断电保持与长时间稳定性。</li>
+              <li><strong>部署发布</strong>：桌面支架安装、调试文档与安全操作说明。</li>
+              <li><strong>运营迭代</strong>：开源社区收集抓取案例，迭代配件与固件。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>逆运动学解算与末端精度校准、多轴同步与抖动抑制。</li>
+              <li><span class="diff-tag">产品</span>硬件选型（扭矩、回程差、功耗）与安全边界（限位、夹持力、防夹手）。</li>
+              <li><span class="diff-tag">运营</span>桌面机械臂门槛高，需教程与开源生态带动，单靠硬件难起量。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：8-12 周（MVP 可先做 4 轴）</span>
+            <span>价值点：教育套件与二次开发 API，可做订阅制课程。</span>
+          </div>
+            <div class="idea-vote" data-id="16">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="17" data-direction="无人机 图像识别">
+          <div class="idea-head">
+            <span class="idea-index">17</span>
+            <div class="idea-head-main">
+              <h2>无人机航拍与巡检系统</h2>
+              <p class="idea-subtitle">航线规划、自动巡检拍照与缺陷标记，覆盖航拍与行业巡检。</p>
+              <div class="idea-tags"><span class="tag">无人机</span><span class="tag">图像</span><span class="tag">10-14 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>航拍爱好者、电力/光伏/农业巡检团队；屋顶、光伏板、农田与厂区自动巡查。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>航线规划、断点续飞与自动返航</li>
+              <li>定时定点自动拍照 / 录像并记录姿态</li>
+              <li>缺陷检测（光伏热斑、裂纹、异物）并在地图上标注</li>
+              <li>电量保护、限飞区检查与链路丢失兜底</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">Pixhawk</span><span class="tag">MAVSDK</span><span class="tag">Python</span><span class="tag">OpenCV</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：确定巡检对象、飞行范围与数据交付格式。</li>
+              <li><strong>原型设计</strong>：机架、飞控、相机与云台选型，估算续航。</li>
+              <li><strong>UI 设计</strong>：航点地图编辑、任务面板与巡检报告视图。</li>
+              <li><strong>开发</strong>：飞控对接 → 航线执行 → 图像采集 → 缺陷检测流水线。</li>
+              <li><strong>测试</strong>：悬停精度、抗风、断链返航与电磁干扰场景。</li>
+              <li><strong>部署发布</strong>：现场巡检 SOP、数据合规与保险配置。</li>
+              <li><strong>运营迭代</strong>：沉淀行业模板（光伏/电力/农业），迭代检测模型。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>飞控调参与震动抑制、图传延迟与图像质量平衡、定位精度与功耗（续航）矛盾。</li>
+              <li><span class="diff-tag">产品</span>空域合规、飞行保险与隐私（拍摄范围）边界。</li>
+              <li><span class="diff-tag">运营</span>巡检标准化难，不同行业交付标准差异大，需按行业做模板。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：10-14 周（MVP 单航线）</span>
+            <span>价值点：行业巡检服务按里程 / 面积付费，检测模型可授权。</span>
+          </div>
+            <div class="idea-vote" data-id="17">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="18" data-direction="图像识别 硬件">
+          <div class="idea-head">
+            <span class="idea-index">18</span>
+            <div class="idea-head-main">
+              <h2>车牌识别停车管理系统</h2>
+              <p class="idea-subtitle">摄像头识别车牌自动抬杆计费，覆盖停车场入口与反向寻车。</p>
+              <div class="idea-tags"><span class="tag">图像识别</span><span class="tag">硬件</span><span class="tag">6-9 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>园区、商场与小区停车场；无感通行、计时收费与黑名单管理。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>车牌检测与 OCR（蓝 / 绿 / 黄牌，新能源牌）</li>
+              <li>抬杆联动、计时计费与支付对接</li>
+              <li>月卡 / 临停车管理、黑白名单与异常告警</li>
+              <li>遮挡 / 模糊样本人工复核队列</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">YOLOv8</span><span class="tag">OpenCV</span><span class="tag">FastAPI</span><span class="tag">继电器控制</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：确认出入口数量、计费规则与运营方角色。</li>
+              <li><strong>原型设计</strong>：摄像头机位、补光灯与道闸联动方案。</li>
+              <li><strong>UI 设计</strong>：后台管理、收费面板与异常处理界面。</li>
+              <li><strong>开发</strong>：检测模型 → 跟踪去重 → 计费逻辑 → 道闸联动。</li>
+              <li><strong>测试</strong>：夜间、逆光、雨雾与斜角样本集回归。</li>
+              <li><strong>部署发布</strong>：边缘盒子部署、闸机接线与网络配置。</li>
+              <li><strong>运营迭代</strong>：监控识别故障率，持续收集难例优化模型。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>低照度 / 反光 / 雨雾下的识别精度、多车道并发与跟踪去重。</li>
+              <li><span class="diff-tag">产品</span>现场光照与机位调优、与既有道闸协议对接。</li>
+              <li><span class="diff-tag">运营</span>硬件维护成本高、售后响应要求快，需区域化服务。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：6-9 周（MVP）</span>
+            <span>价值点：停车场软硬件一体方案，SaaS 管理费按车位收费。</span>
+          </div>
+            <div class="idea-vote" data-id="18">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="19" data-direction="图像识别">
+          <div class="idea-head">
+            <span class="idea-index">19</span>
+            <div class="idea-head-main">
+              <h2>工业缺陷检测系统</h2>
+              <p class="idea-subtitle">用机器视觉自动检测产品表面缺陷（划痕、脏污、缺料）。</p>
+              <div class="idea-tags"><span class="tag">图像识别</span><span class="tag">工业</span><span class="tag">8-12 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>中小工厂质检线；电子、注塑与五金件表面缺陷自动检测。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>缺陷分类与定位（划痕 / 凹坑 / 异物 / 缺料）</li>
+              <li>良率统计、趋势报表与批次追溯</li>
+              <li>灵敏度、ROI 与检测节拍参数化调节</li>
+              <li>不合格品分拣联动（PLC 信号）</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">PyTorch</span><span class="tag">YOLOv8</span><span class="tag">OpenCV</span><span class="tag">PLC 信号</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：明确缺陷类型、检出率与漏检率指标。</li>
+              <li><strong>原型设计</strong>：光源、相机与安装位方案（打光是成败关键）。</li>
+              <li><strong>UI 设计</strong>：检测看板与缺陷标注回看界面。</li>
+              <li><strong>开发</strong>：数据采集 → 标注 → 训练 → 边缘推理 → PLC 联动。</li>
+              <li><strong>测试</strong>：真实产线样本、误检 / 漏检率与节拍压力测试。</li>
+              <li><strong>部署发布</strong>：产线安装、光路调整与操作员培训。</li>
+              <li><strong>运营迭代</strong>：持续收集难例做再训练，维护模型基线。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>小缺陷与纹理背景难区分、样本不均衡、精度与节拍（速度）冲突。</li>
+              <li><span class="diff-tag">产品</span>光源打光与机台适配决定成败，每个客户现场都不同。</li>
+              <li><span class="diff-tag">运营</span>项目制交付、单客户差异大，难标准化，需售前打样降低信任门槛。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：8-12 周（MVP）</span>
+            <span>价值点：产线质检服务按检测量付费，缺陷数据可沉淀为行业资产。</span>
+          </div>
+            <div class="idea-vote" data-id="19">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="20" data-direction="语音 AI应用">
+          <div class="idea-head">
+            <span class="idea-index">20</span>
+            <div class="idea-head-main">
+              <h2>语音管家「听我说」</h2>
+              <p class="idea-subtitle">离线优先的语音助手，自定义唤醒词、命令词与自动化动作。</p>
+              <div class="idea-tags"><span class="tag">语音识别</span><span class="tag">AI</span><span class="tag">6-9 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>桌面办公、智能家居控制与无障碍用户；不想依赖云助手的隐私敏感者。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>自定义唤醒词与命令词（中文普通话）</li>
+              <li>本地语音识别，隐私数据不出设备</li>
+              <li>命令映射到脚本、快捷键与智能设备</li>
+              <li>误唤醒日志与热词在线优化</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">funASR</span><span class="tag">Vosk</span><span class="tag">Python</span><span class="tag">意图解析</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：定义命令语法与动作执行边界。</li>
+              <li><strong>原型设计</strong>：唤醒词选择与命令树结构设计。</li>
+              <li><strong>UI 设计</strong>：热词管理面板与识别日志视图。</li>
+              <li><strong>开发</strong>：唤醒 → 识别 → 意图解析 → 动作执行链路。</li>
+              <li><strong>测试</strong>：噪音、口音、误唤醒率与 CPU 占用测试。</li>
+              <li><strong>部署发布</strong>：常驻后台、开机自启与托盘管理。</li>
+              <li><strong>运营迭代</strong>：命令模板市场、热词库持续扩充。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>本地识别准确率与唤醒灵敏度权衡、CPU 占用与功耗。</li>
+              <li><span class="diff-tag">产品</span>命令冲突与误触发、隐私边界要透明说明。</li>
+              <li><span class="diff-tag">运营</span>语音习惯难养成，需开箱即用的命令模板与教程。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：6-9 周（MVP）</span>
+            <span>价值点：隐私卖点的订阅制，企业桌面语音定制。</span>
+          </div>
+            <div class="idea-vote" data-id="20">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="21" data-direction="人脸 硬件">
+          <div class="idea-head">
+            <span class="idea-index">21</span>
+            <div class="idea-head-main">
+              <h2>人脸门禁与考勤系统</h2>
+              <p class="idea-subtitle">本地人脸识别完成门禁通行与考勤打卡，离线可运行。</p>
+              <div class="idea-tags"><span class="tag">人脸识别</span><span class="tag">硬件</span><span class="tag">7-10 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>中小企业、工作室与实验室门禁、考勤一体化管理。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>人脸注册、活体检测与 1:N 快速比对</li>
+              <li>门禁继电器联动与异常告警</li>
+              <li>考勤记录、导出报表与补卡流程</li>
+              <li>防代打卡（活体 + 随机动作指令）</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">InsightFace</span><span class="tag">OpenCV</span><span class="tag">FastAPI</span><span class="tag">SQLite</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：明确门禁点位、考勤规则与人员规模。</li>
+              <li><strong>原型设计</strong>：机位、光线与门禁机安装方案。</li>
+              <li><strong>UI 设计</strong>：人员管理、权限与考勤报表界面。</li>
+              <li><strong>开发</strong>：注册 → 活体 → 比对 → 开门 → 打卡链路。</li>
+              <li><strong>测试</strong>：多人并发、逆光、戴口罩策略与误识率测试。</li>
+              <li><strong>部署发布</strong>：边缘盒子 + 门禁机联调、数据加密存储。</li>
+              <li><strong>运营迭代</strong>：误识率监控、权限定期回收与人员维护。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>不同光照 / 角度 / 年龄下人脸特征稳定、活体检测与响应速度平衡。</li>
+              <li><span class="diff-tag">产品</span>隐私合规（人脸数据授权与加密存储）、误识责任界定。</li>
+              <li><span class="diff-tag">运营</span>替换既有考勤系统迁移成本高，需兼容旧设备与导出格式。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：7-10 周（MVP）</span>
+            <span>价值点：软硬一体方案、企业考勤订阅服务。</span>
+          </div>
+            <div class="idea-vote" data-id="21">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="22" data-direction="人脸">
+          <div class="idea-head">
+            <span class="idea-index">22</span>
+            <div class="idea-head-main">
+              <h2>疲劳驾驶检测系统</h2>
+              <p class="idea-subtitle">摄像头实时分析闭眼、打哈欠与视线偏离，预警疲劳驾驶。</p>
+              <div class="idea-tags"><span class="tag">人脸识别</span><span class="tag">车载</span><span class="tag">8-12 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>物流车队、网约车与长途司机的安全监控；交管 / 运输企业风险管控。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>眼睑闭合 PERCLOS 疲劳指标计算</li>
+              <li>打哈欠检测与头部姿态（低头 / 偏头）估计</li>
+              <li>连续驾驶时长提醒与分级告警</li>
+              <li>事件抓拍、本地缓存与云端回传</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">MediaPipe</span><span class="tag">OpenCV</span><span class="tag">边缘盒子</span><span class="tag">MQTT</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：确认告警等级、车队管理流程与合规要求。</li>
+              <li><strong>原型设计</strong>：摄像头安装位、夜视补光与车载供电方案。</li>
+              <li><strong>UI 设计</strong>：司机端提示 + 车队端实时看板。</li>
+              <li><strong>开发</strong>：人脸关键点 → 疲劳指标 → 分级告警 → 事件上报。</li>
+              <li><strong>测试</strong>：夜间、墨镜、口罩与车辆震动下的鲁棒性。</li>
+              <li><strong>部署发布</strong>：车载边缘设备安装、司机授权告知。</li>
+              <li><strong>运营迭代</strong>：输出车队安全报告，持续降低误报率。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>暗光 / 抖动下关键点稳定、误报率控制（高频误报会让司机关闭设备）、车载功耗。</li>
+              <li><span class="diff-tag">产品</span>行为数据敏感，需明确告知、授权与匿名化处理。</li>
+              <li><span class="diff-tag">运营</span>车队采购决策链长，需用试点事故率数据说话。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：8-12 周（MVP）</span>
+            <span>价值点：车队安全管理 SaaS，可与保险公司合作降保费。</span>
+          </div>
+            <div class="idea-vote" data-id="22">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="23" data-direction="目标检测">
+          <div class="idea-head">
+            <span class="idea-index">23</span>
+            <div class="idea-head-main">
+              <h2>智能辅助瞄准工具</h2>
+              <p class="idea-subtitle">视觉识别辅助定位目标并给出屏幕提示，仅限单机练习与算法研究（多人竞技使用属作弊）。</p>
+              <div class="idea-tags"><span class="tag">目标检测</span><span class="tag">高风险</span><span class="tag">4-8 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>单机射击游戏练习、无障碍辅助研究与目标检测算法学习；面向多人竞技场景会被平台封禁。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>目标检测与屏幕坐标提示（方框 / 准星辅助线）</li>
+              <li>灵敏度、平滑度与预测参数调节</li>
+              <li>练习模式命中率与反应时间统计</li>
+              <li>快捷键开关与屏蔽名单</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">YOLO</span><span class="tag">mss 截屏</span><span class="tag">OpenCV</span><span class="tag">Python</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：明确合规边界，仅支持单机 / 练习环境。</li>
+              <li><strong>原型设计</strong>：截屏频率、检测模型与提示渲染方案。</li>
+              <li><strong>UI 设计</strong>：悬浮配置面板与数据统计视图。</li>
+              <li><strong>开发</strong>：截屏 → 目标检测 → 坐标换算 → 提示渲染。</li>
+              <li><strong>测试</strong>：帧率、端到端延迟、误检与显存占用。</li>
+              <li><strong>部署发布</strong>：仅限个人练习环境，不提供联机对战分发。</li>
+              <li><strong>运营迭代</strong>：维护合规声明，不做商业化分发。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>检测帧率与延迟、模型大小与显存占用、复杂背景下误检。</li>
+              <li><span class="diff-tag">产品</span>游戏厂商明确禁止自动瞄准，账号封禁与法律风险极高。</li>
+              <li><span class="diff-tag">运营</span>不可商业化分发，否则涉嫌破坏游戏公平并违反平台服务条款。</li>
+            </ul>
+          </div>
+          <p class="idea-warn">⚠️ 合规警示：在多人竞技游戏中使用自动瞄准属作弊行为，会被平台永久封禁并可能承担法律责任；本项目仅可用于单机练习、无障碍辅助研究与算法学习，严禁联机使用与商业分发。</p>
+          <div class="idea-meta">
+            <span>预估周期：4-8 周（原型）</span>
+            <span>价值点：仅学习与研究价值，无商业变现空间。</span>
+          </div>
+            <div class="idea-vote" data-id="23">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="24" data-direction="手势识别">
+          <div class="idea-head">
+            <span class="idea-index">24</span>
+            <div class="idea-head-main">
+              <h2>手势识别控制台</h2>
+              <p class="idea-subtitle">摄像头隔空识别手势，控制电脑翻页、缩放、静音与自定义操作。</p>
+              <div class="idea-tags"><span class="tag">手势识别</span><span class="tag">体感</span><span class="tag">6-9 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>演讲者、设计师与厨房 / 实验室等不便触控的场景；无障碍辅助。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>基础手势识别（翻页 / 缩放 / 拖拽 / 静音）</li>
+              <li>自定义手势到快捷键 / 脚本映射</li>
+              <li>灵敏度、去抖与防误触参数调节</li>
+              <li>手势可视化调试窗口</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">MediaPipe</span><span class="tag">OpenCV</span><span class="tag">pyautogui</span><span class="tag">Python</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：定义手势集与映射操作清单。</li>
+              <li><strong>原型设计</strong>：手势识别流程与交互反馈方案。</li>
+              <li><strong>UI 设计</strong>：映射配置面板与调试可视化。</li>
+              <li><strong>开发</strong>：关键点 → 手势分类 → 动作映射执行。</li>
+              <li><strong>测试</strong>：光照、背景干扰、不同手型与误触测试。</li>
+              <li><strong>部署发布</strong>：后台常驻与开机自启。</li>
+              <li><strong>运营迭代</strong>：手势模板与教程，收集反馈优化。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>不同手型 / 角度鲁棒、误触与响应速度的平衡。</li>
+              <li><span class="diff-tag">产品</span>学习成本与可用性，缺少公认的手势约定。</li>
+              <li><span class="diff-tag">运营</span>价值感知不明显，需靠演示场景（演讲、手卫生）打动用户。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：6-9 周（MVP）</span>
+            <span>价值点：演示工具付费、无障碍辅助授权。</span>
+          </div>
+            <div class="idea-vote" data-id="24">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="25" data-direction="机器人 硬件">
+          <div class="idea-head">
+            <span class="idea-index">25</span>
+            <div class="idea-head-main">
+              <h2>SLAM 室内导航机器人</h2>
+              <p class="idea-subtitle">激光 / 视觉 SLAM 建图与自主导航，做室内送货与巡检机器人底座。</p>
+              <div class="idea-tags"><span class="tag">SLAM</span><span class="tag">机器人</span><span class="tag">12-16 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>室内服务机器人团队、实验室教学；餐厅配送、展厅导览与场馆巡检。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>实时建图与定位（2D 激光 SLAM）</li>
+              <li>目标点导航、路径规划与动态避障</li>
+              <li>动态障碍物重规划与防跌落</li>
+              <li>电量低自动回充与多楼层切换</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">ROS 2</span><span class="tag">Nav2</span><span class="tag">LiDAR</span><span class="tag">C++/Python</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：确定负载、速度、运行时长与场景约束。</li>
+              <li><strong>原型设计</strong>：底盘、雷达、IMU 与电池选型。</li>
+              <li><strong>UI 设计</strong>：地图可视化、任务面板与遥控界面。</li>
+              <li><strong>开发</strong>：里程计 → SLAM 建图 → 导航 → 避障链路。</li>
+              <li><strong>测试</strong>：走廊、人群、窄道、光照变化场景测试。</li>
+              <li><strong>部署发布</strong>：现场建图、站点标定与安全围栏配置。</li>
+              <li><strong>运营迭代</strong>：多场景建图服务、故障诊断与远程升级。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>定位漂移与闭环检测、动态障碍物跟踪、算力与功耗 / 续航平衡。</li>
+              <li><span class="diff-tag">产品</span>硬件成本与可靠性（轮子打滑、里程计误差、机械结构寿命）。</li>
+              <li><span class="diff-tag">运营</span>演示效果好但落地场景碎片化，需按行业逐个打磨。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：12-16 周（MVP）</span>
+            <span>价值点：机器人方案授权、教学套件与行业定制。</span>
+          </div>
+            <div class="idea-vote" data-id="25">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="26" data-direction="硬件 物联网">
+          <div class="idea-head">
+            <span class="idea-index">26</span>
+            <div class="idea-head-main">
+              <h2>智能家居中控面板</h2>
+              <p class="idea-subtitle">树莓派触控中控，统一控制灯、空调、窗帘与场景模式。</p>
+              <div class="idea-tags"><span class="tag">智能家居</span><span class="tag">硬件</span><span class="tag">6-9 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>智能家居用户与极客 DIY；客厅、卧室墙面中控与房间场景管理。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>多协议设备接入（WiFi / 红外 / 蓝牙）</li>
+              <li>场景模式（回家 / 睡眠 / 离家）一键执行</li>
+              <li>本地策略引擎（定时、传感器联动）</li>
+              <li>断网可用、本地存储与远程安全通道</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">Raspberry Pi</span><span class="tag">Home Assistant</span><span class="tag">MQTT</span><span class="tag">Web 前端</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：确认设备协议清单与屏幕尺寸。</li>
+              <li><strong>原型设计</strong>：面板外壳、触控屏与供电散热方案。</li>
+              <li><strong>UI 设计</strong>：卡片式控制界面与场景编排。</li>
+              <li><strong>开发</strong>：设备接入 → 场景引擎 → 界面绑定。</li>
+              <li><strong>测试</strong>：断网、设备掉线、误触与长时间运行。</li>
+              <li><strong>部署发布</strong>：壁挂安装、电源改造与网络配置。</li>
+              <li><strong>运营迭代</strong>：设备兼容模板库，按品牌持续扩充。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>异构协议兼容与掉线重连、整机功耗与散热控制。</li>
+              <li><span class="diff-tag">产品</span>设备生态绑定风险、本地控制避免云端隐私泄露。</li>
+              <li><span class="diff-tag">运营</span>以 DIY 用户为主，规模化需做成品预装与认证。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：6-9 周（MVP）</span>
+            <span>价值点：成品套件销售、私有化部署服务。</span>
+          </div>
+            <div class="idea-vote" data-id="26">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="27" data-direction="硬件 物联网">
+          <div class="idea-head">
+            <span class="idea-index">27</span>
+            <div class="idea-head-main">
+              <h2>树莓派智能门锁</h2>
+              <p class="idea-subtitle">树莓派驱动电子锁，支持密码、RFID、人脸与远程临时授权。</p>
+              <div class="idea-tags"><span class="tag">硬件</span><span class="tag">安防</span><span class="tag">7-10 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>极客家庭、共享办公与民宿短租管理；多认证、时效授权的门禁场景。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>多认证方式（密码 / RFID / 人脸 / 手机）</li>
+              <li>临时密码与时效授权、远程下发</li>
+              <li>开锁记录、异常告警与防撬检测</li>
+              <li>断电机械钥匙兜底与低电量提醒</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">Raspberry Pi</span><span class="tag">RFID RC522</span><span class="tag">OpenCV</span><span class="tag">电机锁</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：明确锁体类型、认证组合与安全等级。</li>
+              <li><strong>原型设计</strong>：锁体选型、电机力度与机械安全边界。</li>
+              <li><strong>UI 设计</strong>：授权管理 Web 与开锁记录视图。</li>
+              <li><strong>开发</strong>：认证模块 → 权限系统 → 电机驱动 → 日志。</li>
+              <li><strong>测试</strong>：反复开合、低压、防撬、断电与极端温度。</li>
+              <li><strong>部署发布</strong>：门体安装、固件签名与安全审计。</li>
+              <li><strong>运营迭代</strong>：安全补丁更新、设备远程诊断。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>锁体与电机选型（力度 / 功耗）、低功耗下人脸识别精度。</li>
+              <li><span class="diff-tag">产品</span>安防责任重大（误开 / 故障开锁后果），物理安全与电子安全同等重要。</li>
+              <li><span class="diff-tag">运营</span>家庭安全信任门槛高，需安全认证、保险与售后承诺。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：7-10 周（MVP）</span>
+            <span>价值点：民宿 / 短租管理 SaaS、安全认证溢价。</span>
+          </div>
+            <div class="idea-vote" data-id="27">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="28" data-direction="机器人 硬件">
+          <div class="idea-head">
+            <span class="idea-index">28</span>
+            <div class="idea-head-main">
+              <h2>循迹避障小车（ROS 入门）</h2>
+              <p class="idea-subtitle">从零搭建可循迹、避障、手机遥控的四轮小车，ROS 学习入门项目。</p>
+              <div class="idea-tags"><span class="tag">机器人</span><span class="tag">教育</span><span class="tag">4-6 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>机器人初学者、STEM 教育与高校课程实验；竞赛训练与创客入门。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>红外 / 灰度传感器循迹</li>
+              <li>超声波避障与防跌落</li>
+              <li>手机 App 遥控与速度调节</li>
+              <li>传感器数据可视化与轨迹回放</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">ESP32</span><span class="tag">ROS 2</span><span class="tag">Python</span><span class="tag">电机驱动</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：确定底盘尺寸、传感器组合与学习目标。</li>
+              <li><strong>原型设计</strong>：底盘、电机、传感器与电池选型。</li>
+              <li><strong>UI 设计</strong>：遥控 App 与数据面板。</li>
+              <li><strong>开发</strong>：电机驱动 → 循迹 → 避障 → 联网控制。</li>
+              <li><strong>测试</strong>：不同地面、速度与光照下的稳定性。</li>
+              <li><strong>部署发布</strong>：配套实验手册与接线教程。</li>
+              <li><strong>运营迭代</strong>：课程内容更新、社区案例收集。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>循迹线检测与转弯时机、电机 PWM 调速抖动与偏差校准。</li>
+              <li><span class="diff-tag">产品</span>教学难度曲线设计、故障要易于排查（接线与日志友好）。</li>
+              <li><span class="diff-tag">运营</span>套件利润薄，靠教程、课程授权与社区获客。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：4-6 周（MVP）</span>
+            <span>价值点：教育套件、课程授权与竞赛培训。</span>
+          </div>
+            <div class="idea-vote" data-id="28">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="idea-card reveal" data-id="29" data-direction="硬件 物联网">
+          <div class="idea-head">
+            <span class="idea-index">29</span>
+            <div class="idea-head-main">
+              <h2>宠物自动喂食器</h2>
+              <p class="idea-subtitle">定时定量自动投喂，支持远程控制、缺粮告警与多宠识别。</p>
+              <div class="idea-tags"><span class="tag">硬件</span><span class="tag">物联网</span><span class="tag">5-7 周</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section">
+            <h3>目标用户与场景</h3>
+            <p>上班族、出差养宠人；多猫多狗家庭分宠投喂与健康管理。</p>
+          </div>
+          <div class="idea-section">
+            <h3>核心功能清单</h3>
+            <ul>
+              <li>定时定量出粮与远程补喂</li>
+              <li>余粮 / 缺粮检测与低电量告警</li>
+              <li>多宠识别（宠物脸部）分食记录</li>
+              <li>进食记录与健康报表</li>
+            </ul>
+          </div>
+          <div class="idea-section">
+            <h3>技术栈选型</h3>
+            <div class="idea-tech"><span class="tag">ESP32</span><span class="tag">步进电机</span><span class="tag">称重传感器</span><span class="tag">微信小程序</span></div>
+          </div>
+          <div class="idea-section">
+            <h3>完整开发流程</h3>
+            <ol class="flow">
+              <li><strong>需求分析</strong>：确定出粮精度、容量与多宠策略。</li>
+              <li><strong>原型设计</strong>：出粮机构、料仓与防潮结构设计。</li>
+              <li><strong>UI 设计</strong>：小程序控制与喂食记录界面。</li>
+              <li><strong>开发</strong>：电机控制 → 称重 → 联网 → 多宠识别。</li>
+              <li><strong>测试</strong>：卡粮、潮湿结块、断电恢复与缺粮报警。</li>
+              <li><strong>部署发布</strong>：家庭安装、网络配置与安全提示。</li>
+              <li><strong>运营迭代</strong>：耗材复购、App 增值功能与健康报告。</li>
+            </ol>
+          </div>
+          <div class="idea-section">
+            <h3>关键困难与难点</h3>
+            <ul class="diff-list">
+              <li><span class="diff-tag">技术</span>出粮机构防卡粮 / 防潮、称重精度与累计误差、整机功耗。</li>
+              <li><span class="diff-tag">产品</span>宠物健康数据可靠性、多宠识别精度直接影响信任。</li>
+              <li><span class="diff-tag">运营</span>硬件毛利低，靠耗材（粮桶、干燥剂）与订阅服务赚钱。</li>
+            </ul>
+          </div>
+          <div class="idea-meta">
+            <span>预估周期：5-7 周（MVP）</span>
+            <span>价值点：硬件 + 耗材 + 健康数据订阅模式。</span>
+          </div>
+            <div class="idea-vote" data-id="29">
+              <span class="vote-label">你的选择</span>
+              <button type="button" class="vote-btn vote-like" data-vote="1" aria-pressed="false">感兴趣 <span class="vote-count">0</span></button>
+              <button type="button" class="vote-btn vote-dislike" data-vote="-1" aria-pressed="false">不感兴趣 <span class="vote-count">0</span></button>
+            </div>
           </div>
         </article>
 
