@@ -15,10 +15,6 @@
 
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
-  <!-- 光标跟随光晕与圆点（桌面端） -->
-  <div class="cursor-glow" aria-hidden="true"></div>
-  <div class="cursor-dot" aria-hidden="true"></div>
-
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
     <div class="container nav">
@@ -33,10 +29,9 @@
           <a href="about.html">关于</a>
           <a href="contact.html">联系</a>
         </nav>
-        <button id="visual-toggle" class="visual-toggle" aria-label="切换渐变风格">MONO</button>
         <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
-          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
         </button>
         <button class="nav-toggle" aria-label="切换导航菜单" aria-expanded="false" aria-controls="nav-links">
           <span></span><span></span><span></span>
@@ -54,7 +49,7 @@
           <span class="section-tag">Portfolio</span>
           <div class="section-divider"></div>
           <h1 class="section-title">项目<span class="gradient-text">作品集</span></h1>
-          <p class="section-desc">覆盖微信小程序、Android 应用与 AI 平台。使用下方筛选快速定位。</p>
+          <p class="section-desc">微信小程序、Android 应用与 AI 平台。</p>
         </div>
 
         <!-- 筛选栏 -->
@@ -80,8 +75,8 @@
               <h3>衣件通</h3>
               <p class="project-subtitle">服装管理工具 · 微信小程序</p>
               <p class="project-desc">
-                一款面向个人衣橱管理的微信小程序。支持衣物信息的记录、分类、检索与日常管理，
-                帮助用户快速掌握衣物资产，合理搭配、减少重复购买。
+                面向个人衣橱管理的微信小程序，支持衣物记录、分类、检索与日常管理，
+                帮助掌握衣物情况，减少重复购买。
               </p>
               <div class="project-features">
                 <span class="tag">微信小程序</span>
@@ -108,8 +103,8 @@
               <h3>好友检测</h3>
               <p class="project-subtitle">Android 应用 · 微信好友检测</p>
               <p class="project-desc">
-                Android 平台应用，用于辅助检测微信好友状态，帮助用户识别被删除 / 拉黑等情况，
-                以友好、合规的方式管理社交关系。
+                Android 平台应用，辅助检测微信好友状态，帮助识别被删除 / 拉黑等情况，
+                以合规方式管理社交关系。
               </p>
               <div class="project-features">
                 <span class="tag">Android</span>
@@ -136,8 +131,8 @@
               <h3>LINGO / 广告拦截</h3>
               <p class="project-subtitle">Android 应用 · 面向老人的广告拦截与风险检测</p>
               <p class="project-desc">
-                面向老年用户的本地广告拦截与风险检测应用。在不联网的前提下智能识别并拦截
-                应用内广告弹窗，检测潜在风险界面，降低误触与诈骗风险。
+                面向老年用户的本地广告拦截与风险检测应用，识别并拦截应用内广告弹窗，
+                检测潜在风险界面，降低误触与诈骗风险。
               </p>
               <div class="project-features">
                 <span class="tag">广告拦截</span>
@@ -164,8 +159,8 @@
               <h3>AI hub</h3>
               <p class="project-subtitle">统一 AI 工具入口与资源监管平台</p>
               <p class="project-desc">
-                集 AI 工具市场、资源监管、部署中心于一体的综合平台。统一管理 AI 工具与模型资源，
-                提供从发现、审批到部署的全流程能力，是面向团队与个人的 AI 能力中台。
+                集 AI 工具市场、资源监管、部署中心于一体的平台，统一管理 AI 工具与模型资源，
+                覆盖发现、审批到部署的完整流程。
               </p>
               <div class="project-features">
                 <span class="tag">工具市场</span>
@@ -181,7 +176,7 @@
 
         </div>
 
-        <div id="empty-tip" class="empty-tip">当前分类暂无项目，敬请期待。</div>
+        <div id="empty-tip" class="empty-tip">当前分类暂无项目。</div>
       </div>
     </section>
 

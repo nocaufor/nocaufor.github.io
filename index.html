@@ -13,12 +13,8 @@
 </head>
 <body>
 
-  <!-- 粒子背景画布 -->
+  <!-- 极淡点阵背景 -->
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
-
-  <!-- 光标跟随光晕与圆点（桌面端） -->
-  <div class="cursor-glow" aria-hidden="true"></div>
-  <div class="cursor-dot" aria-hidden="true"></div>
 
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
@@ -34,10 +30,9 @@
           <a href="about.html">关于</a>
           <a href="contact.html">联系</a>
         </nav>
-        <button id="visual-toggle" class="visual-toggle" aria-label="切换渐变风格">MONO</button>
         <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
-          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
         </button>
         <button class="nav-toggle" aria-label="切换导航菜单" aria-expanded="false" aria-controls="nav-links">
           <span></span><span></span><span></span>
@@ -50,15 +45,11 @@
 
     <!-- ==================== Hero ==================== -->
     <section class="hero">
-      <div class="parallax-orb orb-1" aria-hidden="true"></div>
-      <div class="parallax-orb orb-2" aria-hidden="true"></div>
       <div class="container">
-        <span class="hero-badge reveal"><span class="dot"></span> nocau.com · GitHub Pages 在线</span>
         <h1 class="reveal">用代码把想法做成<br /><span class="gradient-text">能用的产品</span></h1>
         <div class="type-line reveal"><span id="typewriter"></span><span class="cursor"></span></div>
         <p class="reveal">
-          独立开发者，专注小程序、Android 应用与 AI 工具平台。
-          从需求分析到上线运营，全流程亲自打造。
+          独立开发者，专注微信小程序、Android 应用与 AI 工具平台。
         </p>
         <div class="hero-actions reveal">
           <a href="projects.html" class="btn btn-primary btn-lg">查看作品集</a>
@@ -89,23 +80,23 @@
           <span class="section-tag">Capabilities</span>
           <div class="section-divider"></div>
           <h2 class="section-title">核心<span class="gradient-text">能力</span></h2>
-          <p class="section-desc">横跨移动端、工具链与 AI 平台，注重实际落地效果。</p>
+          <p class="section-desc">移动端、工具链与 AI 平台。</p>
         </div>
         <div class="features-grid">
           <div class="feature-card reveal">
             <div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></div>
             <h3>移动应用开发</h3>
-            <p>微信小程序与 Android 原生应用，覆盖服装管理、社交工具、系统安全等场景。</p>
+            <p>微信小程序与 Android 应用，覆盖工具、社交与安全场景。</p>
           </div>
           <div class="feature-card reveal">
             <div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="8" width="14" height="11" rx="2.5"/><path d="M9 8V6.5A3 3 0 0 1 15 6.5V8"/><path d="M9 14.5h.01M15 14.5h.01"/></svg></div>
             <h3>AI 平台建设</h3>
-            <p>AI 工具入口、资源监管、模型部署中心等平台型产品从 0 到 1 的规划与实现。</p>
+            <p>AI 工具入口与资源监管平台，覆盖发现、审批到部署的流程。</p>
           </div>
           <div class="feature-card reveal">
             <div class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 19 5.4v5.6c0 4.6-3 7.9-7 9.2-4-1.3-7-4.6-7-9.2V5.4l7-2.6z"/><path d="m8.8 12 2.1 2.1 4.3-4.4"/></svg></div>
             <h3>系统级工具</h3>
-            <p>面向真实用户的本地工具研发：广告拦截、风险检测，注重性能、安全与体验。</p>
+            <p>本地广告拦截与风险检测类工具，关注性能、安全与体验。</p>
           </div>
         </div>
       </div>
@@ -118,7 +109,7 @@
           <span class="section-tag">Tech Stack</span>
           <div class="section-divider"></div>
           <h2 class="section-title">技术<span class="gradient-text">栈</span></h2>
-          <p class="section-desc">持续打磨的技术组合，驱动每一个产品落地。</p>
+          <p class="section-desc">日常使用的技术。</p>
         </div>
         <div class="skills-list reveal">
           <span class="skill-tag">微信小程序</span>
@@ -140,7 +131,7 @@
           <span class="section-tag">Featured</span>
           <div class="section-divider"></div>
           <h2 class="section-title">精选<span class="gradient-text">项目</span></h2>
-          <p class="section-desc">从工具类小程序到 AI 平台，每个项目都解决一个真实问题。</p>
+          <p class="section-desc">独立完成的部分项目。</p>
         </div>
         <div class="projects-grid">
 
@@ -155,7 +146,7 @@
             <div class="project-body">
               <h3>衣件通</h3>
               <p class="project-subtitle">服装管理工具 · 微信小程序</p>
-              <p class="project-desc">帮助用户高效管理衣物的实用小程序，支持衣物记录、分类检索与日常管理，让衣橱井井有条。</p>
+              <p class="project-desc">管理个人衣物的微信小程序，支持衣物记录、分类检索与日常管理。</p>
               <div class="project-features">
                 <span class="tag">小程序</span><span class="tag">衣物管理</span><span class="tag">本地存储</span>
               </div>
@@ -177,7 +168,7 @@
             <div class="project-body">
               <h3>AI hub</h3>
               <p class="project-subtitle">统一 AI 工具入口与资源监管平台</p>
-              <p class="project-desc">聚合 AI 工具市场、资源监管与部署中心的综合平台，统一管理 AI 工具与模型资源，覆盖发现、审批到部署全流程。</p>
+              <p class="project-desc">聚合 AI 工具市场、资源监管与部署中心的平台，统一管理 AI 工具与模型资源。</p>
               <div class="project-features">
                 <span class="tag">工具市场</span><span class="tag">资源监管</span><span class="tag">部署中心</span>
               </div>
@@ -200,9 +191,9 @@
       <div class="container" style="text-align: center">
         <div class="reveal">
           <span class="section-tag">Let's Talk</span>
-          <h2 class="section-title" style="margin-bottom: 16px">有想法？<span class="gradient-text">一起实现</span></h2>
-          <p class="section-desc" style="margin-bottom: 30px">合作、交流或任何创意，欢迎随时联系。</p>
-          <a href="contact.html" class="btn btn-primary btn-lg">立即联系</a>
+          <h2 class="section-title" style="margin-bottom: 16px">有想做的产品？<span class="gradient-text">聊聊</span></h2>
+          <p class="section-desc" style="margin-bottom: 30px">合作或交流，欢迎联系。</p>
+          <a href="contact.html" class="btn btn-primary btn-lg">联系我</a>
         </div>
       </div>
     </section>
