@@ -143,7 +143,85 @@
               <li><span class="diff-tag">运营</span>同类工具多且免费，需靠差异点（局域网直连、隐私承诺）获客。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">剪贴板监听与 WebSocket 推送（服务端，核心同步链路）</p>
+<pre><code class="language-python">import asyncio, websockets, pyperclip
+
+clients = set()
+clip_state = {}
+
+async def sync(ws, path):
+    clients.add(ws)
+    try:
+        async for msg in ws:
+            # msg: {"type":"clip","text":...,"seq":123,"device":"mac"}
+            data = json.loads(msg)
+            if data.get("seq", 0) &lt;= clip_state.get("device", 0):
+                continue
+            clip_state["device"] = data["seq"]
+            await asyncio.gather(*[
+                c.send(msg) for c in clients if c is not ws
+            ])
+    finally:
+        clients.discard(ws)
+
+start_server = websockets.serve(sync, "0.0.0.0", 8765)
+asyncio.get_event_loop().run_until_complete(start_server)
+asyncio.get_event_loop().run_forever()</code></pre>
+<p class="code-caption">Flutter 端剪贴板监听（客户端）</p>
+<pre><code class="language-dart">import 'package:flutter/services.dart';
+
+void watchClipboard() {
+  final box = Clipboard.getData(Clipboard.kTextPlain);
+  // 轮询或平台通道监听剪贴板变化
+  Timer.periodic(const Duration(milliseconds: 800), (_) async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (data?.text != null &amp;&amp; data.text != _last) {
+      _last = data.text!;
+      _ws.add(jsonEncode({'type': 'clip', 'text': _last}));
+    }
+  });
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://pub.dev/packages/clipboard" target="_blank" rel="noopener">clipboard-sync / flutter_clipboard 示例</a>：Flutter 读取剪贴板的官方插件，用于客户端监听与写入。</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/WebSocket" target="_blank" rel="noopener">WebSockets 协议文档</a>：理解浏览器/客户端 WebSocket 连接与重连语义。</li>
+<li><a href="https://websockets.readthedocs.io/" target="_blank" rel="noopener">websockets（Python）</a>：服务端异步 WebSocket 库，代码示例即基于该库。</li>
+<li><a href="https://sqlite-utils.datasette.io/" target="_blank" rel="noopener">sqlite-utils 文档</a>：历史剪贴板记录的本地 SQLite 存储参考。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>安装 Python 3.10+ 与 Flutter SDK（flutter doctor 校验环境）。</li>
+<li>pip install websockets pyperclip json；flutter create clip_sync。</li>
+</ol>
+<h4 class="step-phase">阶段：后端开发</h4>
+<ol class="flow">
+<li>用 websockets 实现 0.0.0.0:8765 的转发服务，先做广播，再按 seq 去重。</li>
+<li>加 AES-GCM 加密层：服务端不落盘明文，仅中继密文。</li>
+</ol>
+<h4 class="step-phase">阶段：客户端开发</h4>
+<ol class="flow">
+<li>Flutter 端实现剪贴板监听（轮询 800ms 起步）与连接状态 UI。</li>
+<li>实现断线自动重连（指数退避）与离线队列，保证弱网同步。</li>
+</ol>
+<h4 class="step-phase">阶段：联调与测试</h4>
+<ol class="flow">
+<li>手机+电脑同网联调，覆盖大图同步、锁屏后同步、断网重连场景。</li>
+<li>写单元测试验证 seq 乱序与重复消息不重复写入。</li>
+</ol>
+<h4 class="step-phase">阶段：发布迭代</h4>
+<ol class="flow">
+<li>服务端部署到云主机（systemd 托管），客户端打包提审。</li>
+<li>灰度发布后收集崩溃率与同步延迟数据，迭代稳定性。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：4-6 周（MVP）</span>
             <span>价值点：高频刚需工具，可做订阅制或一次性买断。</span>
           </div>
@@ -205,7 +283,66 @@
               <li><span class="diff-tag">运营</span>免费替代品多，需在快捷键体验与批量处理上建立优势。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">截图 → OCR → 翻译 主流程（核心管线）</p>
+<pre><code class="language-python">import mss, pytesseract
+import requests
+
+# 1. 截取屏幕区域
+with mss.mss() as sct:
+    img = sct.grab({"left": 100, "top": 100, "width": 800, "height": 600})
+    img = Image.frombytes("RGB", img.size, img.bgra, "raw", "BGRX")
+
+# 2. 本地 OCR（Tesseract 中文包）
+text = pytesseract.image_to_string(img, lang="chi_sim+eng")
+text = " ".join(text.split())
+
+# 3. 联网翻译（DeepL API 示例）
+resp = requests.post("https://api-free.deepl.com/v2/translate",
+    data={"auth_key": API_KEY, "text": text, "target_lang": "ZH"})
+print(resp.json()["translations"][0]["text"])</code></pre>
+<p class="code-caption">Electron 主进程接收截图热键</p>
+<pre><code class="language-typescript">import { globalShortcut, clipboard, nativeImage } from 'electron';
+
+globalShortcut.register('CommandOrControl+Shift+A', () =&gt; {
+  const img = nativeImage.createFromDataURL(clipboard.readImage().toDataURL());
+  mainWindow.webContents.send('ocr-trigger', img.toPNG());
+});</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://github.com/tesseract-ocr/tesseract" target="_blank" rel="noopener">Tesseract OCR 官方文档</a>：本地 OCR 引擎，示例中 pytesseract 即其封装。</li>
+<li><a href="https://github.com/madmaze/pytesseract" target="_blank" rel="noopener">pytesseract</a>：Python 调用 Tesseract 的封装库，含中文语言包说明。</li>
+<li><a href="https://www.electronjs.org/docs/latest/api/global-shortcut" target="_blank" rel="noopener">Electron globalShortcut</a>：注册全局热键唤起截图识别。</li>
+<li><a href="https://www.deepl.com/docs-api/" target="_blank" rel="noopener">DeepL API 文档</a>：翻译接口参考，可按需换 Google/Baidu 翻译。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install mss pytesseract pillow requests；下载 tesseract 及 chi_sim 语言包。</li>
+<li>npm init electron-app@latest ocr-translate（Electron 脚手架）。</li>
+</ol>
+<h4 class="step-phase">阶段：核心管线</h4>
+<ol class="flow">
+<li>先用 mss 截屏保存到临时文件，验证 OCR 输出文本正确。</li>
+<li>接入翻译 API，先支持英译中，再做语言自动检测。</li>
+</ol>
+<h4 class="step-phase">阶段：桌面集成</h4>
+<ol class="flow">
+<li>注册全局热键，截图后自动粘贴到主窗口。</li>
+<li>实现悬浮结果窗：识别文本+译文并排显示，支持一键复制。</li>
+</ol>
+<h4 class="step-phase">阶段：优化发布</h4>
+<ol class="flow">
+<li>缓存 OCR 结果（内容哈希去重），避免重复翻译计费。</li>
+<li>打包（electron-builder），灰度发布，收集识别错误反馈优化。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：6-8 周（MVP）</span>
             <span>价值点：效率工具付费意愿强，可 Pro 订阅解锁离线与批量。</span>
           </div>
@@ -267,7 +404,70 @@
               <li><span class="diff-tag">运营</span>数据合规敏感，需明确删除策略；获客依赖内容与口碑。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">简历文本解析与技能画像（核心逻辑）</p>
+<pre><code class="language-python">import re
+from collections import Counter
+
+SKILLS = ["Python", "Java", "TypeScript", "React", "Docker", "Kubernetes"]
+
+def extract_profile(resume_text: str) -&gt; dict:
+    # 1. 抽取技能关键词（白名单+词频）
+    found = [s for s in SKILLS if s.lower() in resume_text.lower()]
+    # 2. 工作年限
+    years = re.findall(r"(\d+)\s*年(?:经验|工作经验)", resume_text)
+    # 3. 学历与学校（示例用正则粗提取）
+    edu = re.findall(r"(本科|硕士|博士)", resume_text)
+    return {"skills": found, "years": int(years[0]) if years else 0,
+            "degree": edu[0] if edu else "未知"}
+
+def match_score(profile: dict, jd: dict) -&gt; float:
+    hit = len(set(profile["skills"]) &amp; set(jd["skills"]))
+    need = max(len(jd["skills"]), 1)
+    return round(hit / need, 2)</code></pre>
+<p class="code-caption">岗位匹配结果生成</p>
+<pre><code class="language-python">def build_report(profile, jd):
+    score = match_score(profile, jd)
+    gap = set(jd["skills"]) - set(profile["skills"])
+    return {
+        "score": score,
+        "gap_skills": sorted(gap),
+        "suggestion": "建议补充 " + "、".join(sorted(gap)) if gap else "匹配度良好",
+    }</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://spacy.io/usage" target="_blank" rel="noopener">spaCy 官方文档</a>：NLP 实体识别（学校/公司/职位）可选方案。</li>
+<li><a href="https://github.com/hankcs/HanLP" target="_blank" rel="noopener">HanLP（中文 NLP）</a>：中文分词与实体识别，适合简历中文文本。</li>
+<li><a href="https://fastapi.tiangolo.com/" target="_blank" rel="noopener">FastAPI 文档</a>：简历解析 API 服务框架，示例接口可直接用。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：数据准备</h4>
+<ol class="flow">
+<li>收集 50-100 份脱敏简历，建立技能词库与学历/年限正则规则。</li>
+<li>pip install fastapi uvicorn spacy；python -m spacy download zh_core_web_sm。</li>
+</ol>
+<h4 class="step-phase">阶段：解析模块</h4>
+<ol class="flow">
+<li>先做纯规则版：正则提取年限学历、白名单匹配技能，跑通指标。</li>
+<li>再引入 spaCy/HanLP 做实体抽取，对比规则版准确率。</li>
+</ol>
+<h4 class="step-phase">阶段：匹配与接口</h4>
+<ol class="flow">
+<li>编写 JD 解析与 match_score 算法，输出缺口技能与建议。</li>
+<li>FastAPI 暴露 /parse 与 /match 接口，前端上传 PDF 转文本后调用。</li>
+</ol>
+<h4 class="step-phase">阶段：联调发布</h4>
+<ol class="flow">
+<li>前端展示技能画像雷达图与匹配分，加入改进建议卡片。</li>
+<li>部署到云服务器，测试不同排版简历的鲁棒性，迭代词库。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：8-10 周</span>
             <span>价值点：B 端（HR 批量）与 C 端（求职者）双收费模型。</span>
           </div>
@@ -329,7 +529,76 @@
               <li><span class="diff-tag">运营</span>医疗领域信任门槛高，需专业背书与免责边界清晰。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">用药提醒调度（浏览器通知 + IndexedDB 持久化）</p>
+<pre><code class="language-javascript">const DB_NAME = 'family-health';
+const store = indexedDB.open(DB_NAME, 1);
+
+store.onupgradeneeded = (e) =&gt; {
+  const db = e.target.result;
+  if (!db.objectStoreNames.contains('meds')) {
+    db.createObjectStore('meds', { keyPath: 'id', autoIncrement: true });
+  }
+};
+
+function scheduleReminder(med) {
+  const now = new Date();
+  const [hh, mm] = med.time.split(':');
+  const due = new Date(now.getFullYear(), now.getMonth(), now.getDate(), +hh, +mm);
+  const delay = due - now;
+  if (delay &gt; 0) {
+    setTimeout(() =&gt; notify(med.name + ' 该吃药了'), delay);
+  }
+}
+
+function notify(text) {
+  if (Notification.permission === 'granted') {
+    new Notification('用药提醒', { body: text });
+  }
+}</code></pre>
+<p class="code-caption">血压血糖记录趋势统计</p>
+<pre><code class="language-javascript">async function getTrend(storeName, days = 30) {
+  const db = await openDB(DB_NAME);
+  const tx = db.transaction(storeName, 'readonly');
+  const all = await tx.objectStore(storeName).getAll();
+  const from = Date.now() - days * 864e5;
+  return all.filter(r =&gt; r.ts &gt;= from)
+            .sort((a, b) =&gt; a.ts - b.ts);
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API" target="_blank" rel="noopener">MDN IndexedDB 教程</a>：浏览器本地数据库，用于离线存储用药与健康记录。</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Notifications_API" target="_blank" rel="noopener">MDN Notifications API</a>：用药提醒通知实现参考。</li>
+<li><a href="https://developer.chrome.com/docs/workbox/" target="_blank" rel="noopener">PWA（Workbox）</a>：离线优先的 PWA 方案，家庭场景可离线使用。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：项目初始化</h4>
+<ol class="flow">
+<li>npm create vite@latest family-health -- --template vanilla；搭建 PWA manifest。</li>
+<li>设计数据模型：用药计划、打卡记录、血压血糖读数、家人档案。</li>
+</ol>
+<h4 class="step-phase">阶段：核心功能</h4>
+<ol class="flow">
+<li>实现 IndexedDB 封装层与用药提醒调度（Notification API 申请权限）。</li>
+<li>实现血压/血糖记录表单与 30 天趋势折线图（Chart.js）。</li>
+</ol>
+<h4 class="step-phase">阶段：家庭共享</h4>
+<ol class="flow">
+<li>局域网内基于 BroadcastChannel 同步提醒，老人端免登录。</li>
+<li>导出 CSV/JSON 备份，支持打印就诊参考单。</li>
+</ol>
+<h4 class="step-phase">阶段：测试上线</h4>
+<ol class="flow">
+<li>用 Lighthouse 校验 PWA 离线能力，修复通知权限引导。</li>
+<li>部署 GitHub Pages，真机测试锁屏通知与恢复机制。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：6-8 周</span>
             <span>价值点：家庭刚需，可硬件联动（血压计）与家庭订阅。</span>
           </div>
@@ -391,7 +660,72 @@
               <li><span class="diff-tag">运营</span>免费同类多（如 LocalSend），需在易用性与跨端覆盖上胜出。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">局域网文件发现与传输服务（HTTP + 分片）</p>
+<pre><code class="language-python">import socket, http.server, threading
+
+def get_lan_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
+
+# 在 0.0.0.0:8000 提供文件下载，同时广播本机地址
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+server = http.server.ThreadingHTTPServer(("0.0.0.0", 8000), Handler)
+print("分享链接: http://" + get_lan_ip() + ":8000/file.bin")
+server.serve_forever()</code></pre>
+<p class="code-caption">客户端大文件分片上传（进度与断点）</p>
+<pre><code class="language-typescript">export async function uploadChunked(file: File, url: string) {
+  const CHUNK = 4 * 1024 * 1024; // 4MB
+  for (let i = 0; i &lt; file.size; i += CHUNK) {
+    const blob = file.slice(i, i + CHUNK);
+    const fd = new FormData();
+    fd.append('chunk', blob);
+    fd.append('offset', String(i));
+    fd.append('name', file.name);
+    await fetch(url + '/upload', { method: 'POST', body: fd });
+    onProgress?.(Math.min(1, (i + CHUNK) / file.size));
+  }
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Range_requests" target="_blank" rel="noopener">HTTP Range 请求规范（RFC 7233）</a>：实现断点续传与分片的基础协议。</li>
+<li><a href="https://github.com/localsend/localsend" target="_blank" rel="noopener">LocalSend（开源同类项目）</a>：跨平台局域网互传参考实现，可学习其设备发现。</li>
+<li><a href="https://docs.python.org/3/library/http.server.html" target="_blank" rel="noopener">Python http.server 文档</a>：最小文件服务实现基础。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install flask（或直接用 http.server），npm create vite 建前端。</li>
+<li>定义协议：设备发现 UDP 广播 + HTTP 文件传输。</li>
+</ol>
+<h4 class="step-phase">阶段：设备发现</h4>
+<ol class="flow">
+<li>实现局域网 IP 探测与 UDP 广播（每 2 秒发一次 hello 包）。</li>
+<li>前端展示在线设备列表，点击发起发送。</li>
+</ol>
+<h4 class="step-phase">阶段：传输实现</h4>
+<ol class="flow">
+<li>实现分片上传与 Range 断点续传，进度条实时更新。</li>
+<li>传输完成后校验 SHA-256，确保文件一致。</li>
+</ol>
+<h4 class="step-phase">阶段：测试发布</h4>
+<ol class="flow">
+<li>手机+电脑真机对传 1GB 大文件，测试弱网中断恢复。</li>
+<li>打包各端应用，开源发布并收集兼容性问题。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：5-7 周</span>
             <span>价值点：隐私传输卖点，可做专业版（批量、加密、记录）。</span>
           </div>
@@ -453,7 +787,79 @@
               <li><span class="diff-tag">运营</span>地推成本高、商户留存难，需靠稳定与口碑滚动增长。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">扫码点餐后端接口（Node/Express + SQLite）</p>
+<pre><code class="language-javascript">const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const app = express();
+app.use(express.json());
+
+const db = new sqlite3.Database('shop.db');
+
+// 下单：校验库存后写入订单
+app.post('/api/orders', (req, res) =&gt; {
+  const { tableNo, items } = req.body;
+  db.serialize(() =&gt; {
+    db.run('INSERT INTO orders(table_no, status) VALUES(?, ?)',
+      [tableNo, 'pending'], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        const orderId = this.lastID;
+        const stmt = db.prepare(
+          'INSERT INTO order_items(order_id, dish_id, qty) VALUES(?,?,?)');
+        items.forEach(it =&gt; stmt.run(orderId, it.dishId, it.qty));
+        stmt.finalize();
+        res.json({ orderId });
+      });
+  });
+});
+
+app.listen(3000);</code></pre>
+<p class="code-caption">后厨接单实时推送（WebSocket 广播）</p>
+<pre><code class="language-javascript">const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 });
+
+function broadcast(type, payload) {
+  const msg = JSON.stringify({ type, payload });
+  wss.clients.forEach(c =&gt; {
+    if (c.readyState === WebSocket.OPEN) c.send(msg);
+  });
+}
+
+db.on('order_created', (order) =&gt; broadcast('new_order', order));</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://expressjs.com/zh-cn/" target="_blank" rel="noopener">Express 官方文档</a>：订单 API 服务框架。</li>
+<li><a href="https://github.com/websockets/ws" target="_blank" rel="noopener">ws（Node WebSocket 库）</a>：后厨实时接单推送。</li>
+<li><a href="https://github.com/gruhn/vue-qrcode-reader" target="_blank" rel="noopener">vue-qrcode-reader</a>：扫码点餐桌台码识别前端方案。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>npm init -y &amp;&amp; npm i express ws sqlite3；创建 shop.db 表结构。</li>
+<li>设计菜单/桌台/订单/订单明细四张表。</li>
+</ol>
+<h4 class="step-phase">阶段：后端开发</h4>
+<ol class="flow">
+<li>实现菜单查询、下单、支付回调三个核心接口。</li>
+<li>接入 WebSocket 后厨接单台，下单即推送。</li>
+</ol>
+<h4 class="step-phase">阶段：前端开发</h4>
+<ol class="flow">
+<li>扫码进桌台页（URL 带 tableNo），浏览菜单加购下单。</li>
+<li>后厨接单页：新单语音提示+完成按钮，减少漏单。</li>
+</ol>
+<h4 class="step-phase">阶段：经营统计与上线</h4>
+<ol class="flow">
+<li>实现日/周营业额、菜品销量排行报表页。</li>
+<li>部署到服务器，真店试运营一周，迭代出餐状态流转。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：10-14 周</span>
             <span>价值点：按月订阅 + 支付分润，行业 SaaS 稳定现金流。</span>
           </div>
@@ -515,7 +921,65 @@
               <li><span class="diff-tag">运营</span>会议数据敏感，合规与隐私承诺是获客关键。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">本地录音转文字（Whisper 离线推理）</p>
+<pre><code class="language-python">import whisper
+
+model = whisper.load_model("base")  # base/small/medium 按机器性能选
+
+def transcribe(audio_path: str) -&gt; dict:
+    result = model.transcribe(audio_path, language="zh",
+                              word_timestamps=True)
+    return {"text": result["text"],
+            "segments": result["segments"]}
+
+# 分段时间戳用于后续"分人识别"与纪要锚定
+for seg in transcribe("meeting.wav")["segments"]:
+    print(round(seg["start"], 1), round(seg["end"], 1), seg["text"])</code></pre>
+<p class="code-caption">关键词聚合生成纪要骨架</p>
+<pre><code class="language-python">import re
+
+TOPICS = {"预算": "财务", "上线": "进度", "Bug": "风险", "招聘": "人力"}
+
+def summarize(segments, text):
+    topics = {v for k, v in TOPICS.items() if k in text}
+    actions = re.findall(r"(?:下周|明天|尽快|安排)\s*(.{2,30}?)", text)
+    return {"topics": sorted(topics), "actions": actions[:10]}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://github.com/openai/whisper" target="_blank" rel="noopener">OpenAI Whisper</a>：本地语音转文字模型，支持中文与时间戳。</li>
+<li><a href="https://github.com/SYSTRAN/faster-whisper" target="_blank" rel="noopener">faster-whisper</a>：Whisper 加速推理实现，CPU 上速度提升明显。</li>
+<li><a href="https://github.com/pyannote/pyannote-audio" target="_blank" rel="noopener">pyannote.audio（说话人分离）</a>：分人识别，区分会议中不同说话者。</li>
+<li><a href="https://alphacephei.com/vosk/" target="_blank" rel="noopener">Vosk 离线语音</a>：更轻量的本地 ASR 备选方案。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install openai-whisper faster-whisper pyannote.audio soundfile。</li>
+<li>准备 30-60 分钟中文会议录音样本，测试两种模型效果。</li>
+</ol>
+<h4 class="step-phase">阶段：转写管线</h4>
+<ol class="flow">
+<li>实现录音文件分片转写，保留段落时间戳。</li>
+<li>集成 pyannote 说话人分离，输出'发言人-时间-文本'序列。</li>
+</ol>
+<h4 class="step-phase">阶段：纪要生成</h4>
+<ol class="flow">
+<li>基于主题词典与正则提取结论、待办、风险三类信息。</li>
+<li>生成结构化 Markdown 纪要，锚定时间点可点击回听。</li>
+</ol>
+<h4 class="step-phase">阶段：产品化</h4>
+<ol class="flow">
+<li>Electron 前端：录音列表、转写进度、纪要编辑区。</li>
+<li>打磨误识别修正交互（点击词句编辑），发布迭代。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：8-11 周</span>
             <span>价值点：按分钟计费 + 团队订阅，B 端付费空间大。</span>
           </div>
@@ -577,7 +1041,76 @@
               <li><span class="diff-tag">运营</span>红海市场，需靠无广告、本地隐私与设计感差异化。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">交易自动分类（规则 + 关键词词库）</p>
+<pre><code class="language-javascript">const RULES = [
+  { pattern: /美团|饿了么|餐厅|外卖/i, cat: '餐饮' },
+  { pattern: /地铁|滴滴|加油|停车/i, cat: '出行' },
+  { pattern: /淘宝|京东|拼多多/i, cat: '购物' },
+  { pattern: /工资|奖金|报销/i, cat: '收入' },
+];
+
+function classify(note, amount) {
+  for (const r of RULES) {
+    if (r.pattern.test(note)) return r.cat;
+  }
+  return amount &gt;= 0 ? '收入' : '其他';
+}
+
+// 用户修正反馈 → 累积词库，下次命中率更高
+const feedback = new Map();
+function autoClassifyWithFeedback(tx) {
+  const hit = feedback.get(tx.note);
+  return hit || classify(tx.note, tx.amount);
+}</code></pre>
+<p class="code-caption">月度预算与超支预警</p>
+<pre><code class="language-javascript">function budgetStatus(monthSpend, budgets) {
+  const byCat = {};
+  for (const t of monthSpend) {
+    byCat[t.cat] = (byCat[t.cat] || 0) + t.amount;
+  }
+  return Object.entries(byCat).map(([cat, spent]) =&gt; ({
+    cat,
+    spent,
+    budget: budgets[cat] || Infinity,
+    pct: Math.round(spent / (budgets[cat] || 1) * 100),
+    over: spent &gt; (budgets[cat] || Infinity),
+  }));
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://www.chartjs.org/" target="_blank" rel="noopener">Chart.js 官方文档</a>：月度收支与预算趋势图表。</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat" target="_blank" rel="noopener">MDN Intl.NumberFormat</a>：金额格式化与货币显示。</li>
+<li><a href="https://dexie.org/" target="_blank" rel="noopener">dexie（IndexedDB 封装）</a>：本地优先记账数据的轻量持久化方案。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>npm create vite@latest ledger -- --template vanilla；安装 dexie 与 chart.js。</li>
+<li>定义数据模型：交易、分类、预算、账本四类对象。</li>
+</ol>
+<h4 class="step-phase">阶段：核心功能</h4>
+<ol class="flow">
+<li>实现交易录入表单（金额/分类/备注/日期）与列表展示。</li>
+<li>实现自动分类规则引擎与用户修正反馈学习。</li>
+</ol>
+<h4 class="step-phase">阶段：分析与洞察</h4>
+<ol class="flow">
+<li>实现月度收支趋势图、分类占比环形图。</li>
+<li>预算设置与超支预警（进度条变色 + 通知）。</li>
+</ol>
+<h4 class="step-phase">阶段：上线迭代</h4>
+<ol class="flow">
+<li>数据导出 JSON/CSV，保证本地优先无广告。</li>
+<li>多端同步可选（WebDAV 或自建服务），灰度发布。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：6-8 周</span>
             <span>价值点：一次买断 + 高级图表订阅，靠口碑传播。</span>
           </div>
@@ -639,7 +1172,74 @@
               <li><span class="diff-tag">运营</span>大平台挤压，需靠垂直兴趣与私域组织者共建。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">兴趣小组帖子流与关注（TypeScript）</p>
+<pre><code class="language-typescript">import { NextResponse } from 'next/server';
+
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const groupId = url.searchParams.get('groupId')!;
+  const posts = await db.post.findMany({
+    where: { groupId },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+    include: { author: { select: { name: true } } },
+  });
+  return NextResponse.json(posts);
+}
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  const post = await db.post.create({ data: body });
+  // 推送给群组成员（SSE/WebSocket）
+  notifyGroup(body.groupId, 'new_post', post);
+  return NextResponse.json(post, { status: 201 });
+}</code></pre>
+<p class="code-caption">成员审核与私密圈子（权限中间件）</p>
+<pre><code class="language-typescript">export function requireMember(groupId: string) {
+  return async (ctx: any, next: any) =&gt; {
+    const uid = ctx.user.id;
+    const member = await db.member.findUnique({
+      where: { groupId_uid: { groupId, uid } },
+    });
+    if (!member) return ctx.throw(403, '仅成员可见');
+    await next();
+  };
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://nextjs.org/docs" target="_blank" rel="noopener">Next.js 官方文档</a>：全栈框架，API 路由示例即基于 Next.js App Router。</li>
+<li><a href="https://www.prisma.io/docs" target="_blank" rel="noopener">Prisma ORM 文档</a>：帖子/成员/关注关系的数据模型与查询。</li>
+<li><a href="https://tailwindcss.com/docs" target="_blank" rel="noopener">Tailwind CSS</a>：极简私密社区前端样式方案。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>npx create-next-app@latest interest-hub -- --typescript --tailwind。</li>
+<li>npx prisma init；设计 Group/Member/Post/Follow 模型并 migrate。</li>
+</ol>
+<h4 class="step-phase">阶段：核心功能</h4>
+<ol class="flow">
+<li>实现创建小组、申请加入、成员审核流程。</li>
+<li>实现帖子发布、评论、点赞与关注流。</li>
+</ol>
+<h4 class="step-phase">阶段：实时与通知</h4>
+<ol class="flow">
+<li>用 SSE 实现新帖提醒，避免重型 WebSocket 依赖。</li>
+<li>邮件/站内信通知成员互动。</li>
+</ol>
+<h4 class="step-phase">阶段：发布</h4>
+<ol class="flow">
+<li>部署 Vercel/自建服务器，配置图片上传与内容审核。</li>
+<li>种子小组内测，收集留存数据后迭代推荐算法。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：10-14 周</span>
             <span>价值点：会员订阅 + 活动服务费，社区网络效应强。</span>
           </div>
@@ -701,7 +1301,74 @@
               <li><span class="diff-tag">运营</span>儿童类目监管严，需合规先行；获客靠家长社群。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">个性化故事生成（模板 + LLM 接口）</p>
+<pre><code class="language-python">import json
+import requests
+
+TEMPLATE = (
+    "请以{child}为主角写一篇睡前故事，字数500字左右。"
+    "孩子喜欢{interest}，性格{personality}。"
+    "故事要温暖、有想象力、结局平和，不要有危险情节。"
+)
+
+def generate_story(child, interest, personality, api_key):
+    prompt = TEMPLATE.format(child=child, interest=interest,
+                             personality=personality)
+    resp = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers={"Authorization": "Bearer " + api_key},
+        json={
+            "model": "gpt-4o-mini",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.9,
+        },
+    )
+    return resp.json()["choices"][0]["message"]["content"]</code></pre>
+<p class="code-caption">故事朗读（离线 TTS）</p>
+<pre><code class="language-python">import edge_tts
+
+async def speak(text: str, voice: str = "zh-CN-XiaoxiaoNeural"):
+    communicate = edge_tts.Communicate(text, voice)
+    await communicate.save("story.mp3")
+
+# 生成后调用：为故事配上柔和背景音乐（pydub 混音）
+# audio = AudioSegment.from_mp3("story.mp3") + music
+import asyncio; asyncio.run(speak("从前有一只小兔子…"))</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://platform.openai.com/docs/guides/text-generation" target="_blank" rel="noopener">OpenAI 文本生成 API</a>：故事正文生成接口（可替换为 DeepSeek/Qwen 等）。</li>
+<li><a href="https://github.com/rany2/edge-tts" target="_blank" rel="noopener">edge-tts</a>：免费中文语音合成，输出 mp3。</li>
+<li><a href="https://platform.deepseek.com/" target="_blank" rel="noopener">DeepSeek 开放平台</a>：国内可用的低成本 LLM 备选。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install requests edge-tts pydub ffmpeg。</li>
+<li>注册 LLM API（OpenAI/DeepSeek）并准备测试 Key。</li>
+</ol>
+<h4 class="step-phase">阶段：生成管线</h4>
+<ol class="flow">
+<li>实现故事生成接口：输入孩子名字/兴趣/性格，输出 500 字故事。</li>
+<li>加内容安全过滤：禁用暴力、恐怖、商业引导词汇。</li>
+</ol>
+<h4 class="step-phase">阶段：语音与产品</h4>
+<ol class="flow">
+<li>edge-tts 生成朗读音频，pydub 叠加轻音乐与淡出结尾。</li>
+<li>前端（网页/小程序）输入孩子信息 → 播放故事 + 配图。</li>
+</ol>
+<h4 class="step-phase">阶段：上线</h4>
+<ol class="flow">
+<li>接入家长审核功能（生成后可编辑再朗读）。</li>
+<li>部署服务，控制 LLM 调用成本（缓存相似故事）。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：6-8 周</span>
             <span>价值点：订阅制 + 家长付费意愿高，内容可沉淀为 IP。</span>
           </div>
@@ -763,7 +1430,71 @@
               <li><span class="diff-tag">运营</span>与回收商分润谈判难，规模起量前收入微薄。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">设备型号识别与估价接口</p>
+<pre><code class="language-python">from datetime import date
+
+# 折旧模型：新机价 * (1 - 年限折旧率) * 成色系数
+BASE_PRICE = {"iPhone 15 Pro": 7999, "iPad Air": 4799, "MacBook Pro 14": 14999}
+
+def estimate(device, purchase_year, condition):
+    age = max(date.today().year - purchase_year, 0)
+    dep = min(age * 0.15, 0.75)          # 每年折15%，上限75%
+    cond = {"全新": 1.0, "9成新": 0.88, "8成新": 0.75, "有磕碰": 0.6}
+    price = BASE_PRICE.get(device, 3000) * (1 - dep) * cond.get(condition, 0.7)
+    return round(price, -1)               # 取整到十位
+
+def quote(device, purchase_year, condition, channels):
+    base = estimate(device, purchase_year, condition)
+    return [{"channel": c["name"], "price": int(base * c["rate"])}
+            for c in channels]</code></pre>
+<p class="code-caption">拍照鉴损（YOLO 划痕/碎裂检测占位）</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO("damage.pt")  # 自定义训练的鉴损模型
+
+def detect_damage(image_path: str):
+    results = model(image_path)
+    r = results[0]
+    defects = [{"cls": model.names[int(b.cls)],
+                "conf": float(b.conf)} for b in r.boxes]
+    score = max([d["conf"] for d in defects], default=0)
+    grade = "优" if score &lt; 0.3 else ("良" if score &lt; 0.6 else "差")
+    return {"defects": defects, "grade": grade}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://docs.ultralytics.com/" target="_blank" rel="noopener">Ultralytics YOLOv8 文档</a>：拍照鉴损模型训练与推理。</li>
+<li><a href="https://docs.opencv.org/4.x/d9/df8/tutorial_root.html" target="_blank" rel="noopener">OpenCV 官方教程</a>：拍照图片预处理（裁剪/增强）。</li>
+<li><a href="https://www.zhuanzhuan.com/" target="_blank" rel="noopener">爱回收/转转官网</a>：回收价渠道数据调研与定价参考。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：数据与定价</h4>
+<ol class="flow">
+<li>收集 30+ 款主流机型的新机价与二手成交价，建立价格表。</li>
+<li>定义折旧模型参数（年限/成色/渠道回收率）。</li>
+</ol>
+<h4 class="step-phase">阶段：拍照鉴损</h4>
+<ol class="flow">
+<li>拍摄 200+ 张划痕/碎裂/进水样图，用 labelme 标注并训练 YOLOv8。</li>
+<li>实现拍照自动识别成色等级，与手动选择互补。</li>
+</ol>
+<h4 class="step-phase">阶段：接口与页面</h4>
+<ol class="flow">
+<li>FastAPI 提供 /estimate 与 /detect 接口。</li>
+<li>前端：选机型 → 拍照/上传 → 显示回收价与渠道对比。</li>
+</ol>
+<h4 class="step-phase">阶段：上线迭代</h4>
+<ol class="flow">
+<li>接入真实回收渠道报价接口，标注更新时间。</li>
+<li>按用户反馈修正折旧参数与机型价格。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：7-9 周</span>
             <span>价值点：CPS 分润 + 数据服务，与回收商合作分成。</span>
           </div>
@@ -825,7 +1556,72 @@
               <li><span class="diff-tag">运营</span>与成熟竞品竞争，需低价或免费额度切入。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">网站可用性探测（多协议 + 重试）</p>
+<pre><code class="language-python">import httpx, time, sqlite3
+
+def check_site(url: str) -&gt; dict:
+    try:
+        r = httpx.get(url, timeout=10, follow_redirects=True)
+        ok = 200 &lt;= r.status_code &lt; 500 and r.status_code != 404
+        return {"url": url, "status": r.status_code,
+                "latency_ms": round(r.elapsed.total_seconds() * 1000),
+                "ok": ok, "ts": time.time()}
+    except httpx.HTTPError as e:
+        return {"url": url, "status": -1, "ok": False,
+                "error": str(e), "ts": time.time()}
+
+def check_cert(url: str):
+    # TLS 证书有效期检查（ssl 模块）
+    import ssl, socket
+    host = url.split("//")[1].split("/")[0]
+    ctx = ssl.create_default_context()
+    with socket.create_connection((host, 443), timeout=5) as sock:
+        with ctx.wrap_socket(sock, server_hostname=host) as tls:
+            cert = tls.getpeercert()
+            return cert["notAfter"]  # 过期时间</code></pre>
+<p class="code-caption">告警推送（钉钉/邮件）</p>
+<pre><code class="language-python">def send_alert(item: dict, webhook: str):
+    import requests
+    if not item["ok"]:
+        requests.post(webhook, json={
+            "msgtype": "text",
+            "text": {"content": f"监控告警：{item['url']} 不可用，错误 {item.get('error')}"},
+        })</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://www.python-httpx.org/" target="_blank" rel="noopener">httpx 文档</a>：HTTP 探测客户端，支持超时与重试。</li>
+<li><a href="https://uptimerobot.com/" target="_blank" rel="noopener">UptimeRobot（同类服务）</a>：商业监控服务，作为功能对标与免费额度参考。</li>
+<li><a href="https://open.dingtalk.com/document/robots/custom-robot-access" target="_blank" rel="noopener">钉钉机器人文档</a>：群机器人告警推送接入。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install httpx requests schedule；sqlite3 存储历史。</li>
+<li>设计监控项表：URL、期望状态码、间隔、告警渠道。</li>
+</ol>
+<h4 class="step-phase">阶段：探测与告警</h4>
+<ol class="flow">
+<li>实现 HTTP 探测（状态码/延迟/证书），失败重试 2 次。</li>
+<li>实现钉钉/邮件/Telegram 多渠道告警与恢复通知。</li>
+</ol>
+<h4 class="step-phase">阶段：报表与调度</h4>
+<ol class="flow">
+<li>schedule 定时任务每 5 分钟跑一轮，超过 3 次连续失败触发告警。</li>
+<li>生成周报：可用率、平均延迟、故障时间线（前端图表）。</li>
+</ol>
+<h4 class="step-phase">阶段：上线</h4>
+<ol class="flow">
+<li>部署到云服务器 systemd 托管，添加 3-5 个真实站点试监控。</li>
+<li>调优告警阈值减少误报，添加状态页展示历史。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：7-9 周</span>
             <span>价值点：订阅制 + 免费额度获客，扩展监控生态。</span>
           </div>
@@ -887,7 +1683,74 @@
               <li><span class="diff-tag">运营</span>垂直用户规模有限，需靠开源社区共建规则库。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">多平台成就拉取与去重合并（示例）</p>
+<pre><code class="language-typescript">interface Game {
+  id: string; title: string; platform: 'steam' | 'psn' | 'xbox';
+  achievements: { id: string; name: string; unlocked: boolean; ts?: number }[];
+}
+
+// Steam Web API 示例：获取用户成就
+export async function fetchSteamAchievements(
+  steamId: string, appId: number, apiKey: string
+): Promise&lt;Game['achievements']&gt; {
+  const url = `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key=${apiKey}&amp;steamid=${steamId}&amp;appid=${appId}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  return json.playerstats.achievements.map((a: any) =&gt; ({
+    id: a.apiname,
+    name: a.name,
+    unlocked: a.achieved === 1,
+    ts: a.unlocktime || undefined,
+  }));
+}</code></pre>
+<p class="code-caption">存档备份（云同步到 WebDAV）</p>
+<pre><code class="language-typescript">import { createClient } from 'webdav';
+
+export async function backupSaves(client: WebDAVClient, localDir: string) {
+  const files = await listSaveFiles(localDir);
+  for (const f of files) {
+    await client.putFileContents(
+      `/saves/${gameName}/${f.name}`,
+      await readFile(f.path)
+    );
+  }
+  return files.length; // 返回备份文件数
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://developer.valvesoftware.com/wiki/Steam_Web_API" target="_blank" rel="noopener">Steam Web API 文档</a>：Steam 成就与游戏时长数据接口。</li>
+<li><a href="https://github.com/perry-mitchell/webdav-client" target="_blank" rel="noopener">webdav-client 库</a>：存档备份到 WebDAV/坚果云 的实现库。</li>
+<li><a href="https://tauri.app/" target="_blank" rel="noopener">Tauri 官方文档</a>：轻量桌面壳，替代 Electron 减小体积。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>npm create tauri-app@latest game-vault；安装 webdav、SQLite（tauri-plugin-sql）。</li>
+<li>注册 Steam API Key，申请 PSN/Xbox 开发者凭据。</li>
+</ol>
+<h4 class="step-phase">阶段：数据接入</h4>
+<ol class="flow">
+<li>实现 Steam 成就/时长同步，缓存到本地 SQLite。</li>
+<li>实现 PSN/Xbox 的成就导入（官方/逆向接口）。</li>
+</ol>
+<h4 class="step-phase">阶段：存档管理</h4>
+<ol class="flow">
+<li>扫描游戏存档目录，提供 WebDAV 增量备份与一键恢复。</li>
+<li>冲突处理：双端时间戳比对，保留最新并提示。</li>
+</ol>
+<h4 class="step-phase">阶段：UI 与发布</h4>
+<ol class="flow">
+<li>按平台/游戏聚合成就墙与缺失成就列表。</li>
+<li>打包安装包，灰度发布，迭代平台接入稳定性。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：8-11 周</span>
             <span>价值点：买断制 + 云备份订阅，硬核玩家付费意愿高。</span>
           </div>
@@ -949,7 +1812,69 @@
               <li><span class="diff-tag">运营</span>硬件供应链与售后成本高，需与养老渠道合作。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">电子围栏与跌倒预警（基于定位数据处理）</p>
+<pre><code class="language-python">import math
+from datetime import datetime
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371000
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lon2 - lon1)
+    a = math.sin(dp/2)**2 + math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
+    return 2 * R * math.asin(math.sqrt(a))
+
+def check_fence(lat, lon, home_lat, home_lon, radius=500):
+    d = haversine(lat, lon, home_lat, home_lon)
+    return {"outside": d &gt; radius, "distance_m": round(d)}
+
+def detect_fall(accel: list) -&gt; bool:
+    # 三轴加速度合成冲击值，跌倒特征：先高冲击再静止
+    impact = max((sum(a*a for a in ax)**0.5) for ax in accel)
+    rest = (sum(a*a for a in accel[-10:])**0.5) / 10
+    return impact &gt; 3.0 and rest &lt; 0.5</code></pre>
+<p class="code-caption">告警推送（短信/电话服务占位）</p>
+<pre><code class="language-python">def notify_family(kind, detail, api):
+    # 调用云片/阿里云短信或电话告警 API
+    if kind == "fall":
+        api.send_sms("138xxxx", "跌倒预警：检测到老人可能跌倒，请尽快联系确认。")
+    if kind == "fence":
+        api.send_sms("138xxxx", f"电子围栏提醒：老人已离开安全区域 {detail} 米。")</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://help.aliyun.com/zh/sms/" target="_blank" rel="noopener">阿里云短信服务文档</a>：短信告警通道，老人家人实时接收。</li>
+<li><a href="https://lbs.amap.com/" target="_blank" rel="noopener">高德开放平台定位 API</a>：设备 GPS 坐标逆地理编码与地图围栏可视化。</li>
+<li><a href="https://github.com/search?q=fall+detection+IMU" target="_blank" rel="noopener">循迹/跌倒检测论文与实现</a>：基于加速度计的跌倒检测算法参考。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：硬件准备</h4>
+<ol class="flow">
+<li>准备定位手环/老人手机（GPS + 加速度计），树莓派作为家庭网关。</li>
+<li>确认设备 SDK 可输出经纬度与三轴加速度数据。</li>
+</ol>
+<h4 class="step-phase">阶段：后端服务</h4>
+<ol class="flow">
+<li>实现定位上报接口（MQTT/HTTP），存储最近 30 天轨迹。</li>
+<li>实现电子围栏判定与跌倒检测算法（冲击+静止特征）。</li>
+</ol>
+<h4 class="step-phase">阶段：告警链路</h4>
+<ol class="flow">
+<li>接入阿里云短信与电话告警，配置家人号码白名单。</li>
+<li>一键求助按钮触发电话告警 + 定位推送。</li>
+</ol>
+<h4 class="step-phase">阶段：前端与上线</h4>
+<ol class="flow">
+<li>家属端小程序/Web：实时位置、围栏设置、历史轨迹。</li>
+<li>小范围家庭试用，调优跌倒误报阈值后推广。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：12-16 周</span>
             <span>价值点：硬件 + 服务订阅，家庭安全付费意愿强。</span>
           </div>
@@ -1011,7 +1936,72 @@
               <li><span class="diff-tag">运营</span>协作工具迁移成本高，需靠免费与极简打动小团队。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">看板拖拽更新任务状态（前端）</p>
+<pre><code class="language-typescript">import { useState } from 'react';
+
+export function useDragTask() {
+  const [tasks, setTasks] = useState&lt;Task[]&gt;([]);
+
+  const moveTask = (taskId: string, targetCol: string) =&gt; {
+    setTasks(prev =&gt; prev.map(t =&gt;
+      t.id === taskId ? { ...t, column: targetCol, updatedAt: Date.now() } : t
+    ));
+    // 乐观更新，失败回滚
+    api.moveTask(taskId, targetCol).catch(() =&gt; {
+      setTasks(prev =&gt; prev.map(t =&gt;
+        t.id === taskId ? { ...t, column: t._prevColumn } : t
+      ));
+    });
+  };
+
+  return { tasks, moveTask };
+}</code></pre>
+<p class="code-caption">任务看板 API（Next.js + Prisma）</p>
+<pre><code class="language-typescript">import { NextResponse } from 'next/server';
+
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  const { column, order } = await req.json();
+  const task = await db.task.update({
+    where: { id: params.id },
+    data: { column, order },
+  });
+  return NextResponse.json(task);
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://react-dnd.github.io/react-dnd/" target="_blank" rel="noopener">React DnD 官方文档</a>：拖拽排序与跨列移动实现。</li>
+<li><a href="https://www.prisma.io/docs" target="_blank" rel="noopener">Prisma 文档</a>：任务/列/成员数据模型与迁移。</li>
+<li><a href="https://developer.atlassian.com/cloud/trello/" target="_blank" rel="noopener">Trello 开发者 API（参考）</a>：成熟看板产品的数据模型与交互参考。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>npx create-next-app@latest team-board -- --typescript --tailwind。</li>
+<li>设计数据模型：Board/Column/Task/Member，prisma migrate。</li>
+</ol>
+<h4 class="step-phase">阶段：看板核心</h4>
+<ol class="flow">
+<li>实现三列（待办/进行中/完成）看板渲染与拖拽移动。</li>
+<li>实现任务创建、指派、截止日期与标签。</li>
+</ol>
+<h4 class="step-phase">阶段：协作增强</h4>
+<ol class="flow">
+<li>SSE 实时同步：成员拖拽/评论即时可见。</li>
+<li>活动日志记录关键变更，支持撤销。</li>
+</ol>
+<h4 class="step-phase">阶段：上线</h4>
+<ol class="flow">
+<li>部署服务器，邀请小团队试用一周。</li>
+<li>迭代：搜索/筛选/看板分享只读链接。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：7-9 周</span>
             <span>价值点：Freemium 订阅，团队付费转化稳定。</span>
           </div>
@@ -1073,7 +2063,76 @@
               <li><span class="diff-tag">运营</span>桌面机械臂门槛高，需教程与开源生态带动，单靠硬件难起量。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">机械臂正运动学与逆运动学（2 关节示例）</p>
+<pre><code class="language-python">import math
+
+def forward_kinematics(theta1, theta2, l1=120, l2=100):
+    """两连杆机械臂正运动学：关节角 -&gt; 末端坐标(mm)"""
+    x = l1 * math.cos(theta1) + l2 * math.cos(theta1 + theta2)
+    y = l1 * math.sin(theta1) + l2 * math.sin(theta1 + theta2)
+    return round(x, 2), round(y, 2)
+
+def inverse_kinematics(x, y, l1=120, l2=100):
+    """逆运动学：末端坐标 -&gt; 关节角(rad)，取肘上解"""
+    d = math.hypot(x, y)
+    if d &gt; l1 + l2:
+        raise ValueError("目标超出工作空间")
+    cos_t2 = (x*x + y*y - l1*l1 - l2*l2) / (2*l1*l2)
+    theta2 = math.acos(max(-1, min(1, cos_t2)))
+    theta1 = math.atan2(y, x) - math.atan2(l2*math.sin(theta2),
+                                           l1 + l2*math.cos(theta2))
+    return theta1, theta2</code></pre>
+<p class="code-caption">浏览器控制面板 WebSocket 控制指令</p>
+<pre><code class="language-javascript">const ws = new WebSocket('ws://robot.local:8080/control');
+
+function sendPose(x, y, z) {
+  const joints = solveIK(x, y, z); // 调用逆运动学
+  ws.send(JSON.stringify({
+    type: 'movej', joints,
+    speed: 0.3, accel: 0.2
+  }));
+}
+
+ws.onmessage = (e) =&gt; {
+  const msg = JSON.parse(e.data);
+  if (msg.type === 'pose') updateModel(msg.joints); // 3D 模型跟随
+};</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://docs.ros.org/en/rolling/index.html" target="_blank" rel="noopener">ROS 2 官方文档</a>：机械臂运动控制与驱动节点框架。</li>
+<li><a href="https://moveit.picknik.ai/" target="_blank" rel="noopener">MoveIt 2 文档</a>：六轴机械臂路径规划与避障。</li>
+<li><a href="https://github.com/topics/robot-arm" target="_blank" rel="noopener">三自由度机械臂开源项目</a>：桌面级机械臂硬件与固件参考。</li>
+<li><a href="https://threejs.org/docs/" target="_blank" rel="noopener">three.js 文档</a>：浏览器 3D 模型实时跟随控制。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：硬件与环境</h4>
+<ol class="flow">
+<li>选择桌面六轴机械臂（如 MyCobot/自组），完成 USB 串口驱动。</li>
+<li>pip install pyserial numpy；安装 ROS 2 或直接串口控制。</li>
+</ol>
+<h4 class="step-phase">阶段：运动学实现</h4>
+<ol class="flow">
+<li>实现正/逆运动学，用 2 关节先验证，再扩展到 6 关节。</li>
+<li>在 ROS/独立程序中模拟测试路径点，误差小于 1mm。</li>
+</ol>
+<h4 class="step-phase">阶段：控制链路</h4>
+<ol class="flow">
+<li>服务端串口控制机械臂，WebSocket 暴露控制接口。</li>
+<li>前端 three.js 3D 模型 + 拖拽目标点生成路径。</li>
+</ol>
+<h4 class="step-phase">阶段：视觉抓取与上线</h4>
+<ol class="flow">
+<li>接入摄像头识别物体坐标，联动逆运动学抓取。</li>
+<li>录制示教路径回放，打磨异常急停与限位保护后交付。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：8-12 周（MVP 可先做 4 轴）</span>
             <span>价值点：教育套件与二次开发 API，可做订阅制课程。</span>
           </div>
@@ -1135,7 +2194,74 @@
               <li><span class="diff-tag">运营</span>巡检标准化难，不同行业交付标准差异大，需按行业做模板。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">无人机航线规划（多航点任务）</p>
+<pre><code class="language-python">from pymavlink import mavutil
+
+def upload_mission(connection, waypoints):
+    """上传航点任务到飞控（PX4/ArduPilot）"""
+    connection.mav.mission_count_send(
+        connection.target_system, connection.target_component,
+        len(waypoints), 0)
+
+    for i, (lat, lon, alt) in enumerate(waypoints):
+        connection.mav.mission_item_send(
+            connection.target_system, connection.target_component,
+            i, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+            mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+            0, 0, 0, 0, 0, 0, lat, lon, alt)
+
+def start_mission(connection):
+    connection.mav.command_long_send(
+        connection.target_system, connection.target_component,
+        mavutil.mavlink.MAV_CMD_MISSION_START, 0, 0, 0, 0, 0, 0, 0, 0)</code></pre>
+<p class="code-caption">巡检照片缺陷标记（YOLO 推理）</p>
+<pre><code class="language-python">from ultralytics import YOLO
+import cv2
+
+model = YOLO("defect.pt")
+
+def inspect(path: str):
+    frame = cv2.imread(path)
+    results = model(frame)
+    annotated = results[0].plot()  # 画框
+    defects = [model.names[int(b.cls)] for b in results[0].boxes]
+    return annotated, defects</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://docs.px4.io/main/en/" target="_blank" rel="noopener">PX4 自动驾驶仪文档</a>：开源飞控固件，航线任务与安全机制。</li>
+<li><a href="https://mavlink.io/en/" target="_blank" rel="noopener">MAVLink / pymavlink</a>：地面站与飞控通信协议，示例即基于 pymavlink。</li>
+<li><a href="http://qgroundcontrol.com/" target="_blank" rel="noopener">QGroundControl</a>：开源地面站，航线规划与数据查看参考。</li>
+<li><a href="https://docs.ultralytics.com/" target="_blank" rel="noopener">Ultralytics YOLO</a>：巡检图像缺陷检测模型。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：硬件与仿真</h4>
+<ol class="flow">
+<li>准备 PX4 飞控无人机（或先用 Gazebo 仿真）。</li>
+<li>pip install pymavlink ultralytics；连接飞控验证心跳。</li>
+</ol>
+<h4 class="step-phase">阶段：航线任务</h4>
+<ol class="flow">
+<li>实现航点上传与任务启动，在仿真中跑通航线。</li>
+<li>加入返航、低电量保护等安全逻辑。</li>
+</ol>
+<h4 class="step-phase">阶段：巡检识别</h4>
+<ol class="flow">
+<li>拍摄 500+ 张缺陷样本（裂缝/锈蚀/异物），标注训练 YOLO。</li>
+<li>照片按 GPS 记录归档，识别结果写入巡检报告。</li>
+</ol>
+<h4 class="step-phase">阶段：联调发布</h4>
+<ol class="flow">
+<li>真机小范围试飞，验证 RTK/定位精度与安全距离。</li>
+<li>输出行业报告模板与数据看板，迭代误检率。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：10-14 周（MVP 单航线）</span>
             <span>价值点：行业巡检服务按里程 / 面积付费，检测模型可授权。</span>
           </div>
@@ -1197,7 +2323,70 @@
               <li><span class="diff-tag">运营</span>硬件维护成本高、售后响应要求快，需区域化服务。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">车牌识别（YOLO 检测 + OCR 后处理）</p>
+<pre><code class="language-python">import cv2
+from ultralytics import YOLO
+import paddleocr
+
+plate_model = YOLO("plate_detect.pt")   # 车牌定位模型
+ocr = paddleocr.PaddleOCR(use_angle_cls=True, lang="ch")
+
+def recognize_plate(image_path: str):
+    frame = cv2.imread(image_path)
+    r = plate_model(frame)[0]
+    best = max(r.boxes, key=lambda b: b.conf)
+    x1, y1, x2, y2 = map(int, best.xyxy[0].tolist())
+    crop = frame[y1:y2, x1:x2]
+    crop = cv2.resize(crop, (crop.shape[1]*2, crop.shape[0]*2))  # 放大提高OCR率
+    result = ocr.ocr(crop, cls=True)
+    text = result[0][0][1][0] if result and result[0] else ""
+    return text.replace(" ", ""), best.conf.item()</code></pre>
+<p class="code-caption">停车计费与抬杆控制</p>
+<pre><code class="language-python">def settle(plate, entry_time, fee_rate=3.0):
+    minutes = (now() - entry_time).total_seconds() / 60
+    fee = math.ceil(minutes / 60) * fee_rate
+    if fee &gt; 50: fee = 50  # 封顶
+    return {"plate": plate, "minutes": int(minutes), "fee": fee}
+
+def open_barrier(connection, state=True):
+    # 继电器控制抬杆（树莓派 GPIO 示例）
+    connection.write(b"LIFT" if state else b"DOWN")</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://docs.ultralytics.com/" target="_blank" rel="noopener">Ultralytics YOLOv8 车牌检测</a>：车牌定位模型训练与推理。</li>
+<li><a href="https://github.com/PaddlePaddle/PaddleOCR" target="_blank" rel="noopener">PaddleOCR 文档</a>：车牌字符识别，中文与字母数字。</li>
+<li><a href="https://github.com/detectRecog/CCPD" target="_blank" rel="noopener">CCPD 数据集</a>：开源中国车牌数据集，用于训练检测模型。</li>
+<li><a href="https://www.raspberrypi.com/documentation/computers/os.html#gpio" target="_blank" rel="noopener">树莓派 GPIO 官方文档</a>：继电器控制抬杆与道闸。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：数据准备</h4>
+<ol class="flow">
+<li>下载 CCPD 数据集（或自拍 300+ 车牌图）并标注。</li>
+<li>pip install ultralytics paddleocr；训练 plate_detect 模型。</li>
+</ol>
+<h4 class="step-phase">阶段：识别链路</h4>
+<ol class="flow">
+<li>实现车牌检测 → 裁剪放大 → OCR 识别全流程。</li>
+<li>处理多车牌/倾斜/夜间补光场景，提高鲁棒性。</li>
+</ol>
+<h4 class="step-phase">阶段：业务系统</h4>
+<ol class="flow">
+<li>实现入场/出场记录、按时/封顶计费、月卡管理。</li>
+<li>树莓派 GPIO 控制抬杆继电器，识别成功自动抬杆。</li>
+</ol>
+<h4 class="step-phase">阶段：联调上线</h4>
+<ol class="flow">
+<li>出入口摄像头+树莓派联调，压测并发抬杆。</li>
+<li>接入支付（微信/支付宝）与反向寻车，试运营迭代。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：6-9 周（MVP）</span>
             <span>价值点：停车场软硬件一体方案，SaaS 管理费按车位收费。</span>
           </div>
@@ -1259,7 +2448,66 @@
               <li><span class="diff-tag">运营</span>项目制交付、单客户差异大，难标准化，需售前打样降低信任门槛。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">表面缺陷检测（YOLOv8 训练与推理）</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+# 训练（数据目录结构: datasets/defect/{train,val}/images+labels）
+model = YOLO("yolov8n.pt")
+model.train(data="defect.yaml", epochs=50, imgsz=640, batch=16)
+
+# 推理：返回缺陷类别与置信度
+def inspect(model, image_path):
+    r = model(image_path, conf=0.4)[0]
+    return [{"cls": model.names[int(b.cls)], "conf": float(b.conf)}
+            for b in r.boxes]</code></pre>
+<p class="code-caption">产线图像采集与预处理</p>
+<pre><code class="language-python">import cv2, glob
+
+def capture_and_preprocess(save_dir, count=200):
+    cap = cv2.VideoCapture(0)  # 工业相机按厂商 SDK 替换
+    for i in range(count):
+        ok, frame = cap.read()
+        if not ok: continue
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame = cv2.equalizeHist(frame)          # 光照均衡
+        cv2.imwrite(f"{save_dir}/sample_{i:04d}.jpg", frame)
+    cap.release()</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://docs.ultralytics.com/" target="_blank" rel="noopener">Ultralytics YOLOv8 分割/检测</a>：缺陷定位与分类训练。</li>
+<li><a href="https://docs.opencv.org/4.x/" target="_blank" rel="noopener">OpenCV 官方教程</a>：图像预处理：灰度化、直方图均衡、形态学。</li>
+<li><a href="https://github.com/abin24/Surface-Inspection-defect-detection-datasets" target="_blank" rel="noopener">NEU-DET 缺陷数据集</a>：热轧钢表面缺陷公开数据集（六类）。</li>
+<li><a href="https://github.com/HumanSignal/labelImg" target="_blank" rel="noopener">LabelImg 标注工具</a>：缺陷样本标注。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：数据采集</h4>
+<ol class="flow">
+<li>产线相机采集 500-1000 张缺陷图（划痕/脏污/缺料/气泡）。</li>
+<li>用 LabelImg 标注缺陷框，按 8:2 划分 train/val。</li>
+</ol>
+<h4 class="step-phase">阶段：模型训练</h4>
+<ol class="flow">
+<li>pip install ultralytics labelImg；配置 defect.yaml。</li>
+<li>训练 YOLOv8n 基线，评估 mAP，迭代增强（旋转/亮度）。</li>
+</ol>
+<h4 class="step-phase">阶段：推理部署</h4>
+<ol class="flow">
+<li>实现实时推理管线，缺陷帧自动保存并告警。</li>
+<li>接入产线 PLC/看板：良品计数、缺陷类别统计。</li>
+</ol>
+<h4 class="step-phase">阶段：优化上线</h4>
+<ol class="flow">
+<li>在真实产线收集难例回流训练，降低误检/漏检。</li>
+<li>输出质检报告与趋势图表，验收后正式运行。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：8-12 周（MVP）</span>
             <span>价值点：产线质检服务按检测量付费，缺陷数据可沉淀为行业资产。</span>
           </div>
@@ -1321,7 +2569,78 @@
               <li><span class="diff-tag">运营</span>语音习惯难养成，需开箱即用的命令模板与教程。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">唤醒词与命令词识别（Porcupine + 本地 ASR）</p>
+<pre><code class="language-python">import pvporcupine, pyaudio, struct
+import vosk, json, wave
+
+porcupine = pvporcupine.create(keywords=["hey 小听", "computer"])
+
+# 唤醒词检测循环
+audio = pyaudio.PyAudio()
+stream = audio.open(rate=porcupine.sample_rate,
+                    channels=1, format=pyaudio.paInt16,
+                    input=True, frames_per_buffer=porcupine.frame_length)
+while True:
+    pcm = stream.read(porcupine.frame_length)
+    if porcupine.process(struct.unpack("h"*porcupine.frame_length, pcm)) &gt;= 0:
+        print("唤醒成功，开始聆听…")
+        break
+
+# 用 Vosk 识别命令（离线）
+model = vosk.Model("vosk-model-small-cn-0.22")
+rec = vosk.KaldiRecognizer(model, 16000)
+# ... 录音 5 秒 → rec.AcceptWaveform → 解析命令词表
+actions = {"打开灯": "lights.on", "关灯": "lights.off",
+           "报时": "time.speak", "放音乐": "music.play"}</code></pre>
+<p class="code-caption">Android 端麦克风权限与音频流（Kotlin）</p>
+<pre><code class="language-kotlin">class RecorderService : Service() {
+    private val recorder = MediaRecorder()
+
+    fun start() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+        recorder.setOutputFile(cacheDir.resolve("cmd.m4a").absolutePath)
+        recorder.prepare(); recorder.start()
+    }
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://github.com/Picovoice/porcupine" target="_blank" rel="noopener">Picovoice Porcupine</a>：本地唤醒词引擎，低延迟、离线。</li>
+<li><a href="https://alphacephei.com/vosk/" target="_blank" rel="noopener">Vosk 离线语音识别</a>：中文离线命令词识别，支持自定义词表。</li>
+<li><a href="https://developer.android.com/reference/android/media/MediaRecorder" target="_blank" rel="noopener">Android MediaRecorder 文档</a>：移动端录音采集实现。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install pvporcupine pyaudio vosk；下载 vosk-model-small-cn。</li>
+<li>注册 Picovoice 获取免费 AccessKey。</li>
+</ol>
+<h4 class="step-phase">阶段：唤醒与聆听</h4>
+<ol class="flow">
+<li>实现 Porcupine 唤醒词循环，唤醒后录音 5 秒。</li>
+<li>Vosk 识别命令文本，映射到动作表执行。</li>
+</ol>
+<h4 class="step-phase">阶段：动作执行</h4>
+<ol class="flow">
+<li>实现灯控/报时/音乐等本地动作（树莓派 GPIO/媒体库）。</li>
+<li>设计自定义命令配置页，用户可改词与绑定动作。</li>
+</ol>
+<h4 class="step-phase">阶段：多端与上线</h4>
+<ol class="flow">
+<li>Android 端 Kotlin 录音实现，与桌面端共用识别服务。</li>
+<li>离线优先测试：断网环境下全链路可用后发布。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：6-9 周（MVP）</span>
             <span>价值点：隐私卖点的订阅制，企业桌面语音定制。</span>
           </div>
@@ -1383,7 +2702,77 @@
               <li><span class="diff-tag">运营</span>替换既有考勤系统迁移成本高，需兼容旧设备与导出格式。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">人脸识别考勤（face_recognition 本地推理）</p>
+<pre><code class="language-python">import face_recognition
+import sqlite3, pickle, time
+
+def enroll(employee_id, image_path):
+    img = face_recognition.load_image_file(image_path)
+    enc = face_recognition.face_encodings(img)[0]
+    db.execute("INSERT INTO staff(id, encoding) VALUES(?,?)",
+               (employee_id, pickle.dumps(enc)))
+    db.commit()
+
+def recognize(image_path):
+    img = face_recognition.load_image_file(image_path)
+    locs = face_recognition.face_locations(img)
+    encs = face_recognition.face_encodings(img, locs)
+    for enc in encs:
+        for sid, enc_bytes in db.execute("SELECT id, encoding FROM staff"):
+            dist = face_recognition.face_distance([enc], pickle.loads(enc_bytes))[0]
+            if dist &lt; 0.45:
+                punch(sid)   # 写入考勤记录
+                return sid, dist
+    return None, None</code></pre>
+<p class="code-caption">门禁继电器控制（树莓派 GPIO）</p>
+<pre><code class="language-python">import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)   # 继电器接电磁锁
+
+def open_door(seconds=5):
+    GPIO.output(18, GPIO.HIGH)   # 开门
+    time.sleep(seconds)
+    GPIO.output(18, GPIO.LOW)    # 自动关门
+
+if recognized_uid:
+    open_door()</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://github.com/ageitgey/face_recognition" target="_blank" rel="noopener">face_recognition 库</a>：人脸检测/编码/比对，本地离线推理。</li>
+<li><a href="http://dlib.net/" target="_blank" rel="noopener">dlib C++ 库</a>：face_recognition 底层人脸特征算法。</li>
+<li><a href="https://www.raspberrypi.com/documentation/computers/os.html#gpio" target="_blank" rel="noopener">树莓派 GPIO 文档</a>：电磁锁/继电器控制。</li>
+<li><a href="https://docs.opencv.org/4.x/" target="_blank" rel="noopener">OpenCV 官方教程</a>：摄像头采集与图像预处理。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：硬件准备</h4>
+<ol class="flow">
+<li>树莓派 + 摄像头 + 电磁锁 + 继电器，完成接线与驱动验证。</li>
+<li>pip install face_recognition opencv-python RPi.GPIO。</li>
+</ol>
+<h4 class="step-phase">阶段：人脸注册</h4>
+<ol class="flow">
+<li>录入员工照片建人脸库（SQLite 存特征向量）。</li>
+<li>实现识别比对，调整距离阈值（0.4-0.5）平衡误识/拒识。</li>
+</ol>
+<h4 class="step-phase">阶段：考勤与门禁</h4>
+<ol class="flow">
+<li>识别成功写入考勤表（员工/时间/照片），失败记录日志。</li>
+<li>GPIO 控制电磁锁开门 5 秒，接异常报警。</li>
+</ol>
+<h4 class="step-phase">阶段：上线</h4>
+<ol class="flow">
+<li>安装到门禁点位，白名单加管理员远程注册。</li>
+<li>生成日报：出勤率、异常打卡与陌生人闯入记录。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：7-10 周（MVP）</span>
             <span>价值点：软硬一体方案、企业考勤订阅服务。</span>
           </div>
@@ -1445,7 +2834,82 @@
               <li><span class="diff-tag">运营</span>车队采购决策链长，需用试点事故率数据说话。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">闭眼与打哈欠检测（dlib 关键点 EAR/MAR）</p>
+<pre><code class="language-python">import dlib, cv2
+import numpy as np
+
+detector = dlib.get_frontal_face_detector()
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+
+def ear(landmarks, pts):
+    """眼部纵横比：闭眼时显著下降"""
+    A = np.linalg.norm(pts[1] - pts[5])
+    B = np.linalg.norm(pts[2] - pts[4])
+    C = np.linalg.norm(pts[0] - pts[3])
+    return (A + B) / (2.0 * C)
+
+def mar(landmarks, pts):
+    """嘴部纵横比：打哈欠时升高"""
+    A = np.linalg.norm(pts[13] - pts[19])
+    B = np.linalg.norm(pts[14] - pts[18])
+    C = np.linalg.norm(pts[15] - pts[17])
+    D = np.linalg.norm(pts[12] - pts[16])
+    return (A + B + C) / (3.0 * D)
+
+def fatigue_score(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = detector(gray, 0)
+    if not faces: return 0.0, False
+    land = predictor(gray, faces[0])
+    pts = np.array([(land.part(i).x, land.part(i).y) for i in range(68)])
+    e, m = ear(land, pts[36:42]), mar(land, pts[48:68])
+    return min(e, 1.0), e &lt; 0.2 and m &gt; 0.6  # 闭眼+张嘴</code></pre>
+<p class="code-caption">连续帧状态判定与告警</p>
+<pre><code class="language-python">def update_alarm(state, counter):
+    # 连续 20 帧闭眼判定为疲劳驾驶
+    if state.eye_closed:
+        counter.closed += 1
+        if counter.closed &gt;= 20:
+            play_alarm()          # 蜂鸣/语音提醒
+            counter.closed = 0
+    else:
+        counter.closed = max(0, counter.closed - 2)</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="http://dlib.net/" target="_blank" rel="noopener">dlib 官方文档</a>：人脸关键点 68 点定位，EAR/MAR 计算基础。</li>
+<li><a href="http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2" target="_blank" rel="noopener">shape_predictor_68 模型</a>：人脸关键点模型文件。</li>
+<li><a href="https://docs.opencv.org/4.x/" target="_blank" rel="noopener">OpenCV 视频流</a>：摄像头帧采集与窗口显示。</li>
+<li><a href="https://cv.cs.nthu.edu.tw/php/callforpaper/datasets/DDD/" target="_blank" rel="noopener">NTHU 疲劳数据集（研究用）</a>：驾驶员疲劳检测公开数据集。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install dlib opencv-python numpy；下载 68 点模型文件。</li>
+<li>准备车内摄像头样本（白天/夜间各若干段）。</li>
+</ol>
+<h4 class="step-phase">阶段：特征实现</h4>
+<ol class="flow">
+<li>实现面部关键点检测，计算 EAR（闭眼）与 MAR（打哈欠）。</li>
+<li>实现连续帧状态机：闭眼 20 帧 / 哈欠 3 次触发预警。</li>
+</ol>
+<h4 class="step-phase">阶段：告警与产品</h4>
+<ol class="flow">
+<li>接入语音/蜂鸣告警，支持驾驶员确认解除。</li>
+<li>记录疲劳事件时间线，前端展示行驶安全报告。</li>
+</ol>
+<h4 class="step-phase">阶段：测试上线</h4>
+<ol class="flow">
+<li>夜间弱光测试，必要时加红外补光。</li>
+<li>多驾驶员标定阈值，防误报后装车实测。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：8-12 周（MVP）</span>
             <span>价值点：车队安全管理 SaaS，可与保险公司合作降保费。</span>
           </div>
@@ -1508,7 +2972,80 @@
             </ul>
           </div>
           <p class="idea-warn">⚠️ 合规警示：在多人竞技游戏中使用自动瞄准属作弊行为，会被平台永久封禁并可能承担法律责任；本项目仅可用于单机练习、无障碍辅助研究与算法学习，严禁联机使用与商业分发。</p>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">目标检测与屏幕坐标换算（仅练习场景）</p>
+<pre><code class="language-python">import cv2, numpy as np
+from ultralytics import YOLO
+
+model = YOLO("yolov8n.pt")
+
+def track_target(frame, screen_w, screen_h):
+    r = model(frame, conf=0.5, classes=[0])[0]  # class 0 = person
+    if not r.boxes: return None
+    best = max(r.boxes, key=lambda b: b.conf)
+    x1, y1, x2, y2 = map(int, best.xyxy[0].tolist())
+    cx = (x1 + x2) / 2 / frame.shape[1] * screen_w
+    cy = (y1 + y2) / 2 / frame.shape[0] * screen_h
+    return int(cx), int(cy)
+
+# 仅用于单机练习/算法研究：在画面中心绘制瞄准参考线
+cv2.line(frame, (frame.shape[1]//2 - 30, frame.shape[0]//2),
+         (frame.shape[1]//2 + 30, frame.shape[0]//2), (0, 255, 0), 2)</code></pre>
+<p class="code-caption">目标跟踪平滑（卡尔曼滤波降抖）</p>
+<pre><code class="language-python">import numpy as np
+
+class SimpleKF:
+    def __init__(self):
+        self.x = None
+        self.P = np.eye(4) * 100
+        self.F = np.eye(4); self.H = np.zeros((2, 4))
+        self.H[0, 0] = self.H[1, 1] = 1
+
+    def update(self, z):
+        if self.x is None:
+            self.x = np.array([z[0], z[1], 0, 0], dtype=float)
+            return z
+        # 预测 + 更新（简化版）
+        self.x = self.F @ self.x
+        self.P = self.F @ self.P @ self.F.T + np.eye(4) * 1
+        K = self.P @ self.H.T @ np.linalg.inv(self.H @ self.P @ self.H.T + np.eye(2) * 5)
+        self.x += K @ (np.array(z, dtype=float) - self.H @ self.x)
+        return self.x[:2]</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://docs.ultralytics.com/" target="_blank" rel="noopener">Ultralytics YOLOv8</a>：目标检测模型，示例基于 YOLOv8n 权重。</li>
+<li><a href="https://docs.opencv.org/4.x/" target="_blank" rel="noopener">OpenCV 官方教程</a>：图像处理与画面绘制。</li>
+<li><a href="https://web.mit.edu/kirtley/kirtley/binlustuff/literature/control/Kalman%20filter.pdf" target="_blank" rel="noopener">卡尔曼滤波原理（MIT 讲义）</a>：目标跟踪平滑去抖算法参考。</li>
+<li><a href="https://store.steampowered.com/app/714010/Aimlabs/" target="_blank" rel="noopener">Aimlab / 训练软件（合规参考）</a>：单机练习场景与训练体验对标。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install ultralytics opencv-python numpy。</li>
+<li>明确合规边界：仅单机练习/算法研究，不接入游戏外挂。</li>
+</ol>
+<h4 class="step-phase">阶段：检测实现</h4>
+<ol class="flow">
+<li>用 YOLOv8n 检测画面中人体目标，输出屏幕坐标。</li>
+<li>实现卡尔曼滤波平滑目标轨迹，降低抖动。</li>
+</ol>
+<h4 class="step-phase">阶段：练习功能</h4>
+<ol class="flow">
+<li>画面中心瞄准参考线 + 命中判定（距离阈值）。</li>
+<li>统计命中率/反应时间，生成训练报告。</li>
+</ol>
+<h4 class="step-phase">阶段：自测与发布</h4>
+<ol class="flow">
+<li>在练习软件上对比有无辅助的命中率差异。</li>
+<li>明确开源协议与合规声明后发布演示。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：4-8 周（原型）</span>
             <span>价值点：仅学习与研究价值，无商业变现空间。</span>
           </div>
@@ -1570,7 +3107,82 @@
               <li><span class="diff-tag">运营</span>价值感知不明显，需靠演示场景（演讲、手卫生）打动用户。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">手势识别与动作映射（MediaPipe）</p>
+<pre><code class="language-python">import cv2
+import mediapipe as mp
+import pyautogui
+
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7)
+
+def finger_count(hand_landmarks):
+    tips = [8, 12, 16, 20]
+    count = 0
+    for tip in tips:
+        if hand_landmarks.landmark[tip].y &lt; hand_landmarks.landmark[tip - 2].y:
+            count += 1
+    # 拇指单独判断
+    if hand_landmarks.landmark[4].x &lt; hand_landmarks.landmark[3].x:
+        count += 1
+    return count
+
+cap = cv2.VideoCapture(0)
+ACTIONS = {1: "next", 2: "prev", 3: "volume_up", 4: "volume_down", 5: "play_pause"}
+
+while cap.isOpened():
+    ok, frame = cap.read()
+    if not ok: break
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    result = hands.process(rgb)
+    if result.multi_hand_landmarks:
+        n = finger_count(result.multi_hand_landmarks[0])
+        action = ACTIONS.get(n)
+        if action == "next": pyautogui.press("pagedown")</code></pre>
+<p class="code-caption">浏览器端手势控制（MediaPipe JS 占位）</p>
+<pre><code class="language-javascript">import { Hands } from '@mediapipe/hands';
+
+const hands = new Hands({ locateFile: (f) =&gt; `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+hands.onResults((res) =&gt; {
+  if (!res.multiHandLandmarks?.length) return;
+  const lm = res.multiHandLandmarks[0];
+  const cnt = countFingers(lm);
+  document.dispatchEvent(new CustomEvent('gesture', { detail: cnt }));
+});</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://developers.google.com/mediapipe/solutions/vision/hand_landmarker" target="_blank" rel="noopener">MediaPipe Hands 官方文档</a>：手部关键点检测，识别手势基础。</li>
+<li><a href="https://pyautogui.readthedocs.io/" target="_blank" rel="noopener">pyautogui 文档</a>：模拟键盘/鼠标操作实现控制电脑。</li>
+<li><a href="https://github.com/google-ai-edge/mediapipe-samples" target="_blank" rel="noopener">MediaPipe 手势识别示例</a>：官方手势分类示例代码。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>pip install opencv-python mediapipe pyautogui。</li>
+<li>准备手势词表：1-5 根手指分别映射翻页/缩放/静音等。</li>
+</ol>
+<h4 class="step-phase">阶段：识别实现</h4>
+<ol class="flow">
+<li>实现手部关键点检测与伸指计数（指尖 vs 关节 y 坐标）。</li>
+<li>加手势去抖：连续 5 帧同一手势才触发，防误触。</li>
+</ol>
+<h4 class="step-phase">阶段：动作映射</h4>
+<ol class="flow">
+<li>pyautogui 实现键盘/音量/媒体控制，映射可配置。</li>
+<li>画布叠加显示当前手势与提示，便于校准。</li>
+</ol>
+<h4 class="step-phase">阶段：测试发布</h4>
+<ol class="flow">
+<li>测试不同光照/距离/肤色鲁棒性，调整置信度。</li>
+<li>打包为桌面工具，演示视频发布并收集反馈。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：6-9 周（MVP）</span>
             <span>价值点：演示工具付费、无障碍辅助授权。</span>
           </div>
@@ -1632,7 +3244,81 @@
               <li><span class="diff-tag">运营</span>演示效果好但落地场景碎片化，需按行业逐个打磨。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">ROS 2 SLAM 建图与导航（核心节点）</p>
+<pre><code class="language-python">#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from sensor_msgs.msg import LaserScan
+
+class AutoNav(Node):
+    def __init__(self):
+        super().__init__("auto_nav")
+        self.pub = self.create_publisher(Twist, "/cmd_vel", 10)
+        self.sub = self.create_subscription(LaserScan, "/scan", self.scan_cb, 10)
+
+    def scan_cb(self, msg):
+        # 简单避障：前方 &lt; 0.5m 就转向
+        front = min(msg.ranges[80:100], default=1.0)
+        cmd = Twist()
+        if front &lt; 0.5:
+            cmd.angular.z = 0.5
+        else:
+            cmd.linear.x = 0.15
+        self.pub.publish(cmd)
+
+def main():
+    rclpy.init()
+    rclpy.spin(AutoNav())
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()</code></pre>
+<p class="code-caption">SLAM 建图与导航启动命令</p>
+<pre><code class="language-bash"># 启动雷达驱动
+ros2 launch ldlidar_ros2_driver ld06.launch.py
+# 启动 SLAM 建图（Cartographer）
+ros2 launch turtlebot3_cartographer cartographer.launch.py
+# 保存地图
+ros2 run nav2_map_server map_saver_cli -f map
+# 启动导航
+ros2 launch nav2_bringup bringup_launch.py map:=map.yaml</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://docs.ros.org/en/rolling/index.html" target="_blank" rel="noopener">ROS 2 官方文档</a>：节点、话题、launch 系统基础，示例代码基于 ROS 2。</li>
+<li><a href="https://navigation.ros.org/" target="_blank" rel="noopener">Navigation2 (Nav2)</a>：自主导航栈，AMCL 定位 + 全局/局部规划。</li>
+<li><a href="https://github.com/cartographer-project/cartographer" target="_blank" rel="noopener">Cartographer SLAM</a>：激光 SLAM 建图算法。</li>
+<li><a href="https://emanual.robotis.com/docs/en/platform/turtlebot3/" target="_blank" rel="noopener">TurtleBot3 教程</a>：入门级导航机器人参考硬件与流程。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：环境准备</h4>
+<ol class="flow">
+<li>安装 Ubuntu 22.04 + ROS 2 Humble；source 环境。</li>
+<li>准备机器人底盘（TurtleBot3/自组）+ 激光雷达（LD06/RPLIDAR）。</li>
+</ol>
+<h4 class="step-phase">阶段：驱动与建图</h4>
+<ol class="flow">
+<li>配置雷达驱动节点，rqt_graph 验证 /scan 话题数据。</li>
+<li>运行 Cartographer 建图，遥控小车走遍室内环境，保存 map。</li>
+</ol>
+<h4 class="step-phase">阶段：导航实现</h4>
+<ol class="flow">
+<li>启动 Nav2，AMCL 定位 + 目标点导航，测试避障。</li>
+<li>实现送货任务：多点导航队列 + 到达回调。</li>
+</ol>
+<h4 class="step-phase">阶段：任务与上线</h4>
+<ol class="flow">
+<li>集成语音/触摸屏下达目的地指令。</li>
+<li>长走廊/拥挤场景反复测试，调优代价地图参数。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：12-16 周（MVP）</span>
             <span>价值点：机器人方案授权、教学套件与行业定制。</span>
           </div>
@@ -1694,7 +3380,80 @@
               <li><span class="diff-tag">运营</span>以 DIY 用户为主，规模化需做成品预装与认证。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">智能家居中控（树莓派 + MQTT 全屋控制）</p>
+<pre><code class="language-python">import paho.mqtt.client as mqtt
+import RPi.GPIO as GPIO
+import json
+
+GPIO.setmode(GPIO.BCM)
+DEVICES = {"living_light": {"pin": 17}, "ac": {"pin": 27},
+           "curtain": {"pin": 22}}
+
+def on_message(client, userdata, msg):
+    topic, payload = msg.topic, msg.payload.decode()
+    device = topic.split("/")[2]
+    if device in DEVICES:
+        state = json.loads(payload).get("state")
+        pin = DEVICES[device]["pin"]
+        GPIO.setup(pin, GPIO.OUT)
+        GPIO.output(pin, GPIO.HIGH if state == "on" else GPIO.LOW)
+        print(f"执行: {device} -&gt; {state}")
+
+client = mqtt.Client()
+client.on_message = on_message
+client.connect("127.0.0.1", 1883)
+client.subscribe("home/+/command")
+client.loop_forever()</code></pre>
+<p class="code-caption">中控面板 Web 界面（状态订阅）</p>
+<pre><code class="language-javascript">import mqtt from 'mqtt';
+
+const client = mqtt.connect('ws://raspberrypi.local:9001');
+client.on('connect', () =&gt; client.subscribe('home/+/state'));
+
+client.on('message', (topic, payload) =&gt; {
+  const dev = topic.split('/')[1];
+  setDeviceState(dev, JSON.parse(payload.toString()));
+});
+
+function sendCommand(dev, state) {
+  client.publish(`home/${dev}/command`, JSON.stringify({ state }));
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://mqtt.org/" target="_blank" rel="noopener">MQTT 协议规范（MQTT.org）</a>：设备通信协议，发布/订阅模型。</li>
+<li><a href="https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php" target="_blank" rel="noopener">paho-mqtt 文档</a>：Python MQTT 客户端实现。</li>
+<li><a href="https://www.raspberrypi.com/documentation/computers/os.html#gpio" target="_blank" rel="noopener">树莓派 GPIO 官方文档</a>：继电器/模块控制灯、空调、窗帘。</li>
+<li><a href="https://github.com/home-assistant/core" target="_blank" rel="noopener">Home Assistant 开源项目</a>：成熟智能家居平台，场景/自动化设计参考。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：硬件准备</h4>
+<ol class="flow">
+<li>树莓派 4 + 7 寸触摸屏 + 继电器模块（灯/空调/窗帘）。</li>
+<li>安装 Mosquitto MQTT Broker：sudo apt install mosquitto。</li>
+</ol>
+<h4 class="step-phase">阶段：接入设备</h4>
+<ol class="flow">
+<li>按设备接入继电器/红外发射模块，GPIO 逐一验证开关。</li>
+<li>实现 MQTT 命令订阅与状态发布（home/{device}/{command|state}）。</li>
+</ol>
+<h4 class="step-phase">阶段：中控界面</h4>
+<ol class="flow">
+<li>前端面板：房间/设备卡片 + 一键场景（回家/离家/睡眠）。</li>
+<li>MQTT over WebSocket 实时订阅状态，页面即时反馈。</li>
+</ol>
+<h4 class="step-phase">阶段：场景与上线</h4>
+<ol class="flow">
+<li>实现定时场景与传感器联动（人体感应开灯）。</li>
+<li>整屋安装调试，异常断电恢复测试后正式使用。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：6-9 周（MVP）</span>
             <span>价值点：成品套件销售、私有化部署服务。</span>
           </div>
@@ -1756,7 +3515,77 @@
               <li><span class="diff-tag">运营</span>家庭安全信任门槛高，需安全认证、保险与售后承诺。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">智能门锁主流程（密码 + RFID + 人脸）</p>
+<pre><code class="language-python">import RPi.GPIO as GPIO
+import hashlib, time
+
+GPIO.setmode(GPIO.BCM)
+LOCK_PIN = 18      # 电磁锁
+BUZZER_PIN = 23
+
+def check_pin(entered, salt, stored_hash):
+    return hashlib.sha256((entered + salt).encode()).hexdigest() == stored_hash
+
+def unlock():
+    GPIO.setup(LOCK_PIN, GPIO.OUT)
+    GPIO.output(LOCK_PIN, GPIO.HIGH)      # 开锁
+    GPIO.setup(BUZZER_PIN, GPIO.OUT)
+    GPIO.output(BUZZER_PIN, GPIO.HIGH)    # 成功提示音
+    time.sleep(0.3); GPIO.output(BUZZER_PIN, GPIO.LOW)
+    time.sleep(5)
+    GPIO.output(LOCK_PIN, GPIO.LOW)       # 自动上锁
+
+def handle_rfid(uid):
+    if uid in whitelist:   # 白名单 RFID 卡
+        unlock()
+    else:
+        log_attempt(uid, denied=True)</code></pre>
+<p class="code-caption">人脸开锁（OpenCV + 本地模型）</p>
+<pre><code class="language-python">import cv2, face_recognition
+
+def try_face_unlock(frame):
+    enc = face_recognition.face_encodings(frame)
+    if not enc: return False
+    for uid, saved in home_encodings.items():
+        if face_recognition.face_distance([saved], enc[0])[0] &lt; 0.4:
+            unlock(); return True
+    return False</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://www.raspberrypi.com/documentation/computers/os.html#gpio" target="_blank" rel="noopener">树莓派 GPIO 官方文档</a>：电磁锁与蜂鸣器控制。</li>
+<li><a href="https://github.com/ageitgey/face_recognition" target="_blank" rel="noopener">face_recognition</a>：本地人脸识别开锁。</li>
+<li><a href="https://github.com/mxgxw/MFRC522-python" target="_blank" rel="noopener">MFRC522（RFID）库</a>：RFID 刷卡模块读取。</li>
+<li><a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/" target="_blank" rel="noopener">ESP32 远程授权（参考）</a>：联网远程临时授权与日志上报。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：硬件与安全</h4>
+<ol class="flow">
+<li>树莓派 + 电磁锁 + 数字键盘 + MFRC522 + 摄像头，接线完成。</li>
+<li>密码存储用 SHA-256 加盐，禁用明文，失败 5 次锁定 5 分钟。</li>
+</ol>
+<h4 class="step-phase">阶段：多方式开锁</h4>
+<ol class="flow">
+<li>实现密码校验、RFID 白名单、人脸识别三种开锁路径。</li>
+<li>统一 unlock() 入口：开锁、提示音、5 秒自动上锁。</li>
+</ol>
+<h4 class="step-phase">阶段：远程与日志</h4>
+<ol class="flow">
+<li>接入 ESP32/网络模块：远程临时授权（时效密码）与开锁记录。</li>
+<li>拍照记录每次开锁事件，异常（撬锁/暴力）触发蜂鸣告警。</li>
+</ol>
+<h4 class="step-phase">阶段：测试上线</h4>
+<ol class="flow">
+<li>连续开关锁 100 次测试可靠性，电池/断电应急机械钥匙。</li>
+<li>安装试用一周，收集误识与耗电数据后迭代。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：7-10 周（MVP）</span>
             <span>价值点：民宿 / 短租管理 SaaS、安全认证溢价。</span>
           </div>
@@ -1818,7 +3647,80 @@
               <li><span class="diff-tag">运营</span>套件利润薄，靠教程、课程授权与社区获客。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">循迹与避障小车（ROS 2 控制节点）</p>
+<pre><code class="language-python">#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from sensor_msgs.msg import LaserScan
+from std_msgs.msg import Int8
+
+class LineFollow(Node):
+    def __init__(self):
+        super().__init__("line_follow")
+        self.pub = self.create_publisher(Twist, "cmd_vel", 10)
+        # 红外循迹传感器: 0=左 1=中 2=右，on 表示检测到黑线
+        self.sub = self.create_subscription(Int8, "track_value", self.track_cb, 10)
+
+    def track_cb(self, msg):
+        v = msg.data  # 0b000 全无线 / 0b010 中间
+        cmd = Twist()
+        if v == 0b010:      # 中间
+            cmd.linear.x = 0.2
+        elif v &amp; 0b001:     # 偏右，向左修正
+            cmd.linear.x = 0.12; cmd.angular.z = 0.4
+        elif v &amp; 0b100:     # 偏左，向右修正
+            cmd.linear.x = 0.12; cmd.angular.z = -0.4
+        else:
+            cmd.linear.x = 0.0   # 丢线停车
+        self.pub.publish(cmd)
+
+def main():
+    rclpy.init()
+    node = LineFollow()
+    rclpy.spin(node)
+    node.destroy_node(); rclpy.shutdown()</code></pre>
+<p class="code-caption">手机遥控与建图启动</p>
+<pre><code class="language-bash"># 手机遥控（teleop 键盘/手柄）
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+# 激光雷达建图（可选扩展）
+ros2 launch ldlidar_ros2_driver ld06.launch.py</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://docs.ros.org/en/rolling/Tutorials.html" target="_blank" rel="noopener">ROS 2 官方教程</a>：节点/话题/launch 入门，示例代码基于 ROS 2。</li>
+<li><a href="https://github.com/ros2/teleop_twist_keyboard" target="_blank" rel="noopener">teleop_twist_keyboard</a>：手机/键盘遥控小车。</li>
+<li><a href="https://docs.arduino.cc/built-in-examples/" target="_blank" rel="noopener">Arduino 红外循迹模块教程</a>：红外循迹传感器原理与读取。</li>
+<li><a href="https://howtomechatronics.com/tutorials/arduino/arduino-dc-motor-control-tutorial-l298n-pwm-h-bridge/" target="_blank" rel="noopener">L298N 电机驱动说明</a>：直流电机驱动与 PWM 调速。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：硬件组装</h4>
+<ol class="flow">
+<li>四轮底盘 + L298N 电机驱动 + 红外循迹模块×3 + 树莓派（或 Arduino）。</li>
+<li>接线并逐模块测试：电机正反转、循迹传感器读数。</li>
+</ol>
+<h4 class="step-phase">阶段：ROS 2 环境</h4>
+<ol class="flow">
+<li>树莓派安装 Ubuntu + ROS 2 Humble；创建 line_follow 功能包。</li>
+<li>实现 track_value 话题发布（传感器二进制编码）与循迹节点。</li>
+</ol>
+<h4 class="step-phase">阶段：功能联调</h4>
+<ol class="flow">
+<li>白底黑线赛道测试循迹，调 PID 参数（P 项修正转角）。</li>
+<li>加超声波/激光避障：前方 30cm 内停车转向。</li>
+</ol>
+<h4 class="step-phase">阶段：进阶扩展</h4>
+<ol class="flow">
+<li>手机遥控（teleop）+ 可选 SLAM 建图导航。</li>
+<li>赛道竞速调优，记录实验数据写学习笔记。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：4-6 周（MVP）</span>
             <span>价值点：教育套件、课程授权与竞赛培训。</span>
           </div>
@@ -1880,7 +3782,76 @@
               <li><span class="diff-tag">运营</span>硬件毛利低，靠耗材（粮桶、干燥剂）与订阅服务赚钱。</li>
             </ul>
           </div>
-          <div class="idea-meta">
+          <div class="idea-section">
+<h3>开发代码示例</h3>
+<p class="code-caption">定时定量投喂与缺粮检测（树莓派 + 步进电机）</p>
+<pre><code class="language-python">import RPi.GPIO as GPIO
+import time, requests
+
+# 步进电机驱动（28BYJ-48 + ULN2003）
+IN1, IN2, IN3, IN4 = 16, 20, 21, 26
+SEQ = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+GPIO.setmode(GPIO.BCM)
+for p in (IN1, IN2, IN3, IN4):
+    GPIO.setup(p, GPIO.OUT)
+
+def feed(rotations=2):
+    steps = rotations * 512  # 28BYJ-48 减速比 1/64
+    for i in range(steps):
+        for j, p in enumerate((IN1, IN2, IN3, IN4)):
+            GPIO.output(p, SEQ[(i // 1) % 4][j])
+        time.sleep(0.002)
+    log_feeding()
+
+def check_food_level(weight_sensor):
+    # 压力传感器读数低于阈值 -&gt; 缺粮告警
+    weight = read_hx711()
+    if weight &lt; 100:
+        requests.post("https://api.example.com/notify",
+                      json={"type": "low_food", "weight": weight})</code></pre>
+<p class="code-caption">宠物喂食器 App 远程控制（Kotlin 占位）</p>
+<pre><code class="language-kotlin">class FeedViewModel(private val repo: FeedRepo) : ViewModel() {
+    fun feedNow() = viewModelScope.launch {
+        repo.control("feed_now")   // 调用云端接口
+    }
+    fun updateSchedule(hour: Int, minute: Int, grams: Int) {
+        repo.setSchedule("daily", hour, minute, grams)
+    }
+}</code></pre>
+</div>
+<div class="idea-section">
+<h3>来源与参考</h3>
+<ul class="src-list">
+<li><a href="https://www.raspberrypi.com/documentation/computers/os.html#gpio" target="_blank" rel="noopener">树莓派 GPIO 官方文档</a>：步进电机与传感器控制。</li>
+<li><a href="https://github.com/tatobari/hx711py" target="_blank" rel="noopener">HX711 称重传感器库</a>：余粮重量检测（缺粮告警）。</li>
+<li><a href="https://howtomechatronics.com/tutorials/arduino/stepper-motors/" target="_blank" rel="noopener">28BYJ-48 步进电机教程</a>：步进电机精确出粮控制原理。</li>
+<li><a href="https://github.com/Thiago-Sanches/OpenPetFeeder" target="_blank" rel="noopener">OpenPetFeeder（开源项目）</a>：开源自动喂食器硬件与固件参考。</li>
+</ul>
+</div>
+<div class="idea-section">
+<h3>开发操作步骤与流程</h3>
+<h4 class="step-phase">阶段：硬件组装</h4>
+<ol class="flow">
+<li>树莓派 Zero/4 + 步进电机 + 料仓 + HX711 称重 + 摄像头。</li>
+<li>组装出粮机构，标定 1 圈出粮克数（多次称重取均值）。</li>
+</ol>
+<h4 class="step-phase">阶段：本地控制</h4>
+<ol class="flow">
+<li>实现步进电机定时出粮（GPIO 脉冲序列）。</li>
+<li>称重检测余粮，低于阈值触发告警。</li>
+</ol>
+<h4 class="step-phase">阶段：联网与 App</h4>
+<ol class="flow">
+<li>后端 API：定时计划、手动喂食、余粮/事件查询。</li>
+<li>App/小程序：远程喂食按钮、计划设置、缺粮推送。</li>
+</ol>
+<h4 class="step-phase">阶段：测试迭代</h4>
+<ol class="flow">
+<li>连续 7 天定时投喂测试，校准克数误差与防卡粮。</li>
+<li>加摄像头识别宠物（多宠分别喂食），正式上线。</li>
+</ol>
+</div>
+<div class="idea-meta">
             <span>预估周期：5-7 周（MVP）</span>
             <span>价值点：硬件 + 耗材 + 健康数据订阅模式。</span>
           </div>
