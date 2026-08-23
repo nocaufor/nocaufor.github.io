@@ -248,6 +248,12 @@
       els.forEach(function (el) { el.classList.add("is-visible"); });
       return;
     }
+    /* 错峰：未显式设置 data-delay 的元素按顺序交错 60ms，过渡更自然 */
+    els.forEach(function (el, i) {
+      if (!el.hasAttribute("data-delay")) {
+        el.style.transitionDelay = ((i % 6) * 60) + "ms";
+      }
+    });
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (en.isIntersecting) {
@@ -257,6 +263,91 @@
       });
     }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
     els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ============ 12b. 惯性平滑滚动（桌面滚轮，rAF 克制缓动） ============ */
+  function initSmoothScroll() {
+    if (prefersReduced || !finePointer) return;
+    var target = window.scrollY || document.documentElement.scrollTop;
+    var current = target;
+    var raf = null;
+    var max = 0;
+
+    function updateMax() {
+      max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    }
+    function loop() {
+      var diff = target - current;
+      if (Math.abs(diff) < 0.5) {
+        window.scrollTo(0, Math.round(target));
+        raf = null;
+        return;
+      }
+      current += diff * 0.09;
+      window.scrollTo(0, Math.round(current));
+      raf = requestAnimationFrame(loop);
+    }
+    function kick() {
+      if (raf === null) raf = requestAnimationFrame(loop);
+    }
+    window.addEventListener("wheel", function (e) {
+      if (e.ctrlKey || e.shiftKey) return; /* 保留浏览器缩放 / 横向行为 */
+      if (max <= 0) return;
+      e.preventDefault();
+      var delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 16;
+      else if (e.deltaMode === 2) delta *= window.innerHeight;
+      target += delta;
+      target = Math.max(0, Math.min(target, max));
+      kick();
+    }, { passive: false });
+    /* 键盘 / 锚点 / 触摸等原生滚动期间，同步基准避免跳动 */
+    window.addEventListener("scroll", function () {
+      if (raf !== null) return;
+      var y = window.scrollY || document.documentElement.scrollTop;
+      current = y;
+      target = y;
+    }, { passive: true });
+    window.addEventListener("resize", updateMax, { passive: true });
+    updateMax();
+  }
+
+  /* ============ 12c. Hero 视差（标题与按钮轻微上移淡出） ============ */
+  function initHeroParallax() {
+    var hero = $(".hero");
+    if (!hero || prefersReduced || !finePointer) return;
+    var items = $all(".hero .display-title, .hero .type-line, .hero .hero-actions");
+    if (!items.length) return;
+    var maxY = 240;
+    var ticking = false;
+    function update() {
+      var y = window.scrollY || document.documentElement.scrollTop;
+      if (y > 0) {
+        if (!hero.classList.contains("parallax-on")) {
+          hero.classList.add("parallax-on");
+          items.forEach(function (el) { el.classList.add("parallax-live"); });
+        }
+        var p = Math.min(y / maxY, 1);
+        var eased = 1 - Math.pow(1 - p, 2);
+        items.forEach(function (el, i) {
+          var factor = 0.14 + i * 0.05;
+          el.style.transform = "translateY(" + (eased * factor * y).toFixed(1) + "px)";
+          el.style.opacity = String(Math.max(0, 1 - eased * 0.7));
+        });
+      } else {
+        hero.classList.remove("parallax-on");
+        items.forEach(function (el) {
+          el.classList.remove("parallax-live");
+          el.style.transform = "";
+          el.style.opacity = "";
+        });
+      }
+      ticking = false;
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    update();
   }
 
   /* ============ 13. 页面过渡（站内链接淡出） ============ */
@@ -359,6 +450,8 @@
     initBackToTop();
     initScrollProgress();
     initCursorFX();
+    initSmoothScroll();
+    initHeroParallax();
     initReveal();
     initPageTransitions();
     initParticles();

@@ -90,6 +90,21 @@ body {
 
 ::selection { background: var(--brand-soft); color: inherit; }
 
+/* 滚动条：细条、圆角、低对比，hover 增强 */
+html { scrollbar-width: thin; scrollbar-color: rgba(130, 140, 150, 0.32) transparent; }
+html::-webkit-scrollbar { width: 8px; height: 8px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb {
+  background: rgba(130, 140, 150, 0.26);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: rgba(130, 140, 150, 0.55);
+  background-clip: padding-box;
+}
+
 a { color: inherit; text-decoration: none; }
 
 img, svg { display: inline-block; vertical-align: middle; }
@@ -126,14 +141,14 @@ h4 { font-size: 1rem; font-weight: 620; letter-spacing: -0.01em; }
 /* 正文 */
 p, .text { color: var(--text-2); font-size: 1rem; line-height: 1.8; }
 /* 辅助文字 */
-.section-desc, .project-subtitle, .label, .role, .stat .label {
+.section-desc, .project-subtitle, .label, .role {
   color: var(--text-3);
   font-size: 0.92rem;
   letter-spacing: 0.01em;
 }
 /* 等宽标签 / 数字 / 代码 */
 .mono, .tag, .skill-tag, .platform-badge, .section-tag,
-.stat .num, .notfound-code, .cover-en, .time {
+.notfound-code, .cover-en, .time {
   font-family: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, "Roboto Mono", monospace;
 }
 /* 渐变文字（克制的品牌青点缀） */
@@ -282,16 +297,9 @@ body::before {
 .hero p { max-width: 560px; margin: 0 auto 32px; }
 .hero-actions { display: flex; gap: 16px; justify-content: center; margin-bottom: 64px; flex-wrap: wrap; }
 
-.hero-stats { display: flex; justify-content: center; gap: 72px; flex-wrap: wrap; }
-.stat { text-align: center; }
-.stat .num {
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-.stat .label { margin-top: 4px; }
+/* 视差元素（滚动时标题/按钮轻微上移淡出，由 main.js 驱动） */
+.hero .display-title, .hero .type-line, .hero .hero-actions { will-change: transform, opacity; }
+.reveal.parallax-live { transition: opacity 0.3s ease, transform 0.08s linear; }
 
 /* ============ 08 区块标题 ============ */
 .section-title { margin: 2px 0; }
@@ -683,7 +691,6 @@ body { transition: opacity 0.3s ease, background-color 0.4s ease, color 0.4s eas
   .about-avatar { position: static; }
   .hero { padding: 88px 0 64px; }
   .section { padding: 72px 0; }
-  .hero-stats { gap: 40px; }
   .nav-links {
     position: fixed;
     top: var(--header-h); left: 0; right: 0;
