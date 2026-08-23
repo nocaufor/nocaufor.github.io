@@ -11,6 +11,10 @@
 
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
+  <!-- 光标跟随光晕与圆点（桌面端） -->
+  <div class="cursor-glow" aria-hidden="true"></div>
+  <div class="cursor-dot" aria-hidden="true"></div>
+
   <header class="site-header">
     <div class="container nav">
       <a href="index.html" class="brand">
@@ -24,7 +28,8 @@
           <a href="about.html">关于</a>
           <a href="contact.html">联系</a>
         </nav>
-        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">☀️</button>
+        <button id="visual-toggle" class="visual-toggle" aria-label="切换渐变风格">MONO</button>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg></button>
         <button class="nav-toggle" aria-label="切换导航菜单">
           <span></span><span></span><span></span>
         </button>

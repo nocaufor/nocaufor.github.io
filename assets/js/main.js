@@ -107,7 +107,11 @@
     var mouse = { x: null, y: null };
     var running = true;
 
-    var COLORS = ["0,229,255", "139,92,246", "255,45,120"];
+    function getColors() {
+      return document.documentElement.getAttribute("data-visual") === "mono"
+        ? ["210,216,228", "140,148,164", "90,98,115"]
+        : ["0,229,255", "139,92,246", "255,45,120"];
+    }
 
     function resize() {
       canvas.width = window.innerWidth;
@@ -122,7 +126,7 @@
         vx: (Math.random() - 0.5) * 0.45,
         vy: (Math.random() - 0.5) * 0.45,
         r: Math.random() * 1.8 + 0.6,
-        c: COLORS[Math.floor(Math.random() * COLORS.length)]
+        c: getColors()[Math.floor(Math.random() * 3)]
       };
     }
 
@@ -168,7 +172,7 @@
           var mdist = Math.sqrt(mdx * mdx + mdy * mdy);
           if (mdist < 160) {
             var mAlpha = (1 - mdist / 160) * 0.25;
-            ctx.strokeStyle = "rgba(0,229,255," + mAlpha + ")";
+            ctx.strokeStyle = "rgba(" + getColors()[0] + "," + mAlpha + ")";
             ctx.lineWidth = 0.7;
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
@@ -224,6 +228,12 @@
       running = document.visibilityState === "visible";
       if (running) draw();
     });
+
+    // 视觉风格切换时重建粒子配色
+    window.__nocauParticlesReseed = function () {
+      resize();
+      seed();
+    };
   }
 
   /* ---------- 6. 打字机标题 ---------- */
@@ -463,10 +473,172 @@
     if (el) el.textContent = String(new Date().getFullYear());
   }
 
-  /* ---------- 13. 初始化 ---------- */
+  /* ---------- 13. 视觉风格切换（霓虹 / 黑白灰，localStorage 记忆） ---------- */
+  function initVisualToggle() {
+    var toggle = document.getElementById("visual-toggle");
+    if (!toggle) return;
+
+    var saved = localStorage.getItem("nocau-visual");
+    if (saved === "mono") {
+      document.documentElement.setAttribute("data-visual", "mono");
+    }
+    updateVisualLabel();
+
+    toggle.addEventListener("click", function () {
+      var cur = document.documentElement.getAttribute("data-visual");
+      var next = cur === "mono" ? "neon" : "mono";
+      if (next === "mono") {
+        document.documentElement.setAttribute("data-visual", "mono");
+      } else {
+        document.documentElement.removeAttribute("data-visual");
+      }
+      localStorage.setItem("nocau-visual", next);
+      updateVisualLabel();
+      if (window.__nocauParticlesReseed) window.__nocauParticlesReseed();
+    });
+  }
+
+  function updateVisualLabel() {
+    var toggle = document.getElementById("visual-toggle");
+    if (!toggle) return;
+    var isMono = document.documentElement.getAttribute("data-visual") === "mono";
+    toggle.textContent = isMono ? "NEON" : "MONO";
+    toggle.setAttribute("aria-label", isMono ? "切换到霓虹风格" : "切换到黑白灰风格");
+  }
+
+  /* ---------- 14. 光标光晕与圆点（桌面端，移动端自动降级） ---------- */
+  function initCursorFX() {
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var glow = document.querySelector(".cursor-glow");
+    var dot = document.querySelector(".cursor-dot");
+    if (!glow || !dot) return;
+
+    var raf = null;
+    var gx = window.innerWidth / 2;
+    var gy = window.innerHeight / 2;
+    var dx = gx;
+    var dy = gy;
+    var shown = false;
+
+    function setPos(x, y) {
+      dx = x;
+      dy = y;
+      if (!shown) {
+        shown = true;
+        glow.classList.add("show");
+        dot.classList.add("show");
+      }
+      dot.style.transform = "translate(" + (x - 3.5) + "px," + (y - 3.5) + "px)";
+      if (!raf) {
+        raf = requestAnimationFrame(function loop() {
+          gx += (dx - gx) * 0.12;
+          gy += (dy - gy) * 0.12;
+          glow.style.transform = "translate(" + (gx - 180) + "px," + (gy - 180) + "px)";
+          raf = null;
+        });
+      }
+    }
+
+    window.addEventListener("mousemove", function (e) {
+      setPos(e.clientX, e.clientY);
+    }, { passive: true });
+
+    document.addEventListener("mouseleave", function () {
+      shown = false;
+      glow.classList.remove("show");
+      dot.classList.remove("show");
+    });
+  }
+
+  /* ---------- 15. 项目卡片 3D tilt（桌面端） ---------- */
+  function initTilt() {
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var cards = document.querySelectorAll(".project-card");
+    if (!cards.length) return;
+
+    var max = 7;
+
+    cards.forEach(function (card) {
+      var raf = null;
+      card.addEventListener("mousemove", function (e) {
+        if (raf) return;
+        raf = requestAnimationFrame(function () {
+          raf = null;
+          var rect = card.getBoundingClientRect();
+          var px = (e.clientX - rect.left) / rect.width - 0.5;
+          var py = (e.clientY - rect.top) / rect.height - 0.5;
+          card.style.transform =
+            "perspective(900px) rotateX(" + (-py * max).toFixed(2) + "deg) rotateY(" +
+            (px * max).toFixed(2) + "deg) translateY(-6px)";
+        });
+      });
+      card.addEventListener("mouseleave", function () {
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        card.style.transform = "";
+      });
+    });
+  }
+
+  /* ---------- 16. Hero 鼠标视差光斑 ---------- */
+  function initParallax() {
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var orbs = document.querySelectorAll(".parallax-orb");
+    if (!orbs.length) return;
+
+    var depth = [22, 14];
+    var raf = null;
+    var tx = 0;
+    var ty = 0;
+
+    window.addEventListener("mousemove", function (e) {
+      var cx = (e.clientX / window.innerWidth) - 0.5;
+      var cy = (e.clientY / window.innerHeight) - 0.5;
+      tx = cx;
+      ty = cy;
+      if (!raf) {
+        raf = requestAnimationFrame(function loop() {
+          raf = null;
+          orbs.forEach(function (orb, i) {
+            orb.style.transform = "translate(" + (tx * depth[i]).toFixed(1) + "px," + (ty * depth[i]).toFixed(1) + "px)";
+          });
+        });
+      }
+    }, { passive: true });
+  }
+
+  /* ---------- 17. 按钮涟漪 ---------- */
+  function initRipple() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var btns = document.querySelectorAll(".btn");
+    if (!btns.length) return;
+
+    btns.forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        var rect = btn.getBoundingClientRect();
+        var size = Math.max(rect.width, rect.height) * 2;
+        var span = document.createElement("span");
+        span.className = "ripple";
+        span.style.width = size + "px";
+        span.style.height = size + "px";
+        span.style.left = (e.clientX - rect.left - size / 2) + "px";
+        span.style.top = (e.clientY - rect.top - size / 2) + "px";
+        btn.appendChild(span);
+        span.addEventListener("animationend", function () { span.remove(); });
+      });
+    });
+  }
+
+  /* ---------- 18. 初始化 ---------- */
   document.addEventListener("DOMContentLoaded", function () {
     initTheme();
     initThemeToggle();
+    initVisualToggle();
     initNavToggle();
     initActiveNav();
     initReveal();
@@ -477,6 +649,10 @@
     initProjectFilter();
     initBackToTop();
     initContactForm();
+    initCursorFX();
+    initTilt();
+    initParallax();
+    initRipple();
     initYear();
   });
 })();

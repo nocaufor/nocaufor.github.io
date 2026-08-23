@@ -11,6 +11,10 @@
 
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
+  <!-- 光标跟随光晕与圆点（桌面端） -->
+  <div class="cursor-glow" aria-hidden="true"></div>
+  <div class="cursor-dot" aria-hidden="true"></div>
+
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
     <div class="container nav">
@@ -25,7 +29,8 @@
           <a href="about.html">关于</a>
           <a href="contact.html">联系</a>
         </nav>
-        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">☀️</button>
+        <button id="visual-toggle" class="visual-toggle" aria-label="切换渐变风格">MONO</button>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg></button>
         <button class="nav-toggle" aria-label="切换导航菜单">
           <span></span><span></span><span></span>
         </button>
@@ -58,7 +63,9 @@
           <!-- ============ 项目 1：衣件通 ============ -->
           <article class="project-card reveal" data-category="mini-program">
             <div class="project-cover cover-gradient-1">
-              衣
+              <svg class="cover-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v3.2"/><path d="M12 7.2 4.6 13.6A1.9 1.9 0 0 0 6 17h12a1.9 1.9 0 0 0 1.4-3.4L12 7.2z"/></svg>
+              <span class="cover-title">衣件通</span>
+              <span class="cover-en">Wardrobe Assistant</span>
               <span class="cover-index">01</span>
               <div class="cover-meta"><span class="platform-badge">微信小程序</span></div>
             </div>
@@ -84,7 +91,9 @@
           <!-- ============ 项目 2：好友检测 ============ -->
           <article class="project-card reveal" data-category="android">
             <div class="project-cover cover-gradient-2">
-              好
+              <svg class="cover-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.6 19c.6-3.2 2.8-5 5.4-5s4.8 1.8 5.4 5"/><path d="M15.5 6.5a3.5 3.5 0 0 1 0 6.6"/><path d="M18.4 3.6a8 8 0 0 1 0 12.4"/></svg>
+              <span class="cover-title">好友检测</span>
+              <span class="cover-en">Friend Check</span>
               <span class="cover-index">02</span>
               <div class="cover-meta"><span class="platform-badge">Android</span></div>
             </div>
@@ -110,7 +119,9 @@
           <!-- ============ 项目 3：LINGO / 广告拦截 ============ -->
           <article class="project-card reveal" data-category="android">
             <div class="project-cover cover-gradient-3">
-              L
+              <svg class="cover-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 19 5.4v5.6c0 4.6-3 7.9-7 9.2-4-1.3-7-4.6-7-9.2V5.4l7-2.6z"/><path d="m8.8 12 2.1 2.1 4.3-4.4"/></svg>
+              <span class="cover-title">LINGO</span>
+              <span class="cover-en">Ad Blocker</span>
               <span class="cover-index">03</span>
               <div class="cover-meta"><span class="platform-badge">Android</span></div>
             </div>
@@ -136,7 +147,9 @@
           <!-- ============ 项目 4：AI hub ============ -->
           <article class="project-card reveal" data-category="ai-platform">
             <div class="project-cover cover-gradient-4">
-              AI
+              <svg class="cover-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="18" r="2.2"/><circle cx="19" cy="18" r="2.2"/><path d="M12 7.2v4.2M6.4 16.5l3.8-4.4M17.6 16.5l-3.8-4.4"/></svg>
+              <span class="cover-title">AI hub</span>
+              <span class="cover-en">AI Platform</span>
               <span class="cover-index">04</span>
               <div class="cover-meta"><span class="platform-badge">AI 平台</span></div>
             </div>
@@ -182,7 +195,7 @@
     </div>
   </footer>
 
-  <button id="back-to-top" class="back-to-top" aria-label="回到顶部">↑</button>
+  <button id="back-to-top" class="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
 
   <script src="assets/js/main.js"></script>
 </body>

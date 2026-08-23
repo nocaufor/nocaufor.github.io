@@ -1437,3 +1437,291 @@ textarea.form-control {
     scroll-behavior: auto !important;
   }
 }
+
+/* ============================================================
+   20. 视觉升级：黑白灰流动风格 + 封面精致排版
+       + 鼠标交互（光晕/3D tilt/视差/涟漪）+ SVG 图标
+   ============================================================ */
+
+/* ---------- 20.1 黑白灰流动渐变风格（与霓虹并存，可切换） ---------- */
+:root {
+  --gradient-mono: linear-gradient(120deg, #20242d 0%, #6d7586 28%, #e3e7ee 50%, #828a9b 72%, #23272f 100%);
+}
+
+/* data-visual="mono"：一键将霓虹体系替换为黑白灰体系 */
+[data-visual="mono"] {
+  --brand: #cfd6e4;
+  --brand-2: #7d879a;
+  --brand-3: #b8c0cf;
+  --gradient-brand: var(--gradient-mono);
+  --gradient-cyan: linear-gradient(135deg, #9aa3b4, #c3cbd9);
+  --gradient-purple: linear-gradient(135deg, #6d7688, #aab2c2);
+  --border: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.4);
+  --glow-cyan: 0 0 18px rgba(203, 210, 224, 0.3);
+  --glow-purple: 0 0 18px rgba(160, 168, 184, 0.3);
+  --grid-line: rgba(255, 255, 255, 0.05);
+}
+
+/* 流动渐变通用动画 */
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 黑白灰模式：页面氛围层转为流动黑白灰 */
+[data-visual="mono"] body::before {
+  background:
+    radial-gradient(900px circle at 15% 0%, rgba(160, 170, 190, 0.09), transparent 55%),
+    radial-gradient(900px circle at 85% 20%, rgba(120, 130, 150, 0.09), transparent 55%),
+    radial-gradient(1000px circle at 50% 110%, rgba(200, 205, 215, 0.07), transparent 60%),
+    linear-gradient(120deg, #08090c, #1b1e25, #0a0b0e, #16181f, #08090c);
+  background-size: 400% 400%;
+  animation: gradient-flow 18s ease infinite;
+}
+
+/* 黑白灰模式：文字渐变增强层次 */
+[data-visual="mono"] .hero h1 .gradient-text,
+[data-visual="mono"] .section-title .gradient-text,
+[data-visual="mono"] .stat .num,
+[data-visual="mono"] .brand-name {
+  filter: drop-shadow(0 0 16px rgba(222, 227, 236, 0.28));
+}
+
+/* ---------- 20.2 项目封面精致排版（修复单字过大） ---------- */
+.project-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 1rem;
+  background-size: 300% 300%;
+  animation: gradient-flow 9s ease infinite;
+}
+
+.cover-icon {
+  width: 40px;
+  height: 40px;
+  color: rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
+  margin-bottom: 2px;
+}
+
+.cover-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+.cover-en {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 2px;
+}
+
+/* 各项目封面渐变改为流动渐变（保持差异化） */
+.cover-gradient-1 { background: linear-gradient(120deg, #0ea5e9, #6366f1, #06b6d4, #0ea5e9); }
+.cover-gradient-2 { background: linear-gradient(120deg, #f43f5e, #8b5cf6, #f472b6, #f43f5e); }
+.cover-gradient-3 { background: linear-gradient(120deg, #10b981, #0ea5e9, #22d3ee, #10b981); }
+.cover-gradient-4 { background: linear-gradient(120deg, #8b5cf6, #ff2d78, #6366f1, #8b5cf6); }
+
+/* 黑白灰模式：封面统一黑白灰流动 */
+[data-visual="mono"] .project-cover {
+  background: linear-gradient(120deg, #23262e, #7c8494, #d9dee6, #5d6472, #23262e) !important;
+  background-size: 320% 320% !important;
+  animation: gradient-flow 9s ease infinite !important;
+}
+
+[data-visual="mono"] .cover-icon {
+  color: #fff;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+}
+
+/* ---------- 20.3 光标跟随光晕与圆点 ---------- */
+.cursor-glow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.09) 0%, rgba(139, 92, 246, 0.06) 35%, transparent 70%);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  will-change: transform;
+}
+
+[data-visual="mono"] .cursor-glow {
+  background: radial-gradient(circle, rgba(210, 218, 230, 0.1) 0%, rgba(150, 158, 175, 0.05) 35%, transparent 70%);
+}
+
+.cursor-glow.show { opacity: 1; }
+
+.cursor-dot {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 12px var(--brand);
+  pointer-events: none;
+  z-index: 1001;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cursor-dot.show { opacity: 1; }
+
+/* ---------- 20.4 卡片 3D tilt ---------- */
+.project-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.project-card .project-body {
+  transform: translateZ(26px);
+}
+
+.project-card .project-cover {
+  transform: translateZ(10px);
+}
+
+/* ---------- 20.5 按钮涟漪 ---------- */
+.btn .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transform: scale(0);
+  animation: ripple-anim 0.65s ease-out forwards;
+  pointer-events: none;
+}
+
+[data-visual="mono"] .btn .ripple {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+@keyframes ripple-anim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ---------- 20.6 Hero 鼠标视差光斑 ---------- */
+.parallax-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 0;
+}
+
+.parallax-orb.orb-1 {
+  top: -70px;
+  left: -60px;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.1), transparent 65%);
+}
+
+.parallax-orb.orb-2 {
+  bottom: -90px;
+  right: -40px;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.1), transparent 65%);
+}
+
+[data-visual="mono"] .parallax-orb.orb-1 {
+  background: radial-gradient(circle, rgba(200, 208, 222, 0.09), transparent 65%);
+}
+
+[data-visual="mono"] .parallax-orb.orb-2 {
+  background: radial-gradient(circle, rgba(140, 148, 164, 0.08), transparent 65%);
+}
+
+/* ---------- 20.7 视觉风格切换按钮 ---------- */
+.visual-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-glass);
+  color: var(--brand);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.visual-toggle:hover {
+  box-shadow: var(--glow-cyan);
+  transform: translateY(-2px);
+}
+
+/* ---------- 20.8 SVG 线性科技图标统一样式 ---------- */
+.feature-icon svg,
+.contact-method .icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: #fff;
+  stroke-width: 1.7;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.contact-method .icon svg.icon-fill {
+  fill: #fff;
+  stroke: none;
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.back-to-top svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 移动端 / 无鼠标设备降级 */
+@media (hover: none), (pointer: coarse) {
+  .cursor-glow,
+  .cursor-dot {
+    display: none !important;
+  }
+
+  .project-card {
+    transform-style: flat;
+  }
+
+  .project-card:hover {
+    transform: translateY(-8px);
+  }
+}
