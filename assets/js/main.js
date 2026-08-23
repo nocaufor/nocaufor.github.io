@@ -260,24 +260,24 @@
     });
   }
 
-  /* ============ 11c. 按钮涟漪（克制） ============ */
+  /* ============ 11c. 点击水面波纹（全局，同心圆环扩散，克制低饱和） ============ */
   function initRipple() {
-    if (prefersReduced || !finePointer) return;
-    var targets = $all(".btn, .filter-btn, .theme-toggle, .nav-toggle");
-    targets.forEach(function (el) {
-      el.addEventListener("pointerdown", function (e) {
-        var r = el.getBoundingClientRect();
-        var size = Math.max(r.width, r.height);
-        var span = document.createElement("span");
-        span.className = "ripple";
-        span.style.width = size + "px";
-        span.style.height = size + "px";
-        span.style.left = (e.clientX - r.left - size / 2) + "px";
-        span.style.top = (e.clientY - r.top - size / 2) + "px";
-        el.appendChild(span);
-        span.addEventListener("animationend", function () { span.remove(); });
-      });
-    });
+    if (prefersReduced) return;
+    var layer = document.createElement("div");
+    layer.className = "water-layer";
+    layer.setAttribute("aria-hidden", "true");
+    document.body.appendChild(layer);
+    document.addEventListener("pointerdown", function (e) {
+      var ring = document.createElement("span");
+      ring.className = "water-ripple";
+      var size = 130;
+      ring.style.width = size + "px";
+      ring.style.height = size + "px";
+      ring.style.left = (e.clientX - size / 2) + "px";
+      ring.style.top = (e.clientY - size / 2) + "px";
+      layer.appendChild(ring);
+      ring.addEventListener("animationend", function () { ring.remove(); });
+    }, { passive: true });
   }
 
   /* ============ 11d. Hero 视差光球（低饱和，随鼠标缓动） ============ */
@@ -614,11 +614,79 @@
     });
   }
 
+  /* ============ 15b. 板块式首页：圆点/下一板块/键盘切换 + 滚动高亮 ============ */
+  function initSectionNav() {
+    var dots = $all(".section-dots .dot");
+    var next = $("#section-next");
+    var panels = $all(".section-panel");
+    if (!dots.length || !panels.length) return;
+    function isEditable(t) {
+      return t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+    }
+    function go(el) {
+      if (!el) return;
+      el.scrollIntoView({ behavior: prefersReduced ? "auto" : "smooth", block: "start" });
+    }
+    function currentIndex() {
+      var idx = 0;
+      var winMid = window.innerHeight / 2;
+      panels.forEach(function (p, i) {
+        var r = p.getBoundingClientRect();
+        if (r.top <= winMid && r.bottom > winMid) idx = i;
+      });
+      return idx;
+    }
+    dots.forEach(function (d) {
+      d.addEventListener("click", function () {
+        go(document.getElementById(d.getAttribute("data-target")));
+      });
+    });
+    if (next) {
+      next.addEventListener("click", function () {
+        var idx = currentIndex();
+        go(panels[idx + 1] || panels[0]);
+      });
+    }
+    var ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        var idx = currentIndex();
+        dots.forEach(function (d, i) { d.classList.toggle("is-active", i === idx); });
+        if (next) next.classList.toggle("at-end", idx === panels.length - 1);
+        ticking = false;
+      });
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    document.addEventListener("keydown", function (e) {
+      if (isEditable(e.target) || e.defaultPrevented) return;
+      var idx = currentIndex();
+      if (e.key === "ArrowDown" || e.key === "PageDown") {
+        e.preventDefault();
+        go(panels[Math.min(idx + 1, panels.length - 1)]);
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        go(panels[Math.max(idx - 1, 0)]);
+      }
+    });
+  }
+
+  /* ============ 15c. 页脚年份 ============ */
+  function initYear() {
+    var el = $("#year");
+    if (el) el.textContent = String(new Date().getFullYear());
+  }
+
+
   /* ============ 启动 ============ */
   document.addEventListener("DOMContentLoaded", function () {
     initThemeToggle();
     initNavToggle();
     initNavActive();
+    initSectionNav();
+    initYear();
     initTypewriter();
     initCounters();
     initSkillBars();

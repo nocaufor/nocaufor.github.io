@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>娱乐小代码 · nocau</title>
+  <meta name="description" content="nocau 娱乐小代码合集：烟花、蛋糕、爱心、贪吃蛇、记忆翻牌等 16 个可独立运行的页面。" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="fun.css" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
+</head>
+<body>
+
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a href="../index.html" class="brand">
+        <span class="brand-logo">nc</span>
+        <span class="brand-name">nocau</span>
+      </a>
+      <div class="nav-actions">
+        <nav class="nav-links" id="nav-links">
+          <a href="../index.html">首页</a>
+          <a href="../projects.html">作品集</a>
+          <a href="index.html">娱乐</a>
+          <a href="../ideas.html">想法项目</a>
+          <a href="../about.html">关于</a>
+          <a href="../contact.html">联系</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
+        </button>
+        <button class="nav-toggle" aria-label="切换导航菜单" aria-expanded="false" aria-controls="nav-links">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="section-panel" id="sec-fun">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">Fun Zone</span>
+          <div class="section-divider"></div>
+          <h1 class="section-title">娱乐<span class="gradient-text">小代码</span></h1>
+          <p class="section-desc">16 个可独立运行的小页面，每个都是纯 HTML + 外部 JS，CSP 兼容、零依赖。</p>
+        </div>
+        <div class="fun-grid">
+          <a class="fun-card reveal" href="fireworks.html">
+            <span class="fun-card-index">01 · 交互</span>
+            <h3>烟花</h3>
+            <p>点击夜空绽放多彩烟花，粒子从爆点四散，循环生成。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas 粒子</span></div>
+          </a>
+          <a class="fun-card reveal" href="cake.html">
+            <span class="fun-card-index">02 · 交互</span>
+            <h3>生日蛋糕</h3>
+            <p>奶油蛋糕与蜡烛，点击蜡烛点亮或吹灭，可许愿。</p>
+            <div class="fun-card-tags"><span class="tag">DOM 动画</span></div>
+          </a>
+          <a class="fun-card reveal" href="heart.html">
+            <span class="fun-card-index">03 · 动效</span>
+            <h3>爱心祝福</h3>
+            <p>跳动的爱心由粒子组成，随节奏缩放，治愈系。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas 粒子</span></div>
+          </a>
+          <a class="fun-card reveal" href="birthday-card.html">
+            <span class="fun-card-index">04 · 交互</span>
+            <h3>生日祝福卡片</h3>
+            <p>可翻开的生日贺卡，点按钮撒下祝福彩带。</p>
+            <div class="fun-card-tags"><span class="tag">DOM 动画</span></div>
+          </a>
+          <a class="fun-card reveal" href="confession.html">
+            <span class="fun-card-index">05 · 交互</span>
+            <h3>表白页</h3>
+            <p>逐字敲出的告白信，点击后整屏泛起小心心。</p>
+            <div class="fun-card-tags"><span class="tag">打字机 + 粒子</span></div>
+          </a>
+          <a class="fun-card reveal" href="memory-wall.html">
+            <span class="fun-card-index">06 · 交互</span>
+            <h3>回忆轮回照片墙</h3>
+            <p>轮播照片墙，左右切换，回忆一帧一帧轮回。</p>
+            <div class="fun-card-tags"><span class="tag">轮播动画</span></div>
+          </a>
+          <a class="fun-card reveal" href="memory-scroll.html">
+            <span class="fun-card-index">07 · 动效</span>
+            <h3>滚动回忆录</h3>
+            <p>时间线回忆录，向下滚动时光缓缓浮现。</p>
+            <div class="fun-card-tags"><span class="tag">滚动触发</span></div>
+          </a>
+          <a class="fun-card reveal" href="snow.html">
+            <span class="fun-card-index">08 · 动效</span>
+            <h3>雪花飘落</h3>
+            <p>雪花随风飘落，深浅节奏可调，适合冬天页面。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas 粒子</span></div>
+          </a>
+          <a class="fun-card reveal" href="stars.html">
+            <span class="fun-card-index">09 · 交互</span>
+            <h3>星空许愿</h3>
+            <p>闪烁星空，输入愿望后化为流星划过天际。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas 粒子</span></div>
+          </a>
+          <a class="fun-card reveal" href="lantern.html">
+            <span class="fun-card-index">10 · 交互</span>
+            <h3>孔明灯</h3>
+            <p>放飞孔明灯，写上愿望，看它缓缓升入夜空。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas 动画</span></div>
+          </a>
+          <a class="fun-card reveal" href="love-letter.html">
+            <span class="fun-card-index">11 · 动效</span>
+            <h3>打字机情书</h3>
+            <p>一封以打字机节奏逐字出现的情书，可重播。</p>
+            <div class="fun-card-tags"><span class="tag">打字机</span></div>
+          </a>
+          <a class="fun-card reveal" href="quotes.html">
+            <span class="fun-card-index">12 · 交互</span>
+            <h3>随机名言</h3>
+            <p>点击随机出现一句名言，平静而有力量。</p>
+            <div class="fun-card-tags"><span class="tag">文本随机</span></div>
+          </a>
+          <a class="fun-card reveal" href="pixel-painter.html">
+            <span class="fun-card-index">13 · 交互</span>
+            <h3>像素画板</h3>
+            <p>16×16 像素画板，选色涂鸦，一键清空。</p>
+            <div class="fun-card-tags"><span class="tag">网格绘制</span></div>
+          </a>
+          <a class="fun-card reveal" href="snake.html">
+            <span class="fun-card-index">14 · 小游戏</span>
+            <h3>贪吃蛇小游戏</h3>
+            <p>经典贪吃蛇，键盘方向控制，吃豆变长。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas 游戏</span></div>
+          </a>
+          <a class="fun-card reveal" href="memory-game.html">
+            <span class="fun-card-index">15 · 小游戏</span>
+            <h3>记忆翻牌</h3>
+            <p>8 对卡片翻牌配对，考验记忆力的小游戏。</p>
+            <div class="fun-card-tags"><span class="tag">翻牌游戏</span></div>
+          </a>
+          <a class="fun-card reveal" href="countdown.html">
+            <span class="fun-card-index">16 · 工具</span>
+            <h3>倒计时</h3>
+            <p>设定目标日期，实时计算剩余天时分秒。</p>
+            <div class="fun-card-tags"><span class="tag">实时计算</span></div>
+          </a>
+        </div>
+        <div class="opensrc-note reveal">
+          <p>每个页面均可在浏览器直接打开运行；返回按钮位于页面顶部导航与底部。源码已在作品集「开放源代码」板块公开。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">
+        <span class="mini-logo">nc</span>
+        © <span id="year">2026</span> nocau.com
+      </span>
+      <nav class="footer-links">
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">作品集</a>
+        <a href="../contact.html">联系</a>
+      </nav>
+    </div>
+  </footer>
+
+  <button id="back-to-top" class="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
+
+  <script src="../assets/js/main.js"></script>
+</body>
+</html>

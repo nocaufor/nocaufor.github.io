@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>雪花飘落 · nocau Fun</title>
+  <meta name="description" content="雪花随风飘落，深浅节奏可调，适合冬天页面。" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="fun.css" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
+</head>
+<body class="fun-page">
+
+  <header class="site-header fun-header">
+    <div class="container nav">
+      <a href="../index.html" class="brand">
+        <span class="brand-logo">nc</span>
+        <span class="brand-name">nocau</span>
+      </a>
+      <div class="nav-actions">
+        <nav class="nav-links" id="nav-links">
+      <a href="../index.html">首页</a>
+          <a href="index.html" class="active">娱乐合集</a>
+          <a href="../projects.html">作品集</a>
+          <a href="../contact.html">联系</a>        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="fun-main">
+    <div class="fun-intro">
+      <h1>雪花飘落</h1>
+      <p>雪花随风飘落，深浅节奏可调，适合冬天页面。</p>
+    </div>
+        <div class="fun-box">
+          <div class="fun-canvas-wrap">
+            <canvas id="snow-canvas" aria-label="雪花画布"></canvas>
+            <span class="click-hint">点击画布落下一片大雪</span>
+          </div>
+        </div>
+        <div class="fun-controls">
+          <button type="button" id="snow-low" class="btn btn-outline">小雪</button>
+          <button type="button" id="snow-mid" class="btn btn-primary">中雪</button>
+          <button type="button" id="snow-high" class="btn btn-outline">大雪</button>
+        </div>
+    <div class="fun-footer">
+      <a href="index.html" class="btn btn-outline">← 返回娱乐合集</a>
+      <a href="../projects.html" class="btn btn-outline">查看作品集</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">
+        <span class="mini-logo">nc</span>
+        © <span id="year">2026</span> nocau.com
+      </span>
+      <nav class="footer-links">
+        <a href="index.html">娱乐合集</a>
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">作品集</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="js/fun-common.js"></script>
+  <script src="js/snow.js"></script>
+</body>
+</html>

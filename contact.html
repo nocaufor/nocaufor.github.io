@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>联系 · nocau</title>
-  <meta name="description" content="联系 nocau：邮箱、社交、留言表单。" />
+  <meta name="description" content="联系 nocau：邮箱、微信、GitHub、留言表单与合作流程。" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
@@ -26,6 +26,7 @@
         <nav class="nav-links" id="nav-links">
           <a href="index.html">首页</a>
           <a href="projects.html">作品集</a>
+          <a href="fun/index.html">娱乐</a>
           <a href="ideas.html">想法项目</a>
           <a href="about.html">关于</a>
           <a href="contact.html">联系</a>
@@ -43,24 +44,31 @@
 
   <main class="main">
 
-    <!-- ==================== 联系 ==================== -->
-    <section class="section">
+    <!-- ==================== 联系页头 ==================== -->
+    <section class="section contact-hero">
       <div class="container">
         <div class="section-head reveal">
           <span class="section-tag">Contact</span>
           <div class="section-divider"></div>
           <h1 class="section-title">联系<span class="gradient-text">nocau</span></h1>
-          <p class="section-desc">合作或交流，欢迎联系。</p>
+          <p class="section-desc">合作、交流或只是打个招呼，都欢迎。</p>
         </div>
+      </div>
+    </section>
 
+    <!-- ==================== 联系信息卡 + 留言表单 ==================== -->
+    <section class="section contact-section">
+      <div class="container">
         <div class="contact-layout">
-          <!-- 联系方式 -->
-          <div class="contact-methods reveal">
+
+          <!-- 联系信息卡 -->
+          <div class="contact-info reveal">
             <div class="contact-method">
               <div class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6.4 8.5-6.4"/></svg></div>
               <div>
                 <h4>邮箱</h4>
                 <p>hello@nocau.com</p>
+                <span class="method-note">商务与合作首选</span>
               </div>
             </div>
             <div class="contact-method">
@@ -68,6 +76,7 @@
               <div>
                 <h4>GitHub</h4>
                 <p>github.com/nocau</p>
+                <span class="method-note">源码与开源项目</span>
               </div>
             </div>
             <div class="contact-method">
@@ -75,13 +84,25 @@
               <div>
                 <h4>微信</h4>
                 <p>nocau-dev</p>
+                <span class="method-note">日常沟通</span>
               </div>
+            </div>
+            <div class="contact-method">
+              <div class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-5.5-9-10a5 5 0 0 1 9-3.2A5 5 0 0 1 21 11c-2 4.5-9 10-9 10z"/></svg></div>
+              <div>
+                <h4>所在城市</h4>
+                <p>中国 · 深圳</p>
+                <span class="method-note">可远程协作</span>
+              </div>
+            </div>
+            <div class="contact-tip">
+              <p>回复时效：工作日 24 小时内回复。留言请尽量说明项目背景与预期目标，能帮我更快理解需求。</p>
             </div>
           </div>
 
           <!-- 留言表单（纯前端演示，无后端） -->
           <div class="contact-form reveal">
-            <h3 style="font-size: 1.25rem; margin-bottom: 24px; font-weight: 800">给我留言</h3>
+            <h3>给我留言</h3>
             <form id="contact-form" novalidate>
               <div class="form-group">
                 <label for="name">姓名</label>
@@ -93,12 +114,81 @@
               </div>
               <div class="form-group">
                 <label for="message">留言内容</label>
-                <textarea id="message" name="message" class="form-control" placeholder="想聊点什么？" rows="5" maxlength="1000" required></textarea>
+                <textarea id="message" name="message" class="form-control" placeholder="想聊点什么？例如：想做一个……" rows="6" maxlength="1000" required></textarea>
               </div>
               <button type="submit" class="btn btn-primary">发送留言</button>
               <p id="form-message" class="form-message"></p>
             </form>
           </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 合作流程简述 ==================== -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">How We Work</span>
+          <div class="section-divider"></div>
+          <h2 class="section-title">合作<span class="gradient-text">流程</span></h2>
+          <p class="section-desc">合作如何推进，四步说明。</p>
+        </div>
+        <div class="process-grid compact">
+          <div class="process-step reveal">
+            <span class="process-index">01</span>
+            <h3>沟通需求</h3>
+            <p>通过留言或微信说明目标与背景，确认是否匹配。</p>
+          </div>
+          <div class="process-step reveal">
+            <span class="process-index">02</span>
+            <h3>方案与报价</h3>
+            <p>给出技术方案、排期与报价，达成一致后启动。</p>
+          </div>
+          <div class="process-step reveal">
+            <span class="process-index">03</span>
+            <h3>开发与演示</h3>
+            <p>分阶段交付，定期演示进度，随时调整方向。</p>
+          </div>
+          <div class="process-step reveal">
+            <span class="process-index">04</span>
+            <h3>交付与维护</h3>
+            <p>交付源码与文档，提供一段时间的维护支持。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 常见问题 ==================== -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">FAQ</span>
+          <div class="section-divider"></div>
+          <h2 class="section-title">常见<span class="gradient-text">问题</span></h2>
+          <p class="section-desc">也许你想问的已经有了答案。</p>
+        </div>
+        <div class="faq-list reveal">
+          <details class="faq-item">
+            <summary>可以承接什么类型的项目？</summary>
+            <div class="faq-body"><p>主要承接微信小程序、Android 应用、AI 工具平台前端以及静态站点的设计与开发。偏好小而清晰的工具类产品，复杂业务可以讨论拆分。</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>合作周期大概多久？</summary>
+            <div class="faq-body"><p>简单的工具类小程序约 2-4 周，中大型平台项目 1-3 个月不等。关键在需求边界是否清晰，沟通越充分，交付越快。</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>是否支持远程协作？</summary>
+            <div class="faq-body"><p>支持。日常通过微信 / 邮箱沟通，每周固定演示进度，关键节点可视频会议对齐，交付物全部线上共享。</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>源码和知识产权归谁？</summary>
+            <div class="faq-body"><p>定制项目按合同约定，默认源码与知识产权归委托方；开源项目按对应开源许可（如 MIT）执行，允许任何人查看与使用。</p></div>
+          </details>
+          <details class="faq-item">
+            <summary>这个作品集站点是纯静态的吗？</summary>
+            <div class="faq-body"><p>是的。全站纯 HTML / CSS / JS，零构建、零后端、零依赖，部署在 GitHub Pages，CSP 安全头与相对路径保证任意子路径可部署。</p></div>
+          </details>
         </div>
       </div>
     </section>
