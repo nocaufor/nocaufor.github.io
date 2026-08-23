@@ -283,7 +283,21 @@ body::before {
 .theme-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ============ 07 Hero ============ */
-.hero { padding: 120px 0 90px; text-align: center; }
+.hero { position: relative; overflow: hidden; padding: 120px 0 90px; text-align: center; }
+.hero .container { position: relative; z-index: 1; }
+/* 视差光球：低饱和黑白灰，随鼠标缓动（由 main.js 驱动） */
+.hero-orb {
+  position: absolute;
+  width: 520px; height: 520px;
+  left: 50%; top: 40%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 50% 50%, rgba(150, 158, 168, 0.16), rgba(150, 158, 168, 0) 62%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+  opacity: 0.9;
+}
 .hero .display-title { margin-bottom: 20px; }
 .type-line {
   font-family: "SF Mono", Consolas, monospace;
@@ -305,6 +319,19 @@ body::before {
 .section-title { margin: 2px 0; }
 
 /* ============ 09 按钮 ============ */
+/* 按钮涟漪（克制，由 main.js 驱动） */
+.btn, .filter-btn, .theme-toggle, .nav-toggle { position: relative; overflow: hidden; }
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  transform: scale(0);
+  opacity: 0.6;
+  pointer-events: none;
+  animation: ripple-anim 0.55s ease-out forwards;
+}
+@keyframes ripple-anim { to { transform: scale(2.4); opacity: 0; } }
+
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   gap: 8px;
@@ -447,6 +474,99 @@ body::before {
 }
 .filter-btn:hover { color: var(--text); border-color: var(--line-strong); }
 .filter-btn.active { color: var(--bg); background: var(--text); border-color: var(--text); }
+
+/* ============ 10b 想法项目页 ============ */
+.idea-note {
+  max-width: 720px; margin: 8px auto 0;
+  color: var(--text-3); font-size: 0.92rem;
+  text-align: center;
+}
+.ideas-list { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px; }
+.idea-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 32px 34px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.16s ease-out, border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+.idea-card:hover { border-color: var(--line-strong); box-shadow: var(--shadow); background: color-mix(in srgb, var(--bg-card) 96%, var(--brand) 3%); }
+.idea-card.tilt-live { transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform 0.16s ease-out, border-color var(--transition), box-shadow var(--transition), background var(--transition); }
+.idea-head { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 22px; }
+.idea-index {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  color: var(--brand);
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 0.9rem; font-weight: 700;
+  background: var(--bg-soft);
+}
+.idea-head-main h2 { font-size: 1.35rem; letter-spacing: -0.02em; margin-bottom: 4px; }
+.idea-subtitle { color: var(--text-2); font-size: 0.96rem; margin-bottom: 12px; }
+.idea-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.idea-section { margin-bottom: 18px; }
+.idea-section h3 {
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.idea-section p { font-size: 0.94rem; color: var(--text-2); }
+.idea-section ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.idea-section ul li { position: relative; padding-left: 16px; font-size: 0.94rem; color: var(--text-2); }
+.idea-section ul li::before { content: ""; position: absolute; left: 2px; top: 0.62em; width: 5px; height: 5px; border-radius: 50%; background: var(--brand-soft); }
+.idea-tech { display: flex; flex-wrap: wrap; gap: 8px; }
+.flow { list-style: none; counter-reset: flow; display: flex; flex-direction: column; gap: 7px; }
+.flow li { position: relative; padding-left: 30px; font-size: 0.92rem; color: var(--text-2); counter-increment: flow; }
+.flow li::before {
+  content: counter(flow, decimal-leading-zero);
+  position: absolute; left: 0; top: 0.1em;
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text-3);
+  font-family: "SF Mono", Consolas, monospace;
+  font-size: 0.66rem;
+}
+.flow li strong { color: var(--text); font-weight: 650; margin-right: 4px; }
+.diff-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.diff-list li { position: relative; padding-left: 64px; font-size: 0.92rem; color: var(--text-2); }
+.diff-tag {
+  position: absolute; left: 0; top: 0.05em;
+  width: 52px; text-align: center;
+  font-size: 0.72rem;
+  padding: 3px 0;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+  background: var(--bg-soft);
+}
+.diff-list li:nth-child(1) .diff-tag { color: var(--brand); border-color: var(--brand-soft); background: var(--brand-soft); }
+.idea-meta {
+  display: flex; flex-wrap: wrap; gap: 10px 26px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+  color: var(--text-3);
+}
+.idea-meta span::before { content: "· "; color: var(--brand); }
+
+/* 3D tilt（克制角度，由 main.js 驱动） */
+.project-card, .feature-card, .idea-card { transform-style: preserve-3d; will-change: transform; }
+.project-card.tilt-live, .feature-card.tilt-live {
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 0.16s ease-out, border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
 
 /* ============ 11 技能 ============ */
 .skills-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 720px; margin: 0 auto; }
@@ -630,13 +750,14 @@ textarea.form-control { resize: vertical; min-height: 130px; }
   opacity: 0;
   transition: opacity 0.4s ease;
 }
-.cursor-dot { width: 5px; height: 5px; background: var(--brand); }
+.cursor-dot { width: 5px; height: 5px; background: var(--brand); transition: width 0.24s var(--ease), height 0.24s var(--ease), opacity 0.4s ease; }
 .cursor-ring {
   width: 30px; height: 30px;
   border: 1px solid var(--brand-soft);
   transition: width 0.28s var(--ease), height 0.28s var(--ease), border-color 0.28s ease, opacity 0.4s ease;
 }
 body.cursor-on .cursor-dot, body.cursor-on .cursor-ring { opacity: 0.55; }
+body.cursor-on .cursor-dot.cursor-hover { width: 9px; height: 9px; }
 body.cursor-on .cursor-ring.cursor-hover { width: 42px; height: 42px; border-color: var(--brand); }
 
 /* ============ 18 滚动进度条 ============ */
@@ -656,6 +777,9 @@ body.cursor-on .cursor-ring.cursor-hover { width: 42px; height: 42px; border-col
 .reveal[data-delay="1"] { transition-delay: 0.08s; }
 .reveal[data-delay="2"] { transition-delay: 0.16s; }
 .reveal[data-delay="3"] { transition-delay: 0.24s; }
+/* 想法卡片：进入动画与 tilt 跟手过渡协调 */
+.idea-card.reveal { transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
+.idea-card.reveal.tilt-live { transition: opacity 0.3s ease, transform 0.16s ease-out, border-color var(--transition), box-shadow var(--transition), background var(--transition); }
 
 /* 页面离开过渡（点击站内链接） */
 body.page-leaving { opacity: 0; transform: translateY(8px); transition: opacity 0.22s ease, transform 0.22s ease; }

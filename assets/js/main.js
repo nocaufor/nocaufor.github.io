@@ -230,13 +230,81 @@
 
     document.addEventListener("mouseover", function (e) {
       if (e.target && e.target.closest && e.target.closest(hoverable)) {
+        dot.classList.add("cursor-hover");
         ring.classList.add("cursor-hover");
       }
     }, { passive: true });
     document.addEventListener("mouseout", function (e) {
       if (e.target && e.target.closest && e.target.closest(hoverable)) {
+        dot.classList.remove("cursor-hover");
         ring.classList.remove("cursor-hover");
       }
+    }, { passive: true });
+  }
+
+  /* ============ 11b. 卡片 3D tilt（克制角度） ============ */
+  function initTilt() {
+    if (prefersReduced || !finePointer) return;
+    var cards = $all(".project-card, .feature-card, .idea-card");
+    if (!cards.length) return;
+    var MAX = 6;
+    cards.forEach(function (card) {
+      card.addEventListener("mousemove", function (e) {
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - 0.5;
+        var py = (e.clientY - r.top) / r.height - 0.5;
+        card.classList.add("tilt-live");
+        card.style.setProperty("--tilt-x", (-py * MAX).toFixed(2) + "deg");
+        card.style.setProperty("--tilt-y", (px * MAX).toFixed(2) + "deg");
+      }, { passive: true });
+      card.addEventListener("mouseleave", function () {
+        card.classList.remove("tilt-live");
+        card.style.removeProperty("--tilt-x");
+        card.style.removeProperty("--tilt-y");
+      });
+    });
+  }
+
+  /* ============ 11c. 按钮涟漪（克制） ============ */
+  function initRipple() {
+    if (prefersReduced || !finePointer) return;
+    var targets = $all(".btn, .filter-btn, .theme-toggle, .nav-toggle");
+    targets.forEach(function (el) {
+      el.addEventListener("pointerdown", function (e) {
+        var r = el.getBoundingClientRect();
+        var size = Math.max(r.width, r.height);
+        var span = document.createElement("span");
+        span.className = "ripple";
+        span.style.width = size + "px";
+        span.style.height = size + "px";
+        span.style.left = (e.clientX - r.left - size / 2) + "px";
+        span.style.top = (e.clientY - r.top - size / 2) + "px";
+        el.appendChild(span);
+        span.addEventListener("animationend", function () { span.remove(); });
+      });
+    });
+  }
+
+  /* ============ 11d. Hero 视差光球（低饱和，随鼠标缓动） ============ */
+  function initHeroOrb() {
+    var orb = $(".hero-orb");
+    if (!orb || prefersReduced || !finePointer) return;
+    var ox = 0, oy = 0, cx = 0, cy = 0;
+    var raf = null;
+    function loop() {
+      cx += (ox - cx) * 0.06;
+      cy += (oy - cy) * 0.06;
+      orb.style.transform = "translate(calc(-50% + " + cx.toFixed(1) + "px), calc(-50% + " + cy.toFixed(1) + "px))";
+      if (Math.abs(ox - cx) > 0.1 || Math.abs(oy - cy) > 0.1) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        raf = null;
+      }
+    }
+    document.addEventListener("mousemove", function (e) {
+      ox = (e.clientX / window.innerWidth - 0.5) * 2 * 22;
+      oy = (e.clientY / window.innerHeight - 0.5) * 2 * 18;
+      if (raf === null) raf = requestAnimationFrame(loop);
     }, { passive: true });
   }
 
@@ -450,6 +518,9 @@
     initBackToTop();
     initScrollProgress();
     initCursorFX();
+    initTilt();
+    initRipple();
+    initHeroOrb();
     initSmoothScroll();
     initHeroParallax();
     initReveal();
