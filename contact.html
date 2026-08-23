@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>联系 - 开发者作品集</title>
+  <meta name="description" content="联系独立开发者：邮箱、社交、留言表单。" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+  <!-- ==================== 顶部导航 ==================== -->
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="brand">
+        <span class="brand-logo">nc</span> <span class="brand-name">nocau</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="projects.html">作品集</a>
+        <a href="about.html">关于</a>
+        <a href="contact.html">联系</a>
+      </nav>
+      <button class="nav-toggle" aria-label="切换导航菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ==================== 联系 ==================== -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">Contact</span>
+          <h1 class="section-title">联系我</h1>
+          <p class="section-desc">合作、交流或任何想法，欢迎随时联系。</p>
+        </div>
+
+        <div class="contact-layout">
+          <!-- 联系方式 -->
+          <div class="contact-methods reveal">
+            <div class="contact-method">
+              <div class="icon">✉️</div>
+              <div>
+                <h4>邮箱</h4>
+                <p>hello@example.com</p>
+              </div>
+            </div>
+            <div class="contact-method">
+              <div class="icon">🐙</div>
+              <div>
+                <h4>GitHub</h4>
+                <p>github.com/your-name</p>
+              </div>
+            </div>
+            <div class="contact-method">
+              <div class="icon">💬</div>
+              <div>
+                <h4>微信</h4>
+                <p>your-wechat-id</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 留言表单（纯前端演示，无后端） -->
+          <div class="contact-form reveal">
+            <h3 style="font-size: 1.2rem; margin-bottom: 24px">给我留言</h3>
+            <form id="contact-form" novalidate>
+              <div class="form-group">
+                <label for="name">姓名</label>
+                <input type="text" id="name" class="form-control" placeholder="你的名字" required />
+              </div>
+              <div class="form-group">
+                <label for="email">邮箱</label>
+                <input type="email" id="email" class="form-control" placeholder="your@email.com" required />
+              </div>
+              <div class="form-group">
+                <label for="message">留言内容</label>
+                <textarea id="message" class="form-control" placeholder="想聊点什么？" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">发送留言</button>
+              <p id="form-message" class="form-hint"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== 页脚 ==================== -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span id="year">2026</span> nocau.com. 保留所有权利。</span>
+      <nav class="footer-links">
+        <a href="index.html">首页</a>
+        <a href="projects.html">作品集</a>
+        <a href="about.html">关于</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
