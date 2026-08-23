@@ -1,29 +1,35 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>关于 - 开发者作品集</title>
-  <meta name="description" content="关于独立开发者：个人简介、职业经历、联系方式。" />
+  <title>关于 · nocau</title>
+  <meta name="description" content="关于 nocau 独立开发者：个人简介、技能与职业经历。" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
+
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
     <div class="container nav">
       <a href="index.html" class="brand">
-        <span class="brand-logo">nc</span> <span class="brand-name">nocau</span>
+        <span class="brand-logo">nc</span>
+        <span class="brand-name">nocau</span>
       </a>
-      <nav class="nav-links">
-        <a href="index.html">首页</a>
-        <a href="projects.html">作品集</a>
-        <a href="about.html">关于</a>
-        <a href="contact.html">联系</a>
-      </nav>
-      <button class="nav-toggle" aria-label="切换导航菜单">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="nav-actions">
+        <nav class="nav-links">
+          <a href="index.html">首页</a>
+          <a href="projects.html">作品集</a>
+          <a href="about.html">关于</a>
+          <a href="contact.html">联系</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">☀️</button>
+        <button class="nav-toggle" aria-label="切换导航菜单">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -34,7 +40,8 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="section-tag">About</span>
-          <h1 class="section-title">关于我</h1>
+          <div class="section-divider"></div>
+          <h1 class="section-title">关于<span class="gradient-text">nocau</span></h1>
           <p class="section-desc">独立开发者 · 产品思维驱动 · 全栈落地。</p>
         </div>
 
@@ -43,24 +50,63 @@
           <aside class="about-avatar reveal">
             <div class="avatar-box">nc</div>
             <h3>nocau</h3>
-            <p style="color: var(--text-secondary); font-size: 0.95rem">
-              独立开发者，专注移动端与 AI 工具产品。
+            <p class="role">独立开发者 / 全栈工程师</p>
+            <p class="bio">
+              专注移动端与 AI 工具产品，习惯亲手打通从需求到上线的每个环节。
             </p>
-            <div class="skills-list" style="margin-top: 16px">
+            <div class="skills-list" style="justify-content: center; margin-top: 18px">
               <span class="skill-tag">微信小程序</span>
               <span class="skill-tag">Android</span>
               <span class="skill-tag">AI 平台</span>
             </div>
           </aside>
 
-          <!-- 个人介绍 -->
+          <!-- 详细介绍 -->
           <div class="about-info reveal">
             <h3>简介</h3>
-            <p style="color: var(--text-secondary)">
-              从需求洞察到产品上线，我习惯亲手打通每一个环节。曾独立完成微信小程序
-              「衣件通」、Android 应用「好友检测」「LINGO 广告拦截」以及 AI 平台
-              「AI hub」等多款产品，覆盖工具、社交、安全与 AI 基础设施等方向。
+            <p class="text">
+              我是 nocau，一名独立开发者。从需求洞察到产品上线，我习惯亲手打通每一个环节。
+              曾独立完成微信小程序「衣件通」、Android 应用「好友检测」「LINGO 广告拦截」以及
+              AI 平台「AI hub」等多款产品，覆盖工具、社交、安全与 AI 基础设施等方向。
+              追求简单、可靠、可持续的产品体验。
             </p>
+
+            <h3>技能</h3>
+            <div class="skill-item">
+              <div class="skill-head">
+                <span class="skill-name">微信小程序开发</span>
+                <span class="skill-pct">92%</span>
+              </div>
+              <div class="skill-bar"><div class="fill" data-progress="92"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-head">
+                <span class="skill-name">Kotlin / Android</span>
+                <span class="skill-pct">88%</span>
+              </div>
+              <div class="skill-bar"><div class="fill" data-progress="88"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-head">
+                <span class="skill-name">JavaScript / TypeScript</span>
+                <span class="skill-pct">85%</span>
+              </div>
+              <div class="skill-bar"><div class="fill" data-progress="85"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-head">
+                <span class="skill-name">Python / 工具脚本</span>
+                <span class="skill-pct">82%</span>
+              </div>
+              <div class="skill-bar"><div class="fill" data-progress="82"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-head">
+                <span class="skill-name">AI 模型集成</span>
+                <span class="skill-pct">80%</span>
+              </div>
+              <div class="skill-bar"><div class="fill" data-progress="80"></div></div>
+            </div>
 
             <h3>经历</h3>
             <div class="timeline">
@@ -82,9 +128,8 @@
             </div>
 
             <h3>理念</h3>
-            <p style="color: var(--text-secondary)">
-              好产品要解决真实问题，同时保持简单、可靠、可持续。技术只是手段，
-              用户价值才是最终目标。
+            <p class="text">
+              好产品要解决真实问题，同时保持简单、可靠、可持续。技术只是手段，用户价值才是最终目标。
             </p>
           </div>
         </div>
@@ -96,7 +141,10 @@
   <!-- ==================== 页脚 ==================== -->
   <footer class="site-footer">
     <div class="container footer-inner">
-      <span>© <span id="year">2026</span> nocau.com. 保留所有权利。</span>
+      <span class="footer-brand">
+        <span class="mini-logo">nc</span>
+        © <span id="year">2026</span> nocau.com
+      </span>
       <nav class="footer-links">
         <a href="index.html">首页</a>
         <a href="projects.html">作品集</a>
@@ -104,6 +152,8 @@
       </nav>
     </div>
   </footer>
+
+  <button id="back-to-top" class="back-to-top" aria-label="回到顶部">↑</button>
 
   <script src="assets/js/main.js"></script>
 </body>

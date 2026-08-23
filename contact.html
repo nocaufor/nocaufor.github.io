@@ -1,29 +1,35 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>联系 - 开发者作品集</title>
-  <meta name="description" content="联系独立开发者：邮箱、社交、留言表单。" />
+  <title>联系 · nocau</title>
+  <meta name="description" content="联系 nocau：邮箱、社交、留言表单。" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
+
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
     <div class="container nav">
       <a href="index.html" class="brand">
-        <span class="brand-logo">nc</span> <span class="brand-name">nocau</span>
+        <span class="brand-logo">nc</span>
+        <span class="brand-name">nocau</span>
       </a>
-      <nav class="nav-links">
-        <a href="index.html">首页</a>
-        <a href="projects.html">作品集</a>
-        <a href="about.html">关于</a>
-        <a href="contact.html">联系</a>
-      </nav>
-      <button class="nav-toggle" aria-label="切换导航菜单">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="nav-actions">
+        <nav class="nav-links">
+          <a href="index.html">首页</a>
+          <a href="projects.html">作品集</a>
+          <a href="about.html">关于</a>
+          <a href="contact.html">联系</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">☀️</button>
+        <button class="nav-toggle" aria-label="切换导航菜单">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -34,7 +40,8 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="section-tag">Contact</span>
-          <h1 class="section-title">联系我</h1>
+          <div class="section-divider"></div>
+          <h1 class="section-title">联系<span class="gradient-text">nocau</span></h1>
           <p class="section-desc">合作、交流或任何想法，欢迎随时联系。</p>
         </div>
 
@@ -45,43 +52,43 @@
               <div class="icon">✉️</div>
               <div>
                 <h4>邮箱</h4>
-                <p>hello@example.com</p>
+                <p>hello@nocau.com</p>
               </div>
             </div>
             <div class="contact-method">
               <div class="icon">🐙</div>
               <div>
                 <h4>GitHub</h4>
-                <p>github.com/your-name</p>
+                <p>github.com/nocau</p>
               </div>
             </div>
             <div class="contact-method">
               <div class="icon">💬</div>
               <div>
                 <h4>微信</h4>
-                <p>your-wechat-id</p>
+                <p>nocau-dev</p>
               </div>
             </div>
           </div>
 
           <!-- 留言表单（纯前端演示，无后端） -->
           <div class="contact-form reveal">
-            <h3 style="font-size: 1.2rem; margin-bottom: 24px">给我留言</h3>
+            <h3 style="font-size: 1.25rem; margin-bottom: 24px; font-weight: 800">给我留言</h3>
             <form id="contact-form" novalidate>
               <div class="form-group">
                 <label for="name">姓名</label>
-                <input type="text" id="name" class="form-control" placeholder="你的名字" required />
+                <input type="text" id="name" class="form-control" placeholder="你的名字" />
               </div>
               <div class="form-group">
                 <label for="email">邮箱</label>
-                <input type="email" id="email" class="form-control" placeholder="your@email.com" required />
+                <input type="email" id="email" class="form-control" placeholder="your@email.com" />
               </div>
               <div class="form-group">
                 <label for="message">留言内容</label>
-                <textarea id="message" class="form-control" placeholder="想聊点什么？" required></textarea>
+                <textarea id="message" class="form-control" placeholder="想聊点什么？"></textarea>
               </div>
               <button type="submit" class="btn btn-primary">发送留言</button>
-              <p id="form-message" class="form-hint"></p>
+              <p id="form-message" class="form-message"></p>
             </form>
           </div>
         </div>
@@ -93,7 +100,10 @@
   <!-- ==================== 页脚 ==================== -->
   <footer class="site-footer">
     <div class="container footer-inner">
-      <span>© <span id="year">2026</span> nocau.com. 保留所有权利。</span>
+      <span class="footer-brand">
+        <span class="mini-logo">nc</span>
+        © <span id="year">2026</span> nocau.com
+      </span>
       <nav class="footer-links">
         <a href="index.html">首页</a>
         <a href="projects.html">作品集</a>
@@ -101,6 +111,8 @@
       </nav>
     </div>
   </footer>
+
+  <button id="back-to-top" class="back-to-top" aria-label="回到顶部">↑</button>
 
   <script src="assets/js/main.js"></script>
 </body>

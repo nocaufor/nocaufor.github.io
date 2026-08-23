@@ -1,61 +1,73 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>作品集 - 开发者作品集</title>
-  <meta name="description" content="开发者项目作品集：衣件通、好友检测、LINGO 广告拦截、AI hub 等独立开发项目。" />
+  <title>作品集 · nocau</title>
+  <meta name="description" content="nocau 开发者项目作品集：衣件通、好友检测、LINGO 广告拦截、AI hub。" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
+
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
     <div class="container nav">
       <a href="index.html" class="brand">
-        <span class="brand-logo">nc</span> <span class="brand-name">nocau</span>
+        <span class="brand-logo">nc</span>
+        <span class="brand-name">nocau</span>
       </a>
-      <nav class="nav-links">
-        <a href="index.html">首页</a>
-        <a href="projects.html">作品集</a>
-        <a href="about.html">关于</a>
-        <a href="contact.html">联系</a>
-      </nav>
-      <button class="nav-toggle" aria-label="切换导航菜单">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="nav-actions">
+        <nav class="nav-links">
+          <a href="index.html">首页</a>
+          <a href="projects.html">作品集</a>
+          <a href="about.html">关于</a>
+          <a href="contact.html">联系</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">☀️</button>
+        <button class="nav-toggle" aria-label="切换导航菜单">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main class="main">
 
-    <!-- ==================== 作品集列表 ==================== -->
+    <!-- ==================== 作品集 ==================== -->
     <section class="section">
       <div class="container">
         <div class="section-head reveal">
           <span class="section-tag">Portfolio</span>
-          <h1 class="section-title">作品集</h1>
-          <p class="section-desc">
-            覆盖微信小程序、Android 应用与 AI 平台。点击卡片链接可查看详情（占位链接，可替换为项目仓库 / 详情页）。
-          </p>
+          <div class="section-divider"></div>
+          <h1 class="section-title">项目<span class="gradient-text">作品集</span></h1>
+          <p class="section-desc">覆盖微信小程序、Android 应用与 AI 平台。使用下方筛选快速定位。</p>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div id="filter-bar" class="filter-bar reveal">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="mini-program">微信小程序</button>
+          <button class="filter-btn" data-filter="android">Android</button>
+          <button class="filter-btn" data-filter="ai-platform">AI 平台</button>
         </div>
 
         <div class="projects-grid">
 
           <!-- ============ 项目 1：衣件通 ============ -->
-          <article class="project-card reveal">
-            <div class="project-cover">
+          <article class="project-card reveal" data-category="mini-program">
+            <div class="project-cover cover-gradient-1">
               衣
-              <div class="cover-meta">
-                <span class="platform-badge">微信小程序</span>
-              </div>
+              <span class="cover-index">01</span>
+              <div class="cover-meta"><span class="platform-badge">微信小程序</span></div>
             </div>
             <div class="project-body">
               <h3>衣件通</h3>
-              <p class="project-subtitle">服装管理工具</p>
+              <p class="project-subtitle">服装管理工具 · 微信小程序</p>
               <p class="project-desc">
                 一款面向个人衣橱管理的微信小程序。支持衣物信息的记录、分类、检索与日常管理，
-                帮助用户快速掌握自己的衣物资产，合理搭配、减少重复购买。
+                帮助用户快速掌握衣物资产，合理搭配、减少重复购买。
               </p>
               <div class="project-features">
                 <span class="tag">微信小程序</span>
@@ -63,19 +75,18 @@
                 <span class="tag">本地存储</span>
               </div>
               <div class="project-links">
-                <a href="#" onclick="return false;">查看详情（占位）</a>
-                <a href="#" onclick="return false;">源码（占位）</a>
+                <a href="#" onclick="return false;">查看详情 →</a>
+                <a href="#" onclick="return false;">源码 →</a>
               </div>
             </div>
           </article>
 
           <!-- ============ 项目 2：好友检测 ============ -->
-          <article class="project-card reveal">
-            <div class="project-cover">
+          <article class="project-card reveal" data-category="android">
+            <div class="project-cover cover-gradient-2">
               好
-              <div class="cover-meta">
-                <span class="platform-badge">Android</span>
-              </div>
+              <span class="cover-index">02</span>
+              <div class="cover-meta"><span class="platform-badge">Android</span></div>
             </div>
             <div class="project-body">
               <h3>好友检测</h3>
@@ -90,26 +101,25 @@
                 <span class="tag">Kotlin</span>
               </div>
               <div class="project-links">
-                <a href="#" onclick="return false;">查看详情（占位）</a>
-                <a href="#" onclick="return false;">源码（占位）</a>
+                <a href="#" onclick="return false;">查看详情 →</a>
+                <a href="#" onclick="return false;">源码 →</a>
               </div>
             </div>
           </article>
 
           <!-- ============ 项目 3：LINGO / 广告拦截 ============ -->
-          <article class="project-card reveal">
-            <div class="project-cover">
+          <article class="project-card reveal" data-category="android">
+            <div class="project-cover cover-gradient-3">
               L
-              <div class="cover-meta">
-                <span class="platform-badge">Android</span>
-              </div>
+              <span class="cover-index">03</span>
+              <div class="cover-meta"><span class="platform-badge">Android</span></div>
             </div>
             <div class="project-body">
               <h3>LINGO / 广告拦截</h3>
               <p class="project-subtitle">Android 应用 · 面向老人的广告拦截与风险检测</p>
               <p class="project-desc">
                 面向老年用户的本地广告拦截与风险检测应用。在不联网的前提下智能识别并拦截
-                应用内广告弹窗，检测潜在风险界面，降低误触与诈骗风险，提升长辈用机安全感。
+                应用内广告弹窗，检测潜在风险界面，降低误触与诈骗风险。
               </p>
               <div class="project-features">
                 <span class="tag">广告拦截</span>
@@ -117,19 +127,18 @@
                 <span class="tag">适老化</span>
               </div>
               <div class="project-links">
-                <a href="#" onclick="return false;">查看详情（占位）</a>
-                <a href="#" onclick="return false;">源码（占位）</a>
+                <a href="#" onclick="return false;">查看详情 →</a>
+                <a href="#" onclick="return false;">源码 →</a>
               </div>
             </div>
           </article>
 
           <!-- ============ 项目 4：AI hub ============ -->
-          <article class="project-card reveal">
-            <div class="project-cover">
+          <article class="project-card reveal" data-category="ai-platform">
+            <div class="project-cover cover-gradient-4">
               AI
-              <div class="cover-meta">
-                <span class="platform-badge">平台</span>
-              </div>
+              <span class="cover-index">04</span>
+              <div class="cover-meta"><span class="platform-badge">AI 平台</span></div>
             </div>
             <div class="project-body">
               <h3>AI hub</h3>
@@ -144,13 +153,15 @@
                 <span class="tag">部署中心</span>
               </div>
               <div class="project-links">
-                <a href="#" onclick="return false;">查看详情（占位）</a>
-                <a href="#" onclick="return false;">源码（占位）</a>
+                <a href="#" onclick="return false;">查看详情 →</a>
+                <a href="#" onclick="return false;">源码 →</a>
               </div>
             </div>
           </article>
 
         </div>
+
+        <div id="empty-tip" class="empty-tip">当前分类暂无项目，敬请期待。</div>
       </div>
     </section>
 
@@ -159,7 +170,10 @@
   <!-- ==================== 页脚 ==================== -->
   <footer class="site-footer">
     <div class="container footer-inner">
-      <span>© <span id="year">2026</span> nocau.com. 保留所有权利。</span>
+      <span class="footer-brand">
+        <span class="mini-logo">nc</span>
+        © <span id="year">2026</span> nocau.com
+      </span>
       <nav class="footer-links">
         <a href="index.html">首页</a>
         <a href="about.html">关于</a>
@@ -167,6 +181,8 @@
       </nav>
     </div>
   </footer>
+
+  <button id="back-to-top" class="back-to-top" aria-label="回到顶部">↑</button>
 
   <script src="assets/js/main.js"></script>
 </body>
