@@ -1,0 +1,88 @@
+/* ============================================================
+   gesture.css — 视觉手势识别（Hero 背景粒子追踪层）
+   摄像头手势 / 鼠标 / 触摸 统一降级为粒子追踪反馈
+   ============================================================ */
+
+.gesture-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+.gesture-stage canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+/* 内容层保持在粒子之上，保证按钮可交互 */
+.hero .container {
+  position: relative;
+  z-index: 2;
+}
+.hero-orb,
+.slant-accent {
+  z-index: 0;
+}
+
+/* ---------- 状态徽标（极简、弱化、不干扰） ---------- */
+.gesture-status {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: rgba(190, 202, 220, 0.72);
+  border: 1px solid rgba(170, 184, 205, 0.22);
+  border-radius: 999px;
+  background: rgba(8, 12, 22, 0.35);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0.55;
+  transition: opacity 0.35s ease, border-color 0.35s ease;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.gesture-status:hover { opacity: 1; }
+.gesture-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(170, 182, 200, 0.55);
+  flex: none;
+}
+.gesture-status.on { opacity: 0.85; }
+.gesture-status.on .gesture-dot {
+  background: #9be0b4;
+  box-shadow: 0 0 8px rgba(140, 220, 175, 0.8);
+  animation: gesture-pulse 2.2s ease-in-out infinite;
+}
+.gesture-status.off .gesture-dot { background: rgba(210, 190, 165, 0.7); }
+.gesture-status .gesture-tip {
+  display: none;
+  font-size: 10px;
+  color: rgba(180, 192, 210, 0.55);
+}
+.gesture-status:hover .gesture-tip { display: inline; }
+
+@keyframes gesture-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.82); }
+}
+
+@media (max-width: 640px) {
+  .gesture-status { right: 12px; bottom: 12px; font-size: 10px; padding: 4px 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gesture-status { display: none; }
+}

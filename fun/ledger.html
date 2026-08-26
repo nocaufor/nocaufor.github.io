@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>个人记账与预算洞察 · nocau Fun</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+  <meta name="description" content="源自想法 B000008：本地优先记账，收支分类、月度统计与预算趋势，数据存于浏览器。" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="fun.css" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
+</head>
+<body class="fun-page">
+  <header class="site-header fun-header">
+    <div class="container nav">
+      <a href="../index.html" class="brand">
+        <img class="brand-logo" src="../assets/img/logo.svg" alt="nocau" width="30" height="30" />
+        <span class="brand-name">NOCAU</span>
+      </a>
+      <div class="nav-actions">
+        <nav class="nav-links" id="nav-links">
+          <a href="../index.html">首页</a>
+          <a href="index.html" class="active">代码开发合集</a>
+          <a href="../projects.html">作品集</a>
+          <a href="../contact.html">联系</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <main class="fun-main">
+    <div class="fun-intro">
+      <h1>个人记账与预算洞察</h1>
+      <p>源自想法 B000008：本地优先记账，收支分类、月度统计与预算趋势，数据存于浏览器。</p>
+    </div>
+    <div class="fun-box">
+      <style>
+        .l-wrap{display:flex;flex-direction:column;gap:12px;width:100%;max-width:980px}
+        .l-panel{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;justify-content:center}
+        .l-field{display:flex;flex-direction:column;gap:4px;text-align:left;font-size:0.8rem}
+        .l-field input,.l-field select{background:var(--color-card,#1e1e24);color:var(--color-text,#e8e8ea);border:1px solid var(--color-border,#333);border-radius:8px;padding:7px 10px;font-size:0.85rem}
+        .l-field input:focus,.l-field select:focus{outline:none;border-color:var(--color-accent,#7aa2f7)}
+        .l-summary{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+        .l-sum{flex:1 1 130px;background:var(--color-card,#1e1e24);border-radius:10px;padding:10px;text-align:center}
+        .l-sum b{display:block;font-size:1.1rem;margin-top:4px}
+        .l-sum.income b{color:#98c379}.l-sum.expense b{color:#e06c75}.l-sum.balance b{color:#7aa2f7}
+        .l-table{width:100%;border-collapse:collapse;font-size:0.85rem}
+        .l-table th,.l-table td{border-bottom:1px solid var(--color-border,#333);padding:7px 8px;text-align:left}
+        .l-table th{opacity:.7;font-weight:600}
+        .l-budget{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;font-size:0.85rem}
+        .l-bar{flex:1 1 220px;height:8px;background:var(--color-border,#333);border-radius:999px;overflow:hidden}
+        .l-bar i{display:block;height:100%;background:var(--color-accent,#7aa2f7);border-radius:999px}
+        .l-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+      </style>
+      <div class="l-wrap">
+        <div class="l-panel">
+          <span class="l-field"><label for="l-date">日期</label><input type="date" id="l-date" /></span>
+          <span class="l-field"><label for="l-type">类型</label><select id="l-type"><option value="expense">支出</option><option value="income">收入</option></select></span>
+          <span class="l-field"><label for="l-cat">分类</label><select id="l-cat"></select></span>
+          <span class="l-field"><label for="l-amount">金额</label><input type="number" id="l-amount" min="0" step="0.01" placeholder="0.00" /></span>
+          <span class="l-field"><label for="l-note">备注</label><input id="l-note" placeholder="可选" /></span>
+          <button type="button" id="l-add" class="btn btn-primary">记一笔</button>
+        </div>
+        <div class="l-summary">
+          <div class="l-sum income">本月收入<b id="l-inc">0.00</b></div>
+          <div class="l-sum expense">本月支出<b id="l-exp">0.00</b></div>
+          <div class="l-sum balance">结余<b id="l-bal">0.00</b></div>
+        </div>
+        <div class="l-budget">
+          <label>月度预算 <input id="l-budget" type="number" value="3000" min="0" style="width:80px;background:var(--color-card,#1e1e24);color:inherit;border:1px solid var(--color-border,#333);border-radius:6px;padding:4px 8px" /> 元</label>
+          <span class="l-bar"><i id="l-bar"></i></span>
+          <span id="l-budget-txt"></span>
+        </div>
+        <table class="l-table">
+          <thead><tr><th>日期</th><th>类型</th><th>分类</th><th>金额</th><th>备注</th><th></th></tr></thead>
+          <tbody id="l-body"></tbody>
+        </table>
+        <div class="l-actions">
+          <button type="button" id="l-sample" class="btn btn-outline">示例数据</button>
+          <button type="button" id="l-clear" class="btn btn-outline">清空记录</button>
+        </div>
+      </div>
+    </div>
+    <div class="fun-footer">
+      <a href="index.html" class="btn btn-outline">← 返回代码开发合集</a>
+      <a href="../projects.html" class="btn btn-outline">查看作品集</a>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">
+        <img class="mini-logo" src="../assets/img/logo.svg" alt="nocau" width="16" height="16" />
+        © <span id="year">2026</span> nocau.com
+      </span>
+      <nav class="footer-links">
+        <a href="index.html">代码开发合集</a>
+        <a href="../index.html">首页</a>
+        <a href="../projects.html">作品集</a>
+      </nav>
+    </div>
+  </footer>
+  <script src="js/fun-common.js"></script>
+  <script src="js/ledger.js"></script>
+</body>
+</html>

@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>页面未找到 · nocau</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <meta name="description" content="404 页面未找到。" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -14,6 +16,7 @@
 <body>
 
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
+  <div class="bg-fog" aria-hidden="true"></div>
   <div class="bg-grid" aria-hidden="true"></div>
 
   <header class="site-header">
@@ -24,18 +27,19 @@
       </a>
       <div class="nav-actions">
         <nav class="nav-links" id="nav-links">
-          <a href="index.html">首页</a>
-          <a href="projects.html">作品集</a>
-          <a href="fun/index.html">娱乐</a>
-          <a href="ideas.html">想法项目</a>
-          <a href="about.html">关于</a>
-          <a href="contact.html">联系</a>
+          <a href="index.html" data-i18n="nav_home">首页</a>
+          <a href="projects.html" data-i18n="nav_projects">作品集</a>
+          <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
+          <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
+          <a href="about.html" data-i18n="nav_about">关于</a>
+          <a href="contact.html" data-i18n="nav_contact">联系</a>
         </nav>
-        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
+        <button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言" data-i18n-attr="aria-label=lang_aria">EN</button>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式" data-i18n-attr="aria-label=theme_aria">
           <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
         </button>
-        <button class="nav-toggle" aria-label="切换导航菜单" aria-expanded="false" aria-controls="nav-links">
+        <button class="nav-toggle" aria-label="切换导航菜单" data-i18n-attr="aria-label=nav_aria" aria-expanded="false" aria-controls="nav-links">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -47,9 +51,9 @@
       <div>
         <img class="hero-logo-mark" src="assets/img/logo.svg" alt="nocau" style="margin: 0 auto 18px; width: 72px; height: 72px" />
         <div class="notfound-code">404</div>
-        <h1>页面不存在</h1>
-        <p>你访问的页面不存在或已被移动。</p>
-        <a href="index.html" class="btn btn-primary">返回首页</a>
+        <h1 data-i18n="nf_title">页面不存在</h1>
+        <p data-i18n="nf_desc">你访问的页面不存在或已被移动。</p>
+        <a href="index.html" class="btn btn-primary" data-i18n="btn_back_home">返回首页</a>
       </div>
     </div>
   </main>
@@ -59,11 +63,12 @@
       <span class="footer-brand">
         <img class="mini-logo" src="assets/img/logo.svg" alt="nocau" width="16" height="16" />
         © <span id="year">2026</span> nocau.com
-        <span class="footer-slogan"><em>让科技引领文明进步</em> · Let Technology Lead Civilization Forward</span>
+        <span class="footer-slogan" data-i18n="footer_slogan">让科技引领文明进步</span>
       </span>
     </div>
   </footer>
 
+  <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,105 @@
+/* ============================================================
+   contact.css — 联系页高级感增强
+   光标视差光晕 / 网格视差 / 卡片 tilt 3D / 表单焦点光晕 / 提交动效
+   ============================================================ */
+
+/* ---------- 光标视差光晕 ---------- */
+#cursor-follow {
+  position: fixed;
+  top: 0; left: 0;
+  width: 300px; height: 300px;
+  margin: -150px 0 0 -150px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 997;
+  background: radial-gradient(circle, rgba(205, 215, 232, 0.10) 0%, rgba(205, 215, 232, 0.045) 40%, transparent 70%);
+  opacity: 0;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+body.cursor-follow-on #cursor-follow { opacity: 1; }
+
+/* ---------- 网格视差（跟随光标轻微位移，形成空间感） ---------- */
+.bg-grid {
+  will-change: transform;
+  transform: translate3d(var(--grid-dx, 0px), var(--grid-dy, 0px), 0);
+}
+
+/* ---------- 联系卡 tilt 3D ---------- */
+.contact-method {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.16s ease-out, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+.contact-method:hover {
+  transform: perspective(720px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg)) translateY(-3px);
+  border-color: rgba(170, 190, 220, 0.5);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28), 0 0 26px rgba(150, 175, 215, 0.1);
+}
+.contact-method .icon,
+.contact-method div { transform: translateZ(16px); }
+.contact-method .method-note { transform: translateZ(8px); }
+.contact-method:hover .icon {
+  border-color: rgba(170, 190, 220, 0.55);
+  box-shadow: 0 0 22px rgba(150, 175, 215, 0.18);
+  color: #fff;
+}
+
+/* ---------- 联系信息区视觉增强 ---------- */
+.contact-layout { gap: 40px; }
+.contact-tip {
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  background: linear-gradient(120deg, var(--bg-soft), var(--bg-card));
+}
+
+/* ---------- 表单焦点光晕 ---------- */
+.form-group { position: relative; }
+.form-group label {
+  transition: color 0.3s ease;
+}
+.form-control {
+  transition: border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease, transform 0.28s ease;
+}
+.form-control:focus { transform: translateY(-1px); }
+.form-group.focus label { color: var(--brand); }
+.form-group.focus .form-control {
+  border-color: rgba(150, 175, 215, 0.75);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 4px rgba(150, 175, 215, 0.1), 0 0 26px rgba(150, 175, 215, 0.12);
+}
+
+/* ---------- 提交按钮动效 ---------- */
+.contact-form .btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+.contact-form .btn-primary:active { transform: translateY(1px) scale(0.985); }
+.contact-form .btn-primary:focus-visible { box-shadow: 0 0 0 4px rgba(150, 175, 215, 0.22); }
+.contact-form .btn-primary.submitted {
+  opacity: 0.82;
+  box-shadow: 0 0 0 4px rgba(150, 175, 215, 0.14), 0 8px 30px rgba(150, 175, 215, 0.18);
+}
+
+/* ---------- 消息动效 ---------- */
+.form-message { transition: opacity 0.4s ease, transform 0.4s ease; }
+.form-message:not(:empty) { animation: contact-msg-in 0.45s ease both; }
+@keyframes contact-msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 900px) {
+  .contact-method { transform: none !important; }
+  .contact-method:hover { transform: translateY(-3px); }
+  .contact-method .icon,
+  .contact-method div { transform: none; }
+  .bg-grid { transform: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #cursor-follow { display: none; }
+  .bg-grid { transform: none !important; }
+  .contact-method:hover { transform: translateY(-3px); }
+}

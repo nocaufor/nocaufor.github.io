@@ -270,7 +270,7 @@
     document.addEventListener("pointerdown", function (e) {
       var ring = document.createElement("span");
       ring.className = "water-ripple";
-      var size = 130;
+      var size = 48;
       ring.style.width = size + "px";
       ring.style.height = size + "px";
       ring.style.left = (e.clientX - size / 2) + "px";
@@ -387,18 +387,49 @@
     if (!bar || !cards.length) return;
     var btns = $all(".idea-filter-btn", bar);
     var tip = $("#idea-empty-tip");
+    var search = $("#idea-search");
+    var count = $("#idea-count");
     var active = {};
+    var keyword = "";
     function apply() {
       var keys = Object.keys(active);
       var showAll = keys.length === 0;
+      var kw = keyword.toLowerCase();
       var shown = 0;
       cards.forEach(function (card) {
         var dirs = (card.getAttribute("data-direction") || "").split(" ");
-        var match = showAll || dirs.some(function (d) { return active[d]; });
+        var match = (showAll || dirs.some(function (d) { return active[d]; }));
+        if (match && kw) {
+          match = (card.textContent || "").toLowerCase().indexOf(kw) >= 0;
+        }
         card.classList.toggle("hide", !match);
         if (match) shown++;
       });
       if (tip) tip.style.display = shown === 0 ? "block" : "none";
+      if (count) {
+        var label = (count.getAttribute("data-count") || "{n} 个方案").replace("{n}", shown + "/" + cards.length);
+        count.textContent = label;
+      }
+    }
+    if (search) {
+      search.addEventListener("input", function () {
+        keyword = search.value;
+        apply();
+      });
+      search.addEventListener("search", function () {
+        keyword = search.value;
+        apply();
+      });
+    }
+    var collapseAll = $("#idea-collapse-all");
+    if (collapseAll) {
+      collapseAll.addEventListener("click", function () {
+        $all(".idea-card.open").forEach(function (c) {
+          c.classList.remove("open");
+          var tgl = $(".idea-toggle", c);
+          if (tgl) tgl.setAttribute("aria-expanded", "false");
+        });
+      });
     }
     btns.forEach(function (b) {
       b.addEventListener("click", function () {
@@ -421,10 +452,19 @@
     $all(".idea-card").forEach(function (card) {
       var head = $(".idea-head", card);
       if (!head) return;
-      head.addEventListener("click", function () {
+      head.addEventListener("click", function (e) {
+        if (e.target.closest && e.target.closest("a")) return;
         var open = card.classList.toggle("open");
         var toggle = $(".idea-toggle", head);
         if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      $all(".idea-card.open").forEach(function (c) {
+        c.classList.remove("open");
+        var tgl = $(".idea-toggle", c);
+        if (tgl) tgl.setAttribute("aria-expanded", "false");
       });
     });
   }
@@ -517,64 +557,6 @@
     });
   }
 
-  /* ============ 15b. 板块式首页：圆点/下一板块/键盘切换 + 滚动高亮 ============ */
-  function initSectionNav() {
-    var dots = $all(".section-dots .dot");
-    var next = $("#section-next");
-    var panels = $all(".section-panel");
-    if (!dots.length || !panels.length) return;
-    function isEditable(t) {
-      return t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
-    }
-    function go(el) {
-      if (!el) return;
-      el.scrollIntoView({ behavior: prefersReduced ? "auto" : "smooth", block: "start" });
-    }
-    function currentIndex() {
-      var idx = 0;
-      var winMid = window.innerHeight / 2;
-      panels.forEach(function (p, i) {
-        var r = p.getBoundingClientRect();
-        if (r.top <= winMid && r.bottom > winMid) idx = i;
-      });
-      return idx;
-    }
-    dots.forEach(function (d) {
-      d.addEventListener("click", function () {
-        go(document.getElementById(d.getAttribute("data-target")));
-      });
-    });
-    if (next) {
-      next.addEventListener("click", function () {
-        var idx = currentIndex();
-        go(panels[idx + 1] || panels[0]);
-      });
-    }
-    var ticking = false;
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        var idx = currentIndex();
-        dots.forEach(function (d, i) { d.classList.toggle("is-active", i === idx); });
-        if (next) next.classList.toggle("at-end", idx === panels.length - 1);
-        ticking = false;
-      });
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    document.addEventListener("keydown", function (e) {
-      if (isEditable(e.target) || e.defaultPrevented) return;
-      var idx = currentIndex();
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
-        e.preventDefault();
-        go(panels[Math.min(idx + 1, panels.length - 1)]);
-      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
-        e.preventDefault();
-        go(panels[Math.max(idx - 1, 0)]);
-      }
-    });
-  }
 
   /* ============ 15c. 页脚年份 ============ */
   function initYear() {
@@ -588,7 +570,6 @@
     initThemeToggle();
     initNavToggle();
     initNavActive();
-    initSectionNav();
     initYear();
     initTypewriter();
     initCounters();
@@ -607,6 +588,5 @@
     initIdeaExpand();
         initReveal();
     initPageTransitions();
-    initParticles();
   });
 })();

@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>表白页 · nocau Fun</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
   <meta name="description" content="逐字敲出的告白信，点击后整屏泛起小心心。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
@@ -23,7 +25,7 @@
       <div class="nav-actions">
         <nav class="nav-links" id="nav-links">
       <a href="../index.html">首页</a>
-          <a href="index.html" class="active">娱乐合集</a>
+          <a href="index.html" class="active">代码开发合集</a>
           <a href="../projects.html">作品集</a>
           <a href="../contact.html">联系</a>        </nav>
         <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
@@ -45,12 +47,18 @@
             <p class="fun-status" id="confession-note"></p>
           </div>
         </div>
+        <div class="style-picker" id="confession-picker" aria-label="选择表白主题">
+          <button type="button" class="btn is-active" data-style="ember"><span class="theme-demo" style="background:#e07b54"></span>暖橙心动</button>
+          <button type="button" class="btn" data-style="midnight"><span class="theme-demo" style="background:#7fb3ff"></span>星空告白</button>
+          <button type="button" class="btn" data-style="blossom"><span class="theme-demo" style="background:#e0708a"></span>樱粉浪漫</button>
+        </div>
         <div class="fun-controls">
           <button type="button" id="confession-start" class="btn btn-primary">开始告白</button>
           <button type="button" id="confession-hearts" class="btn btn-outline">满屏小心心</button>
+          <button type="button" id="confession-replay" class="btn btn-outline">重新告白</button>
         </div>
     <div class="fun-footer">
-      <a href="index.html" class="btn btn-outline">← 返回娱乐合集</a>
+      <a href="index.html" class="btn btn-outline">← 返回代码开发合集</a>
       <a href="../projects.html" class="btn btn-outline">查看作品集</a>
     </div>
   </main>
@@ -62,7 +70,7 @@
         © <span id="year">2026</span> nocau.com
       </span>
       <nav class="footer-links">
-        <a href="index.html">娱乐合集</a>
+        <a href="index.html">代码开发合集</a>
         <a href="../index.html">首页</a>
         <a href="../projects.html">作品集</a>
       </nav>

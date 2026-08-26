@@ -1,0 +1,226 @@
+/* ============================================================
+   stars3d.css — 3D 项目星空（首页嵌入板块版）
+   纯星空沉浸板块：无文字标题/说明/计数，仅极简图标交互提示
+   ============================================================ */
+
+.stars-section {
+  position: relative;
+  display: block;
+  height: 100vh;
+  min-height: 560px;
+  padding: 0 !important;
+  margin: 0;
+  overflow: hidden;
+  touch-action: none;
+  background:
+    radial-gradient(140% 105% at 50% 42%, rgba(24, 36, 76, 0.55) 0%, rgba(14, 20, 48, 0.68) 34%, rgba(7, 10, 26, 0.86) 66%, rgba(2, 3, 8, 0.97) 100%),
+    radial-gradient(90% 70% at 24% 16%, rgba(38, 60, 116, 0.16) 0%, rgba(30, 46, 92, 0.06) 46%, rgba(10, 12, 30, 0) 74%),
+    #04060e;
+}
+#stars-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#stars-canvas:active { cursor: grabbing; }
+
+/* ---------- 详情面板遮罩 ---------- */
+.star-panel-mask[hidden],
+.star-panel[hidden] { display: none !important; }
+.star-panel-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 4, 10, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 120;
+}
+
+/* ---------- 详情面板 ---------- */
+.star-panel {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(400px, calc(100vw - 48px));
+  padding: 28px 26px 24px;
+  z-index: 121;
+  border-radius: 18px;
+  border: 1px solid rgba(170, 182, 200, 0.18);
+  background: linear-gradient(165deg, rgba(22, 28, 46, 0.92), rgba(10, 14, 26, 0.94));
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(90, 110, 160, 0.12);
+  color: #e8ecf4;
+}
+.star-panel-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: rgba(200, 210, 225, 0.75);
+  cursor: pointer;
+  border-radius: 50%;
+}
+.star-panel-close:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+.star-panel-close svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+}
+.star-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.star-panel-code {
+  font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(205, 215, 230, 0.85);
+  border: 1px solid rgba(180, 192, 210, 0.28);
+  border-radius: 6px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.star-panel-type {
+  font-size: 12px;
+  color: rgba(190, 202, 220, 0.85);
+  border: 1px solid rgba(170, 184, 205, 0.25);
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.star-panel-name {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #f2f5fa;
+}
+.star-panel-desc {
+  margin: 0 0 18px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: rgba(205, 215, 230, 0.82);
+}
+.star-panel-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.star-rate-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 184, 205, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(215, 224, 238, 0.9);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.star-rate-btn:hover {
+  border-color: rgba(200, 214, 234, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+.star-rate-btn.active-like {
+  border-color: rgba(150, 210, 180, 0.65);
+  color: #b9ecd2;
+  background: rgba(120, 200, 165, 0.12);
+}
+.star-rate-btn.active-dislike {
+  border-color: rgba(200, 150, 150, 0.55);
+  color: #e7c2c2;
+  background: rgba(190, 120, 120, 0.12);
+}
+.star-panel-note {
+  margin: 0 0 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(185, 196, 212, 0.6);
+}
+.star-panel-links {
+  display: flex;
+  gap: 10px;
+}
+.star-panel-links .btn { flex: 1; }
+
+/* ---------- 移动端 ---------- */
+@media (max-width: 640px) {
+  .star-panel { padding: 22px 18px 18px; }
+}
+
+/* ---------- 减弱动效：静态星空 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #stars-canvas { cursor: default; }
+}
+/* ---------- 全屏自适应（窄屏不挤压） ---------- */
+@media (max-width: 640px) {
+  .stars-section { height: 100vh; }
+}
+
+/* ---------- 宇宙大爆炸转场：每次下滑进入星空时播放 ----------
+   亮度脉冲（canvas 同步绘制主光球/扩张波环/星尘喷涌/星星生长） */
+.stars-section.light-burst {
+  animation: starsBurstFlash 1.5s ease-out;
+}
+.stars-section.light-burst::before,
+.stars-section.light-burst::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(224, 234, 255, 0.85);
+  transform: translate(-50%, -50%) scale(0.08);
+  opacity: 0;
+  animation: starsBurstRing 1.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+  z-index: 6;
+}
+.stars-section.light-burst::after {
+  animation-delay: 0.14s;
+  border-color: rgba(168, 182, 240, 0.5);
+  border-width: 1.5px;
+}
+@keyframes starsBurstFlash {
+  0% { filter: brightness(2.2) saturate(1.35); }
+  28% { filter: brightness(1.55); }
+  58% { filter: brightness(1.12); }
+  100% { filter: brightness(1); }
+}
+@keyframes starsBurstRing {
+  0% { transform: translate(-50%, -50%) scale(0.08); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(30); opacity: 0; }
+}
+
+/* ---------- 减弱动效：宇宙大爆炸降级为柔光淡入 ---------- */
+.stars-section.light-burst-fade {
+  animation: starsFadeIn 1s ease;
+}
+@keyframes starsFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

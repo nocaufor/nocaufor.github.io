@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>关于 · nocau</title>
-  <meta name="description" content="关于 nocau：独立开发者、软件产品实践与技术方向。" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <meta name="description" content="关于 nocau：开发者、软件产品实践与技术方向。" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
@@ -15,6 +17,7 @@
 
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
   <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-fog" aria-hidden="true"></div>
 
   <!-- ==================== 顶部导航 ==================== -->
   <header class="site-header">
@@ -25,18 +28,19 @@
       </a>
       <div class="nav-actions">
         <nav class="nav-links" id="nav-links">
-          <a href="index.html">首页</a>
-          <a href="projects.html">作品集</a>
-          <a href="fun/index.html">娱乐</a>
-          <a href="ideas.html">想法项目</a>
-          <a href="about.html">关于</a>
-          <a href="contact.html">联系</a>
+          <a href="index.html" data-i18n="nav_home">首页</a>
+          <a href="projects.html" data-i18n="nav_projects">作品集</a>
+          <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
+          <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
+          <a href="about.html" data-i18n="nav_about">关于</a>
+          <a href="contact.html" data-i18n="nav_contact">联系</a>
         </nav>
-        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
+        <button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言" data-i18n-attr="aria-label=lang_aria">EN</button>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式" data-i18n-attr="aria-label=theme_aria">
           <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
         </button>
-        <button class="nav-toggle" aria-label="切换导航菜单" aria-expanded="false" aria-controls="nav-links">
+        <button class="nav-toggle" aria-label="切换导航菜单" data-i18n-attr="aria-label=nav_aria" aria-expanded="false" aria-controls="nav-links">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -46,88 +50,75 @@
   <main class="main">
 
     <!-- ==================== 关于 ==================== -->
-    <section class="section">
+    <section class="section about-minimal">
       <div class="container">
-        <div class="section-head reveal">
-          <span class="section-tag">About</span>
-          <div class="section-divider"></div>
-          <h1 class="section-title">关于<span class="gradient-text">nocau</span></h1>
-          <p class="section-desc">独立开发者。只做简单、可靠、能解决真实问题的产品。</p>
+
+        <!-- 身份区：左文右图 -->
+        <div class="about-min-head reveal">
+          <p class="about-min-kicker">NOCAU</p>
+          <h1 class="about-min-title" data-i18n="about_role">开发者 · nocau</h1>
+          <p class="about-min-desc" data-i18n="about_page_desc">开发者。只做简单、可靠、能解决真实问题的产品。</p>
         </div>
 
-        <div class="about-hero-grid">
-          <!-- 左：身份 -->
-          <div class="about-profile reveal corner-frame">
-            <img class="about-avatar-lg" src="assets/img/logo.svg" alt="nocau" />
-            <p class="about-role-en">Independent Developer · nocau</p>
-            <div class="about-motto">
-              让科技引领文明进步
-              <small>Let Technology Lead Civilization Forward</small>
-            </div>
-          </div>
-
-          <!-- 右：详述 -->
-          <div class="about-info reveal">
-            <h3>简介</h3>
-            <p class="text">
-              从移动端工具到 AI 平台，这里沉淀了多款从想法到上线的产品实践：微信小程序
-              「衣件通」、Android 应用「好友检测」「LINGO 广告拦截」、统一 AI 工具平台
-              「AI hub」。每一条代码都服务于一个真实问题，不堆砌概念、不追逐噪音。
+        <div class="about-min-layout">
+          <div class="about-min-text reveal">
+            <p data-i18n="about_intro_text">
+              从移动端工具到 AI 平台，这里沉淀了多款从想法到上线的产品实践：微信小程序「衣件通」、
+              Android 应用「好友检测」「LINGO 广告拦截」、统一 AI 工具平台「AI hub」。
+              每一条代码都服务于一个真实问题，不堆砌概念、不追逐噪音。
             </p>
-
-            <div class="about-title-row"><span class="row-line"></span><h3>技术方向</h3><span class="row-line"></span></div>
-            <div class="about-values">
-              <span>微信小程序</span><span>Android / Kotlin</span><span>Web 前端</span>
-              <span>Python 自动化</span><span>AI 模型集成</span><span>边缘计算</span><span>控制系统</span>
+            <div class="about-min-motto">
+              <span data-i18n="about_motto">让科技引领文明进步</span>
+              <small data-i18n="about_motto_en" data-i18n-hide="zh">Let Technology Lead Civilization Forward</small>
             </div>
-
-            <div class="about-title-row"><span class="row-line"></span><h3>实践轨迹</h3><span class="row-line"></span></div>
-            <div class="timeline">
-              <div class="timeline-item">
-                <span class="time">2023</span>
-                <h4>移动端工具起步</h4>
-                <p>「衣件通」服装管理小程序、「好友检测」Android 应用上线。</p>
-              </div>
-              <div class="timeline-item">
-                <span class="time">2024</span>
-                <h4>安全与适老化</h4>
-                <p>「LINGO」广告拦截与风险检测，面向老年用户降低误触与诈骗风险。</p>
-              </div>
-              <div class="timeline-item">
-                <span class="time">2025</span>
-                <h4>内容与社区化</h4>
-                <p>建设 fun 娱乐子站与 29 个想法方案库，探索开发者的表达方式。</p>
-              </div>
-              <div class="timeline-item">
-                <span class="time">2026</span>
-                <h4>AI 基础设施</h4>
-                <p>建设「AI hub」统一工具平台，并持续补充自动化与前沿开源代码实践。</p>
-              </div>
-            </div>
-
-            <div class="about-title-row"><span class="row-line"></span><h3>价值观</h3><span class="row-line"></span></div>
-            <div class="about-principles">
-              <div class="about-principle">
-                <b>克制</b>
-                <p>少即是多。不添加无用的功能，不追逐浮躁的技术。</p>
-              </div>
-              <div class="about-principle">
-                <b>可靠</b>
-                <p>上线只是开始，稳定运行与可维护性才是长期价值。</p>
-              </div>
-              <div class="about-principle">
-                <b>真实</b>
-                <p>每个产品对应一个真实问题，用数据与用户反馈说话。</p>
-              </div>
-            </div>
+          </div>
+          <div class="about-min-figure reveal">
+            <img class="about-min-logo" src="assets/img/logo.svg" alt="nocau" />
           </div>
         </div>
 
-        <!-- 标语横幅 -->
-        <div class="about-banner reveal">
-          <p class="cn">让科技引领文明进步</p>
-          <p class="en">Let Technology Lead Civilization Forward</p>
+        <!-- 技术方向 -->
+        <div class="about-min-block reveal">
+          <h2 class="about-min-h" data-i18n="about_direction">技术方向</h2>
+          <div class="about-min-tags">
+            <span>微信小程序</span><span>Android / Kotlin</span><span>Web 前端</span>
+            <span>Python 自动化</span><span>AI 模型集成</span><span>边缘计算</span><span>控制系统</span>
+          </div>
         </div>
+
+        <!-- 实践轨迹 -->
+        <div class="about-min-block reveal">
+          <h2 class="about-min-h" data-i18n="about_timeline">实践轨迹</h2>
+          <ol class="about-min-timeline">
+            <li>
+              <span class="t-time">2023</span>
+              <div><b data-i18n="about_t1_t">移动端工具起步</b><p data-i18n="about_t1_d">「衣件通」服装管理小程序、「好友检测」Android 应用上线。</p></div>
+            </li>
+            <li>
+              <span class="t-time">2024</span>
+              <div><b data-i18n="about_t2_t">安全与适老化</b><p data-i18n="about_t2_d">「LINGO」广告拦截与风险检测，面向老年用户降低误触与诈骗风险。</p></div>
+            </li>
+            <li>
+              <span class="t-time">2025</span>
+              <div><b data-i18n="about_t3_t">内容与社区化</b><p data-i18n="about_t3_d">建设 fun 代码开发子站与 29 个想法方案库，探索开发者的表达方式。</p></div>
+            </li>
+            <li>
+              <span class="t-time">2026</span>
+              <div><b data-i18n="about_t4_t">AI 基础设施</b><p data-i18n="about_t4_d">建设「AI hub」统一工具平台，并持续补充自动化与前沿开源代码实践。</p></div>
+            </li>
+          </ol>
+        </div>
+
+        <!-- 价值观 -->
+        <div class="about-min-block reveal">
+          <h2 class="about-min-h" data-i18n="about_values">价值观</h2>
+          <div class="about-min-values">
+            <div><b data-i18n="about_v1">克制</b><p data-i18n="about_v1_d">少即是多。不添加无用的功能，不追逐浮躁的技术。</p></div>
+            <div><b data-i18n="about_v2">可靠</b><p data-i18n="about_v2_d">上线只是开始，稳定运行与可维护性才是长期价值。</p></div>
+            <div><b data-i18n="about_v3">真实</b><p data-i18n="about_v3_d">每个产品对应一个真实问题，用数据与用户反馈说话。</p></div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -139,18 +130,19 @@
       <span class="footer-brand">
         <img class="mini-logo" src="assets/img/logo.svg" alt="nocau" width="16" height="16" />
         © <span id="year">2026</span> nocau.com
-        <span class="footer-slogan"><em>让科技引领文明进步</em> · Let Technology Lead Civilization Forward</span>
+        <span class="footer-slogan" data-i18n="footer_slogan">让科技引领文明进步</span>
       </span>
       <nav class="footer-links">
-        <a href="index.html">首页</a>
-        <a href="projects.html">作品集</a>
-        <a href="contact.html">联系</a>
+        <a href="index.html" data-i18n="nav_home">首页</a>
+        <a href="projects.html" data-i18n="nav_projects">作品集</a>
+        <a href="contact.html" data-i18n="nav_contact">联系</a>
       </nav>
     </div>
   </footer>
 
-  <button id="back-to-top" class="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
+  <button id="back-to-top" class="back-to-top" aria-label="回到顶部" data-i18n-attr="aria-label=back_aria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
 
+  <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>

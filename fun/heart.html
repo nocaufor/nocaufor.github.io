@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>爱心祝福 · nocau Fun</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
   <meta name="description" content="跳动的爱心由粒子组成，随节奏缩放，治愈系。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
@@ -23,7 +25,7 @@
       <div class="nav-actions">
         <nav class="nav-links" id="nav-links">
       <a href="../index.html">首页</a>
-          <a href="index.html" class="active">娱乐合集</a>
+          <a href="index.html" class="active">代码开发合集</a>
           <a href="../projects.html">作品集</a>
           <a href="../contact.html">联系</a>        </nav>
         <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
@@ -45,13 +47,18 @@
             <span class="click-hint">点击画布重新生成</span>
           </div>
         </div>
+        <div class="style-picker" id="heart-picker" aria-label="选择爱心形态">
+          <button type="button" class="btn is-active" data-style="classic"><span class="theme-demo" style="background:#e07b54"></span>经典粒子</button>
+          <button type="button" class="btn" data-style="star"><span class="theme-demo" style="background:#a3779e"></span>星芒闪耀</button>
+          <button type="button" class="btn" data-style="flow"><span class="theme-demo" style="background:#e3b341"></span>流光圆点</button>
+        </div>
         <div class="fun-controls">
           <button type="button" id="heart-faster" class="btn btn-outline">快一点</button>
           <button type="button" id="heart-slower" class="btn btn-outline">慢一点</button>
         </div>
         <p id="heart-status" class="fun-status"></p>
     <div class="fun-footer">
-      <a href="index.html" class="btn btn-outline">← 返回娱乐合集</a>
+      <a href="index.html" class="btn btn-outline">← 返回代码开发合集</a>
       <a href="../projects.html" class="btn btn-outline">查看作品集</a>
     </div>
   </main>
@@ -63,7 +70,7 @@
         © <span id="year">2026</span> nocau.com
       </span>
       <nav class="footer-links">
-        <a href="index.html">娱乐合集</a>
+        <a href="index.html">代码开发合集</a>
         <a href="../index.html">首页</a>
         <a href="../projects.html">作品集</a>
       </nav>

@@ -1,4 +1,4 @@
-/* nocau Fun 娱乐小代码：通用样式（与 style.css 搭配使用） */
+/* nocau Fun 代码开发：通用样式（与 style.css 搭配使用） */
 .fun-header .nav-links a { font-size: 0.9rem; }
 .fun-main {
   min-height: calc(100vh - 140px);
@@ -176,4 +176,153 @@
     max-width: 100%;
   }
   .fun-header .nav-actions { flex-direction: column; align-items: flex-end; gap: 0; }
+}
+
+/* ============ 第二批：代码开发页 / 样式挑选 / 免责声明 / 知识条目 ============ */
+
+/* 代码开发页模板 */
+.code-page { padding: 96px 20px 56px; }
+.code-page .container-inner { max-width: 900px; margin: 0 auto; }
+.code-hero { text-align: center; margin-bottom: 30px; }
+.code-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -0.03em; font-weight: 800; }
+.code-hero .sub { margin-top: 10px; color: var(--text-soft); font-size: 0.95rem; line-height: 1.7; }
+.code-hero .meta-line { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+.code-hero .meta-line .tag { font-size: 0.72rem; }
+
+.code-section { margin-top: 26px; }
+.code-section > h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.code-section > h2::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); display: inline-block; }
+.code-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-soft);
+  padding: 20px 22px;
+  line-height: 1.8;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+.code-card ul, .code-card ol { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.code-card code { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; font-size: 0.85em; color: var(--text); }
+.code-card strong { color: var(--text); font-weight: 700; }
+
+.code-block { position: relative; margin-top: 26px; }
+.code-block pre {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #0d0f12;
+  color: #d8dee9;
+  padding: 18px 20px;
+  overflow-x: auto;
+  font-size: 0.83rem;
+  line-height: 1.75;
+  max-height: 640px;
+  tab-size: 2;
+}
+[data-theme="light"] .code-block pre { background: #f4f5f7; color: #2c3138; border-color: var(--line); }
+.code-block pre code { font-family: "Cascadia Code", Consolas, "JetBrains Mono", monospace; }
+.code-copy-btn {
+  position: absolute; top: 10px; right: 12px;
+  border: 1px solid var(--line); background: var(--bg-soft);
+  color: var(--text-soft); border-radius: 8px; padding: 5px 12px;
+  font-size: 0.76rem; cursor: pointer; transition: border-color var(--transition), color var(--transition);
+}
+.code-copy-btn:hover { border-color: var(--brand); color: var(--brand); }
+.code-lang-badge {
+  position: absolute; top: 10px; left: 12px;
+  font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-soft); border: 1px solid var(--line); border-radius: 999px;
+  padding: 3px 10px; background: var(--bg);
+}
+.code-block .code-copy-btn { right: 12px; }
+
+/* 样式挑选（多主题/多形态） */
+.style-picker { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 18px; z-index: 2; }
+.style-picker .btn.is-active { border-color: var(--brand); color: var(--brand); background: var(--bg-soft); }
+.theme-demo { width: 16px; height: 16px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: -3px; border: 1px solid var(--line); }
+
+/* 免责声明 */
+.disclaimer {
+  margin-top: 22px;
+  border: 1px solid var(--brand);
+  border-left-width: 4px;
+  border-radius: 12px;
+  background: var(--bg-soft);
+  padding: 16px 18px;
+  font-size: 0.88rem;
+  line-height: 1.8;
+  color: var(--text-soft);
+}
+.disclaimer strong { color: var(--brand); display: block; margin-bottom: 6px; }
+
+/* 系统知识条目 */
+.kb-item { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--bg-soft); margin-top: 14px; }
+.kb-item h3 { font-size: 1rem; font-weight: 700; }
+.kb-item h3 .kb-no { color: var(--brand); font-size: 0.78rem; letter-spacing: 0.14em; margin-right: 8px; }
+.kb-item p { font-size: 0.9rem; color: var(--text-soft); line-height: 1.75; margin-top: 8px; }
+.kb-item .kb-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.kb-item .kb-tags .tag { font-size: 0.68rem; }
+
+/* 合集页分类筛选 */
+.fun-filters { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 26px; }
+.fun-filters .btn { font-size: 0.8rem; padding: 7px 16px; }
+.fun-filters .btn.is-active { border-color: var(--brand); color: var(--brand); }
+.fun-count { text-align: center; color: var(--text-soft); font-size: 0.82rem; margin-bottom: 22px; }
+
+/* 聊天 demo（虚拟对象 Virtual Companion） */
+.chat-demo { width: min(560px, 100%); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; margin: 0 auto; }
+.chat-demo .chat-head { padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 0.9rem; font-weight: 700; color: var(--text); background: var(--bg-soft); }
+.chat-demo .chat-body { height: 300px; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.chat-msg { max-width: 78%; padding: 9px 14px; border-radius: 14px; font-size: 0.86rem; line-height: 1.6; white-space: pre-wrap; }
+.chat-msg.bot { align-self: flex-start; background: var(--bg-soft); border: 1px solid var(--line); color: var(--text); }
+.chat-msg.user { align-self: flex-end; background: var(--brand); color: #fff; }
+.chat-demo .chat-input { display: flex; gap: 10px; padding: 12px; border-top: 1px solid var(--line); }
+.chat-demo .chat-input input { flex: 1; }
+.chat-hint { text-align: center; font-size: 0.8rem; color: var(--text-soft); margin-top: 10px; }
+
+/* 激光打蚊器 demo */
+.laser-wrap { position: relative; width: 100%; height: 420px; overflow: hidden; border-radius: 14px; }
+.laser-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.laser-stat { position: absolute; top: 12px; left: 14px; font-size: 0.8rem; color: var(--text-soft); background: var(--bg-soft); border: 1px solid var(--line); padding: 5px 12px; border-radius: 999px; z-index: 3; }
+.laser-crosshair { position: absolute; width: 34px; height: 34px; border: 1px solid rgba(231, 76, 60, 0.9); border-radius: 50%; pointer-events: none; z-index: 3; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+.laser-crosshair::before, .laser-crosshair::after { content: ""; position: absolute; background: rgba(231, 76, 60, 0.9); }
+.laser-crosshair::before { left: 50%; top: -6px; width: 1px; height: 46px; }
+.laser-crosshair::after { top: 50%; left: -6px; height: 1px; width: 46px; }
+
+/* 圣诞树 demo */
+.tree-stage { width: min(520px, 92vw); height: 460px; position: relative; overflow: hidden; border-radius: 14px; display: flex; align-items: flex-end; justify-content: center; }
+.tree-stage .tree-wrap { position: relative; display: flex; flex-direction: column; align-items: center; }
+.tree-star { font-size: 2rem; animation: twinkle 1.6s ease-in-out infinite; }
+.tree-layer { width: 0; height: 0; border-left: 74px solid transparent; border-right: 74px solid transparent; border-bottom: 108px solid var(--tree-green, #2e7d4f); margin-top: -34px; position: relative; }
+.tree-layer::after { content: ""; position: absolute; left: 50%; top: 60px; transform: translateX(-50%); width: 6px; height: 24px; background: var(--tree-trunk, #7a5230); }
+.tree-layer .orn { position: absolute; border-radius: 50%; animation: twinkle 2.4s ease-in-out infinite; }
+.tree-trunk { width: 34px; height: 46px; background: var(--tree-trunk, #7a5230); border-radius: 0 0 8px 8px; margin-top: -6px; }
+.tree-snow { position: absolute; bottom: 0; left: 0; right: 0; height: 26px; background: rgba(255,255,255,0.18); border-radius: 12px 12px 0 0; }
+@keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* 贺卡多主题 */
+.birthday-theme { transition: background 0.5s ease, color 0.5s ease; }
+.birthday-theme.theme-star { --bc-bg: linear-gradient(135deg, #101c3a, #1b2f63); --bc-accent: #ffd166; --bc-text: #eef2ff; }
+.birthday-theme.theme-sakura { --bc-bg: linear-gradient(135deg, #fdeef0, #f8d8de); --bc-accent: #e0708a; --bc-text: #5a3a44; }
+.birthday-theme.theme-classic { --bc-bg: linear-gradient(135deg, #f7f3e9, #efe6d2); --bc-accent: #c89b3c; --bc-text: #4a4238; }
+.birthday-card-cover { background: var(--bc-bg, var(--bg-soft)); color: var(--bc-text, var(--text)); }
+.birthday-card-cover .bc-accent { color: var(--bc-accent, var(--brand)); }
+
+/* 页面底部说明（浏览器直开提示） */
+.opensrc-note {
+  max-width: 760px;
+  margin: 30px auto 0;
+  padding: 16px 20px;
+  border-left: 2px solid var(--brand);
+  background: var(--bg-soft);
+  border-radius: 0 12px 12px 0;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+/* 移动端适配 */
+@media (max-width: 720px) {
+  .code-page { padding-top: 84px; }
+  .code-card { padding: 16px; }
+  .tree-layer { border-left-width: 56px; border-right-width: 56px; border-bottom-width: 82px; }
 }

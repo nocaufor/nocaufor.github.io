@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>娱乐小代码 · nocau</title>
-  <meta name="description" content="nocau 娱乐小代码合集：烟花、蛋糕、爱心、贪吃蛇、记忆翻牌等 16 个可独立运行的页面。" />
+  <title>代码开发 · nocau</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+  <meta name="description" content="nocau 代码开发合集：经典动效、小程序工具、自动化、单片机、爬虫、安全、前沿实验与系统知识等 52 个可独立运行的页面。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -26,7 +28,7 @@
         <nav class="nav-links" id="nav-links">
           <a href="../index.html">首页</a>
           <a href="../projects.html">作品集</a>
-          <a href="index.html">娱乐</a>
+          <a href="index.html">代码开发</a>
           <a href="../ideas.html">想法项目</a>
           <a href="../about.html">关于</a>
           <a href="../contact.html">联系</a>
@@ -48,109 +50,338 @@
         <div class="section-head reveal">
           <span class="section-tag">Fun Zone</span>
           <div class="section-divider"></div>
-          <h1 class="section-title">娱乐<span class="gradient-text">小代码</span></h1>
-          <p class="section-desc">16 个可独立运行的小页面，每个都是纯 HTML + 外部 JS，CSP 兼容、零依赖。</p>
+          <h1 class="section-title">代码开发<span class="gradient-text">合集</span></h1>
+          <p class="section-desc">52 个可独立运行的代码页面：经典动效、小程序工具、自动化、单片机、爬虫、安全、前沿实验与系统知识。每个都是纯 HTML + 外部 JS，CSP 兼容、零依赖。</p>
         </div>
-        <div class="fun-grid">
-          <a class="fun-card reveal" href="fireworks.html">
-            <span class="fun-card-index">01 · 交互</span>
+                <div class="fun-filters reveal" id="fun-filters">
+          <button type="button" class="btn is-active" data-filter="all">全部</button>
+          <button type="button" class="btn" data-filter="classic">经典动效</button>
+          <button type="button" class="btn" data-filter="miniapp">小程序</button>
+          <button type="button" class="btn" data-filter="auto">AI / 自动化</button>
+          <button type="button" class="btn" data-filter="mcu">单片机</button>
+          <button type="button" class="btn" data-filter="crawler">爬虫</button>
+          <button type="button" class="btn" data-filter="security">安全</button>
+          <button type="button" class="btn" data-filter="frontier">前沿实验</button>
+          <button type="button" class="btn" data-filter="knowledge">系统知识</button>
+<button type="button" class="btn" data-filter="tool">实用工具</button>
+        </div>
+        <p class="fun-count reveal" id="fun-count">共 52 个可运行页面</p>
+<div class="fun-grid">
+          <a class="fun-card reveal" href="fireworks.html" data-cat="classic">
+<span class="fun-card-index">D000001</span>
             <h3>烟花</h3>
             <p>点击夜空绽放多彩烟花，粒子从爆点四散，循环生成。</p>
             <div class="fun-card-tags"><span class="tag">Canvas 粒子</span></div>
           </a>
-          <a class="fun-card reveal" href="cake.html">
-            <span class="fun-card-index">02 · 交互</span>
+          <a class="fun-card reveal" href="cake.html" data-cat="classic">
+<span class="fun-card-index">D000002</span>
             <h3>生日蛋糕</h3>
             <p>奶油蛋糕与蜡烛，点击蜡烛点亮或吹灭，可许愿。</p>
             <div class="fun-card-tags"><span class="tag">DOM 动画</span></div>
           </a>
-          <a class="fun-card reveal" href="heart.html">
-            <span class="fun-card-index">03 · 动效</span>
+          <a class="fun-card reveal" href="heart.html" data-cat="classic">
+<span class="fun-card-index">D000003</span>
             <h3>爱心祝福</h3>
             <p>跳动的爱心由粒子组成，随节奏缩放，治愈系。</p>
             <div class="fun-card-tags"><span class="tag">Canvas 粒子</span></div>
           </a>
-          <a class="fun-card reveal" href="birthday-card.html">
-            <span class="fun-card-index">04 · 交互</span>
+          <a class="fun-card reveal" href="birthday-card.html" data-cat="classic">
+<span class="fun-card-index">D000004</span>
             <h3>生日祝福卡片</h3>
             <p>可翻开的生日贺卡，点按钮撒下祝福彩带。</p>
             <div class="fun-card-tags"><span class="tag">DOM 动画</span></div>
           </a>
-          <a class="fun-card reveal" href="confession.html">
-            <span class="fun-card-index">05 · 交互</span>
+          <a class="fun-card reveal" href="confession.html" data-cat="classic">
+<span class="fun-card-index">D000005</span>
             <h3>表白页</h3>
             <p>逐字敲出的告白信，点击后整屏泛起小心心。</p>
             <div class="fun-card-tags"><span class="tag">打字机 + 粒子</span></div>
           </a>
-          <a class="fun-card reveal" href="memory-wall.html">
-            <span class="fun-card-index">06 · 交互</span>
+          <a class="fun-card reveal" href="memory-wall.html" data-cat="classic">
+<span class="fun-card-index">D000006</span>
             <h3>回忆轮回照片墙</h3>
             <p>轮播照片墙，左右切换，回忆一帧一帧轮回。</p>
             <div class="fun-card-tags"><span class="tag">轮播动画</span></div>
           </a>
-          <a class="fun-card reveal" href="memory-scroll.html">
-            <span class="fun-card-index">07 · 动效</span>
+          <a class="fun-card reveal" href="memory-scroll.html" data-cat="classic">
+<span class="fun-card-index">D000007</span>
             <h3>滚动回忆录</h3>
             <p>时间线回忆录，向下滚动时光缓缓浮现。</p>
             <div class="fun-card-tags"><span class="tag">滚动触发</span></div>
           </a>
-          <a class="fun-card reveal" href="snow.html">
-            <span class="fun-card-index">08 · 动效</span>
+          <a class="fun-card reveal" href="snow.html" data-cat="classic">
+<span class="fun-card-index">D000008</span>
             <h3>雪花飘落</h3>
             <p>雪花随风飘落，深浅节奏可调，适合冬天页面。</p>
             <div class="fun-card-tags"><span class="tag">Canvas 粒子</span></div>
           </a>
-          <a class="fun-card reveal" href="stars.html">
-            <span class="fun-card-index">09 · 交互</span>
+          <a class="fun-card reveal" href="stars.html" data-cat="classic">
+<span class="fun-card-index">D000009</span>
             <h3>星空许愿</h3>
             <p>闪烁星空，输入愿望后化为流星划过天际。</p>
             <div class="fun-card-tags"><span class="tag">Canvas 粒子</span></div>
           </a>
-          <a class="fun-card reveal" href="lantern.html">
-            <span class="fun-card-index">10 · 交互</span>
+          <a class="fun-card reveal" href="lantern.html" data-cat="classic">
+<span class="fun-card-index">D000010</span>
             <h3>孔明灯</h3>
             <p>放飞孔明灯，写上愿望，看它缓缓升入夜空。</p>
             <div class="fun-card-tags"><span class="tag">Canvas 动画</span></div>
           </a>
-          <a class="fun-card reveal" href="love-letter.html">
-            <span class="fun-card-index">11 · 动效</span>
+          <a class="fun-card reveal" href="love-letter.html" data-cat="classic">
+<span class="fun-card-index">D000011</span>
             <h3>打字机情书</h3>
             <p>一封以打字机节奏逐字出现的情书，可重播。</p>
             <div class="fun-card-tags"><span class="tag">打字机</span></div>
           </a>
-          <a class="fun-card reveal" href="quotes.html">
-            <span class="fun-card-index">12 · 交互</span>
+          <a class="fun-card reveal" href="quotes.html" data-cat="classic">
+<span class="fun-card-index">D000012</span>
             <h3>随机名言</h3>
             <p>点击随机出现一句名言，平静而有力量。</p>
             <div class="fun-card-tags"><span class="tag">文本随机</span></div>
           </a>
-          <a class="fun-card reveal" href="pixel-painter.html">
-            <span class="fun-card-index">13 · 交互</span>
+          <a class="fun-card reveal" href="pixel-painter.html" data-cat="classic">
+<span class="fun-card-index">D000013</span>
             <h3>像素画板</h3>
             <p>16×16 像素画板，选色涂鸦，一键清空。</p>
             <div class="fun-card-tags"><span class="tag">网格绘制</span></div>
           </a>
-          <a class="fun-card reveal" href="snake.html">
-            <span class="fun-card-index">14 · 小游戏</span>
+          <a class="fun-card reveal" href="snake.html" data-cat="classic">
+<span class="fun-card-index">D000014</span>
             <h3>贪吃蛇小游戏</h3>
             <p>经典贪吃蛇，键盘方向控制，吃豆变长。</p>
             <div class="fun-card-tags"><span class="tag">Canvas 游戏</span></div>
           </a>
-          <a class="fun-card reveal" href="memory-game.html">
-            <span class="fun-card-index">15 · 小游戏</span>
+          <a class="fun-card reveal" href="memory-game.html" data-cat="classic">
+<span class="fun-card-index">D000015</span>
             <h3>记忆翻牌</h3>
             <p>8 对卡片翻牌配对，考验记忆力的小游戏。</p>
             <div class="fun-card-tags"><span class="tag">翻牌游戏</span></div>
           </a>
-          <a class="fun-card reveal" href="countdown.html">
-            <span class="fun-card-index">16 · 工具</span>
+          <a class="fun-card reveal" href="countdown.html" data-cat="classic">
+<span class="fun-card-index">D000016</span>
             <h3>倒计时</h3>
             <p>设定目标日期，实时计算剩余天时分秒。</p>
             <div class="fun-card-tags"><span class="tag">实时计算</span></div>
           </a>
+          <a class="fun-card reveal" href="christmas-tree.html" data-cat="classic">
+<span class="fun-card-index">D000017</span>
+            <h3>圣诞树</h3>
+            <p>三种装饰风格一键切换：彩灯、雪花、礼物与星光。</p>
+            <div class="fun-card-tags"><span class="tag">多风格</span><span class="tag">Canvas</span></div>
+          </a>
+          <a class="fun-card reveal" href="minesweeper.html" data-cat="classic">
+<span class="fun-card-index">D000018</span>
+            <h3>扫雷</h3>
+            <p>经典扫雷：首次点击避雷、数字展开、右键标记。</p>
+            <div class="fun-card-tags"><span class="tag">小游戏</span><span class="tag">逻辑</span></div>
+          </a>
+          <a class="fun-card reveal" href="g2048.html" data-cat="classic">
+<span class="fun-card-index">D000019</span>
+            <h3>2048</h3>
+            <p>滑动合并数字，冲击 2048，本地最高分与触屏支持。</p>
+            <div class="fun-card-tags"><span class="tag">小游戏</span><span class="tag">策略</span></div>
+          </a>
+          <a class="fun-card reveal" href="breakout.html" data-cat="classic">
+<span class="fun-card-index">D000020</span>
+            <h3>打砖块</h3>
+            <p>挡板反弹小球击碎砖块，多关卡与剩余生命。</p>
+            <div class="fun-card-tags"><span class="tag">小游戏</span><span class="tag">Canvas</span></div>
+          </a>
+          <a class="fun-card reveal" href="slide-puzzle.html" data-cat="classic">
+<span class="fun-card-index">D000021</span>
+            <h3>滑块拼图</h3>
+            <p>3×3 数字华容道，可解打乱，步数与计时挑战。</p>
+            <div class="fun-card-tags"><span class="tag">小游戏</span><span class="tag">益智</span></div>
+          </a>
+          <a class="fun-card reveal" href="tictactoe.html" data-cat="classic">
+<span class="fun-card-index">D000022</span>
+            <h3>井字棋</h3>
+            <p>人机对战（极小极大 AI）或双人同屏，三连取胜。</p>
+            <div class="fun-card-tags"><span class="tag">小游戏</span><span class="tag">AI</span></div>
+          </a>
+          <a class="fun-card reveal" href="miniapp-login.html" data-cat="miniapp">
+<span class="fun-card-index">E000001</span>
+            <h3>小程序登录与支付封装</h3>
+            <p>wx.login 登录态、支付签名与安全校验的完整封装示例。</p>
+            <div class="fun-card-tags"><span class="tag">微信小程序</span><span class="tag">登录支付</span></div>
+          </a>
+          <a class="fun-card reveal" href="miniapp-components.html" data-cat="miniapp">
+<span class="fun-card-index">E000002</span>
+            <h3>小程序自定义组件库</h3>
+            <p>评分、空状态、防抖按钮等可复用自定义组件实现。</p>
+            <div class="fun-card-tags"><span class="tag">微信小程序</span><span class="tag">组件</span></div>
+          </a>
+          <a class="fun-card reveal" href="miniapp-poster.html" data-cat="miniapp">
+<span class="fun-card-index">E000003</span>
+            <h3>小程序分享海报生成</h3>
+            <p>Canvas 离屏绘制分享海报并保存到相册的工具函数。</p>
+            <div class="fun-card-tags"><span class="tag">微信小程序</span><span class="tag">Canvas</span></div>
+          </a>
+          <a class="fun-card reveal" href="virtual-companion.html" data-cat="auto">
+<span class="fun-card-index">F000001</span>
+            <h3>虚拟对象 · 人味儿对话陪伴</h3>
+            <p>性别、性格与语言风格完全自定义的虚拟对象：规则引擎 + LLM API 双模式，含记忆、情绪与亲密度系统。</p>
+            <div class="fun-card-tags"><span class="tag">虚拟对象</span><span class="tag">规则引擎</span><span class="tag">LLM</span></div>
+          </a>
+          <a class="fun-card reveal" href="laser-mosquito.html" data-cat="auto">
+<span class="fun-card-index">F000002</span>
+            <h3>激光追踪打蚊器模拟</h3>
+            <p>视觉追踪思路的前端模拟：瞄准、锁定、激光发射小游戏。</p>
+            <div class="fun-card-tags"><span class="tag">视觉追踪</span><span class="tag">Canvas</span></div>
+          </a>
+          <a class="fun-card reveal" href="auto-tools.html" data-cat="auto">
+<span class="fun-card-index">F000003</span>
+            <h3>自动化开发工具集</h3>
+            <p>文件整理、定时任务、邮件通知等 Python 自动化脚本。</p>
+            <div class="fun-card-tags"><span class="tag">Python</span><span class="tag">自动化</span></div>
+          </a>
+          <a class="fun-card reveal" href="mcu-led.html" data-cat="mcu">
+<span class="fun-card-index">G000001</span>
+            <h3>单片机 LED 与点阵控制</h3>
+            <p>51/STM32/Arduino 呼吸灯、流水灯、点阵屏示例代码。</p>
+            <div class="fun-card-tags"><span class="tag">51/STM32</span><span class="tag">Arduino</span></div>
+          </a>
+          <a class="fun-card reveal" href="mcu-sensor.html" data-cat="mcu">
+<span class="fun-card-index">G000002</span>
+            <h3>单片机传感器采集</h3>
+            <p>温湿度、红外、串口采集与上位机通信示例。</p>
+            <div class="fun-card-tags"><span class="tag">传感器</span><span class="tag">串口</span></div>
+          </a>
+          <a class="fun-card reveal" href="crawler-basic.html" data-cat="crawler">
+<span class="fun-card-index">H000001</span>
+            <h3>网络爬虫与反爬基础</h3>
+            <p>requests + BeautifulSoup 采集、限速、UA 池与反爬应对。</p>
+            <div class="fun-card-tags"><span class="tag">requests</span><span class="tag">反爬</span></div>
+          </a>
+          <a class="fun-card reveal" href="security-pentest.html" data-cat="security">
+<span class="fun-card-index">I000001</span>
+            <h3>网络攻防与白帽渗透基础</h3>
+            <p>合规渗透测试流程、信息收集、漏洞验证与防御（含声明）。</p>
+            <div class="fun-card-tags"><span class="tag">白帽</span><span class="tag">渗透测试</span></div>
+          </a>
+          <a class="fun-card reveal" href="security-web.html" data-cat="security">
+<span class="fun-card-index">I000002</span>
+            <h3>Web 漏洞原理与防御</h3>
+            <p>XSS / SQL 注入 / CSRF 原理示例与修复方案（含声明）。</p>
+            <div class="fun-card-tags"><span class="tag">XSS</span><span class="tag">SQLi</span><span class="tag">CSRF</span></div>
+          </a>
+          <a class="fun-card reveal" href="github-agent.html" data-cat="frontier">
+<span class="fun-card-index">J000001</span>
+            <h3>AI Agent 实验框架</h3>
+            <p>ReAct 循环、工具调用、记忆模块的实验性 Python 框架。</p>
+            <div class="fun-card-tags"><span class="tag">AI Agent</span><span class="tag">实验</span></div>
+          </a>
+          <a class="fun-card reveal" href="github-multimodal.html" data-cat="frontier">
+<span class="fun-card-index">J000002</span>
+            <h3>多模态 AI 实验</h3>
+            <p>图文对齐、CLIP 风格嵌入与推理的轻量实验代码。</p>
+            <div class="fun-card-tags"><span class="tag">多模态</span><span class="tag">实验</span></div>
+          </a>
+          <a class="fun-card reveal" href="github-edge-ai.html" data-cat="frontier">
+<span class="fun-card-index">J000003</span>
+            <h3>边缘 AI 推理实践</h3>
+            <p>TinyML / ONNX Runtime 在低成本设备上的推理示例。</p>
+            <div class="fun-card-tags"><span class="tag">边缘 AI</span><span class="tag">ONNX</span></div>
+          </a>
+          <a class="fun-card reveal" href="knowledge-os.html" data-cat="knowledge">
+<span class="fun-card-index">K000001</span>
+            <h3>操作系统原理</h3>
+            <p>进程线程、内存管理、调度、文件系统的核心概念与图解。</p>
+            <div class="fun-card-tags"><span class="tag">OS</span><span class="tag">内核</span></div>
+          </a>
+          <a class="fun-card reveal" href="knowledge-embedded.html" data-cat="knowledge">
+<span class="fun-card-index">K000002</span>
+            <h3>嵌入式系统</h3>
+            <p>裸机与 RTOS、中断、寄存器、交叉编译入门。</p>
+            <div class="fun-card-tags"><span class="tag">RTOS</span><span class="tag">裸机</span></div>
+          </a>
+          <a class="fun-card reveal" href="knowledge-distributed.html" data-cat="knowledge">
+<span class="fun-card-index">K000003</span>
+            <h3>分布式系统</h3>
+            <p>CAP、一致性协议、负载均衡、分布式事务要点。</p>
+            <div class="fun-card-tags"><span class="tag">CAP</span><span class="tag">Raft</span></div>
+          </a>
+          <a class="fun-card reveal" href="knowledge-db.html" data-cat="knowledge">
+<span class="fun-card-index">K000004</span>
+            <h3>数据库系统</h3>
+            <p>索引、事务隔离、SQL 优化与存储引擎原理。</p>
+            <div class="fun-card-tags"><span class="tag">MySQL</span><span class="tag">索引</span></div>
+          </a>
+          <a class="fun-card reveal" href="knowledge-network.html" data-cat="knowledge">
+<span class="fun-card-index">K000005</span>
+            <h3>网络协议栈</h3>
+            <p>TCP/IP 分层、HTTP/HTTPS、DNS 与常见抓包分析。</p>
+            <div class="fun-card-tags"><span class="tag">TCP/IP</span><span class="tag">HTTP</span></div>
+          </a>
+          <a class="fun-card reveal" href="markdown-editor.html" data-cat="tool">
+<span class="fun-card-index">L000001</span>
+            <h3>Markdown 编辑器</h3>
+            <p>轻量 Markdown 实时预览、导出 HTML，本地零依赖。</p>
+            <div class="fun-card-tags"><span class="tag">实用工具</span><span class="tag">Markdown</span></div>
+          </a>
+          <a class="fun-card reveal" href="json-formatter.html" data-cat="tool">
+<span class="fun-card-index">L000002</span>
+            <h3>JSON 格式化工具</h3>
+            <p>格式化 / 压缩 / 排序键 / 校验 JSON，一键复制。</p>
+            <div class="fun-card-tags"><span class="tag">实用工具</span><span class="tag">JSON</span></div>
+          </a>
+          <a class="fun-card reveal" href="color-palette.html" data-cat="tool">
+<span class="fun-card-index">L000003</span>
+            <h3>调色板</h3>
+            <p>HEX / RGB / HSL 互转与配色生成，复制色值。</p>
+            <div class="fun-card-tags"><span class="tag">实用工具</span><span class="tag">配色</span></div>
+          </a>
+          <a class="fun-card reveal" href="regex-tester.html" data-cat="tool">
+<span class="fun-card-index">L000004</span>
+            <h3>正则测试器</h3>
+            <p>正则实时匹配高亮、分组展示、常用表达式速查。</p>
+            <div class="fun-card-tags"><span class="tag">实用工具</span><span class="tag">Regex</span></div>
+          </a>
+          <a class="fun-card reveal" href="pomodoro.html" data-cat="tool">
+<span class="fun-card-index">L000005</span>
+            <h3>番茄钟</h3>
+            <p>专注 / 休息循环计时，完成提示音与本地统计。</p>
+            <div class="fun-card-tags"><span class="tag">实用工具</span><span class="tag">效率</span></div>
+          </a>
+          <a class="fun-card reveal" href="ledger.html" data-cat="tool">
+<span class="fun-card-index">L000006</span>
+            <h3>个人记账与预算洞察</h3>
+            <p>想法 B000008 落地：收支流水、分类统计、月度预算预警。</p>
+            <div class="fun-card-tags"><span class="tag">想法落地</span><span class="tag">B000008</span></div>
+          </a>
+          <a class="fun-card reveal" href="kanban.html" data-cat="tool">
+<span class="fun-card-index">L000007</span>
+            <h3>极简团队任务看板</h3>
+            <p>想法 B000015 落地：拖拽列、任务卡片、状态流转。</p>
+            <div class="fun-card-tags"><span class="tag">想法落地</span><span class="tag">B000015</span></div>
+          </a>
+          <a class="fun-card reveal" href="medcare.html" data-cat="tool">
+<span class="fun-card-index">L000008</span>
+            <h3>家庭用药与健康档案</h3>
+            <p>想法 B000004 落地：用药提醒、体征记录、家庭成员档案。</p>
+            <div class="fun-card-tags"><span class="tag">想法落地</span><span class="tag">B000004</span></div>
+          </a>
+          <a class="fun-card reveal" href="ordering-demo.html" data-cat="tool">
+<span class="fun-card-index">L000009</span>
+            <h3>扫码点餐轻量后台</h3>
+            <p>想法 B000006 落地：菜单管理、下单模拟、状态跟踪。</p>
+            <div class="fun-card-tags"><span class="tag">想法落地</span><span class="tag">B000006</span></div>
+          </a>
+          <a class="fun-card reveal" href="cron-sim.html" data-cat="tool">
+<span class="fun-card-index">L000010</span>
+            <h3>自动化任务调度器</h3>
+            <p>想法 C000001 落地：Cron 表达式解析、下次执行时间预览。</p>
+            <div class="fun-card-tags"><span class="tag">想法落地</span><span class="tag">C000001</span></div>
+          </a>
+          <a class="fun-card reveal" href="pid-sim.html" data-cat="tool">
+<span class="fun-card-index">L000011</span>
+            <h3>PID 闭环控制器仿真</h3>
+            <p>想法 C000004 落地：调参曲线可视化、阶跃响应与抗扰演示。</p>
+            <div class="fun-card-tags"><span class="tag">想法落地</span><span class="tag">C000004</span></div>
+          </a>
         </div>
         <div class="opensrc-note reveal">
-          <p>每个页面均可在浏览器直接打开运行；返回按钮位于页面顶部导航与底部。源码已在作品集「开放源代码」板块公开。</p>
+          <p>每个页面均可在浏览器直接打开运行；返回按钮位于页面顶部导航与底部。安全相关页面仅供学习，请仅在合法授权环境中实践。</p>
         </div>
       </div>
     </section>
@@ -173,5 +404,6 @@
   <button id="back-to-top" class="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
 
   <script src="../assets/js/main.js"></script>
+  <script src="js/index.js"></script>
 </body>
 </html>
