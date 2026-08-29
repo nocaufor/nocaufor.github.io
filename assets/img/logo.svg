@@ -25,7 +25,7 @@
     1) 外圈圆环（度量环）：圆周率/度量结构（秩序与精密，无横纵坐标轴点）
     2) 正六边形：蜂窝秩序 / 几何切割（结构感）
     3) 黄金对数螺旋：斐波那契生长（从中心核向外 1.5 圈）
-    4) 椭圆原子轨道 + 电子点：科学运行
+    4) 椭圆原子轨道：科学运行
     5) 中心核点：能量核心
     黑白灰极简 · stroke=currentColor · 无繁琐节点
   -->
@@ -39,8 +39,6 @@
     <!-- 原子轨道椭圆（-30° 倾斜） -->
     <ellipse cx="32" cy="32" rx="16" ry="6.4" stroke-width="1.2" transform="rotate(-30 32 32)"/>
   </g>
-  <!-- 电子点（轨道右端） -->
-  <circle cx="45.86" cy="24" r="1.8" fill="currentColor"/>
   <!-- 中心核 -->
     <circle class="nc-glow" cx="32" cy="32" r="7.4" fill="rgba(150,196,196,1)"/>
   <circle class="nc-pulse" cx="32" cy="32" r="2.7" fill="currentColor"/>

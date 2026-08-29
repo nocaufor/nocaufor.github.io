@@ -1,0 +1,8 @@
+* Host nocau.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 185.199.109.153, 185.199.111.153, 185.199.110.153
+*   Trying 185.199.109.153:443...
+* schannel: disabled automatic use of client certificate
+* ALPN: curl offers http/1.1
+* schannel: SNI or certificate check failed: SEC_E_WRONG_PRINCIPAL (0x80090322) - 目标主要名称不正确。
+* closing connection #0

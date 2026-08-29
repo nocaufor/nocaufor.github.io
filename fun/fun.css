@@ -69,9 +69,10 @@
   background: var(--bg-soft);
   text-decoration: none;
   color: inherit;
-  transition: border-color var(--transition), transform var(--transition), background var(--transition);
+  transition: border-color var(--transition), transform var(--transition), background var(--transition), box-shadow var(--transition);
 }
-.fun-card:hover { border-color: var(--line-strong); transform: translateY(-3px); background: var(--bg); }
+.fun-card:hover { border-color: var(--brand-soft); transform: translateY(-3px); background: var(--bg-card); box-shadow: var(--shadow); }
+.fun-card:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 .fun-card .fun-card-index { font-size: 0.72rem; letter-spacing: 0.16em; color: var(--brand); text-transform: uppercase; }
 .fun-card h3 { font-size: 1.04rem; font-weight: 700; }
 .fun-card p { font-size: 0.86rem; color: var(--text-soft); line-height: 1.6; }
@@ -265,7 +266,7 @@
 /* 合集页分类筛选 */
 .fun-filters { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 26px; }
 .fun-filters .btn { font-size: 0.8rem; padding: 7px 16px; }
-.fun-filters .btn.is-active { border-color: var(--brand); color: var(--brand); }
+.fun-filters .btn.is-active { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
 .fun-count { text-align: center; color: var(--text-soft); font-size: 0.82rem; margin-bottom: 22px; }
 
 /* 聊天 demo（虚拟对象 Virtual Companion） */
@@ -325,4 +326,17 @@
   .code-page { padding-top: 84px; }
   .code-card { padding: 16px; }
   .tree-layer { border-left-width: 56px; border-right-width: 56px; border-bottom-width: 82px; }
+}
+
+
+/* 代码开发三大分区 */
+.fun-section { margin-bottom: 52px; }
+.fun-section:last-of-type { margin-bottom: 0; }
+.fun-section-head { text-align: left; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.fun-section-kicker { font-size: 0.72rem; letter-spacing: 0.22em; color: var(--brand); text-transform: uppercase; }
+.fun-section-title { font-size: 1.5rem; font-weight: 800; margin-top: 8px; letter-spacing: -0.02em; }
+.fun-section-desc { margin-top: 8px; color: var(--text-soft); font-size: 0.9rem; line-height: 1.7; max-width: 760px; }
+@media (max-width: 900px) {
+  .fun-section-head { text-align: center; }
+  .fun-section-desc { margin-left: auto; margin-right: auto; }
 }

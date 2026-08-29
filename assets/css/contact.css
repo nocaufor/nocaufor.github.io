@@ -46,7 +46,11 @@ body.cursor-follow-on #cursor-follow { opacity: 1; }
 }
 
 /* ---------- 联系信息区视觉增强 ---------- */
-.contact-layout { gap: 40px; }
+.contact-layout { gap: 36px; }
+
+/* 联系信息卡 2x2 方法网格（style.css 已改容器，此处补 tip 横跨与移动端回退） */
+.contact-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.contact-methods .contact-tip { grid-column: 1 / -1; margin-top: 2px; }
 .contact-tip {
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);

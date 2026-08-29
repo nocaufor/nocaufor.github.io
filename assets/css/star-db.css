@@ -1,0 +1,280 @@
+/* ============================================================
+   star-db.css — 星空数据库独立展示页
+   精简标题区 + 星空舞台（控制栏悬浮于星空上）
+   ============================================================ */
+
+/* ---------- 页面布局：标题区 + 星空舞台占满剩余视口 ---------- */
+.star-db-main {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-h, 64px) - 90px);
+}
+.star-db-head {
+  padding: 30px 0 4px;
+}
+.star-db-head-inner {
+  text-align: center;
+}
+.star-db-head .section-head {
+  margin-bottom: 0;
+}
+
+/* ---------- 悬浮控制条：融合于星空顶部，不破坏沉浸感 ---------- */
+.star-db-controls {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  width: max-content;
+  max-width: calc(100% - 28px);
+  padding: 10px 14px;
+  background: rgba(8, 12, 24, 0.52);
+  border: 1px solid rgba(160, 180, 210, 0.14);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.32);
+}
+.star-db-search-wrap {
+  position: relative;
+  width: min(320px, 100%);
+}
+.star-db-search {
+  width: 100%;
+  padding: 9px 76px 9px 40px;
+  font-size: 0.9rem;
+  color: #e8eaed;
+  background: rgba(10, 14, 26, 0.6);
+  border: 1px solid rgba(160, 180, 210, 0.16);
+  border-radius: 999px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.star-db-search::placeholder { color: #8b929c; }
+.star-db-search:focus {
+  border-color: rgba(111, 179, 168, 0.65);
+  box-shadow: 0 0 0 3px rgba(111, 179, 168, 0.18);
+}
+.star-db-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  stroke: #8b929c;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.star-db-search-clear {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #8b929c;
+  cursor: pointer;
+}
+.star-db-search-clear:hover { color: #e8eaed; background: rgba(255, 255, 255, 0.08); }
+.star-db-search-clear svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+}
+.star-db-search-hit {
+  position: absolute;
+  right: 42px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+  font-size: 0.78rem;
+  color: #6fb3a8;
+  pointer-events: none;
+}
+.star-db-filter {
+  margin-bottom: 0;
+  gap: 6px;
+}
+.star-db-filter .filter-btn {
+  padding: 6px 14px;
+  font-size: 0.84rem;
+  color: #a7adb5;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.star-db-filter .filter-btn:hover { color: #e8eaed; background: rgba(255, 255, 255, 0.06); }
+.star-db-filter .filter-btn.active {
+  color: #ffffff;
+  background: rgba(111, 179, 168, 0.92);
+  box-shadow: 0 2px 12px rgba(111, 179, 168, 0.28);
+}
+.star-db-count {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #8b929c;
+  font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ---------- 工具栏：排序 + 计数（视图切换已移除） ---------- */
+.star-db-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.star-db-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  color: #8b929c;
+}
+.star-db-sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 6px 30px 6px 12px;
+  font-size: 0.84rem;
+  font-family: inherit;
+  color: #e8eaed;
+  background: rgba(10, 14, 26, 0.6);
+  border: 1px solid rgba(160, 180, 210, 0.16);
+  border-radius: 999px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238b929c' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.star-db-sort-select option { color: #1a1d21; }
+.star-db-sort-select:hover { border-color: rgba(111, 179, 168, 0.5); }
+.star-db-sort-select:focus-visible {
+  border-color: rgba(111, 179, 168, 0.65);
+  box-shadow: 0 0 0 3px rgba(111, 179, 168, 0.18);
+}
+
+/* ---------- 粒子散射层：覆盖星空，不拦截交互 ---------- */
+.star-particle-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* ---------- 空状态 ---------- */
+.star-db-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+#star-db-empty-3d {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: auto;
+  background: rgba(4, 6, 16, 0.42);
+  border-radius: 18px;
+  backdrop-filter: blur(2px);
+}
+.star-db-empty-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 340px;
+}
+.star-db-empty-icon {
+  width: 42px;
+  height: 42px;
+  stroke: var(--brand, #6fb3a8);
+  fill: none;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+.star-db-empty-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.star-db-empty-desc {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--text-2);
+}
+.star-db-empty-reset {
+  margin-top: 6px;
+}
+.star-db-empty[hidden] { display: none; }
+
+/* ---------- 3D 星空舞台：占满标题区之后剩余高度 ---------- */
+.star-db-stage {
+  flex: 1;
+  height: auto;
+  min-height: 480px;
+  margin-top: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(170, 182, 200, 0.10);
+  position: relative;
+}
+.star-db-stage #stars-canvas {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ---------- 移动端 ---------- */
+@media (max-width: 640px) {
+  .star-db-head { padding: 22px 0 2px; }
+  .star-db-stage { min-height: 460px; margin-top: 10px; }
+  .star-db-controls {
+    top: 10px;
+    width: calc(100% - 24px);
+    max-width: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+  .star-db-search-wrap { width: 100%; }
+  .star-db-filter { justify-content: center; flex-wrap: wrap; }
+  .star-db-toolbar { justify-content: space-between; }
+  .star-db-count { font-size: 0.78rem; }
+}
+
+/* ---------- 减弱动效 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .star-db-controls { transition: none; }
+}

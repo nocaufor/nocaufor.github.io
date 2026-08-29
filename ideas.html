@@ -31,11 +31,13 @@
       <div class="nav-actions">
         <nav class="nav-links" id="nav-links">
           <a href="index.html" data-i18n="nav_home">首页</a>
-          <a href="projects.html" data-i18n="nav_projects">作品集</a>
           <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
           <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
+          <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
           <a href="about.html" data-i18n="nav_about">关于</a>
           <a href="contact.html" data-i18n="nav_contact">联系</a>
+          <a href="services.html" data-i18n="nav_services">定制服务</a>
+
         </nav>
         <button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言" data-i18n-attr="aria-label=lang_aria">EN</button>
         <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式" data-i18n-attr="aria-label=theme_aria">
@@ -85,6 +87,14 @@
           <button type="button" class="filter-btn idea-filter-btn" data-direction="eff" data-i18n="ideas_eff">效率协作</button>
           <button type="button" class="filter-btn idea-filter-btn" data-direction="hwiot" data-i18n="ideas_hwiot">硬件物联网</button>
         </div>
+
+        <div class="idea-zone-nav reveal" role="navigation" aria-label="分区跳转" data-i18n-attr="aria-label=ideas_zone_aria">
+          <span class="idea-zone-label" data-i18n="ideas_zone_label">分区直达</span>
+          <button type="button" class="idea-zone-btn" data-zone="code" data-i18n="ideas_zone_code">实用代码</button>
+          <button type="button" class="idea-zone-btn" data-zone="ideas" data-i18n="ideas_zone_ideas">想法方案</button>
+          <button type="button" class="idea-zone-btn" data-zone="works" data-i18n="ideas_zone_works">作品</button>
+        </div>
+
 <p class="empty-tip" id="idea-empty-tip" data-i18n="ideas_empty">没有符合条件的方案，换个方向试试。</p>
 
 
@@ -4675,6 +4685,176 @@ print("台账外:", unknown or "无")
 </div>
         </article>
 
+<article class="idea-card reveal" data-id="51" id="idea-51" data-direction="AI应用 工具 平民化"><div class="idea-head">
+            <span class="idea-badge">B000038</span>
+            <div class="idea-head-main">
+              <h2>AI 讲人话 · 平民化问答助教</h2>
+              <p class="idea-subtitle">把任何复杂概念翻译成大白话，支持比喻、场景举例与反问式引导，让 AI 不再高门槛。</p>
+              <div class="idea-tags"><span class="tag">AI应用</span><span class="tag">工具</span><span class="tag">教育</span></div>
+              <div class="idea-meta"><span>预估周期：3-5 天</span><span>价值点：AI 平民化的最小切口，任何人群都能"问得出口、听得明白"。</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情" data-i18n-attr="aria-label=ideas_expand">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>学生、长辈、非技术人群想弄懂一个概念（"什么是区块链""为什么飞机能飞"），用大白话 + 生活比喻讲清楚，听不懂就换个讲法，直到听懂。</p></div>            <div class="idea-section"><h3>核心功能清单</h3><ul><li><b>难度分级</b>：儿童 / 入门 / 专业三档解释</li><li><b>比喻库</b>：按领域预设比喻模板，讲不抽象</li><li><b>追问引导</b>：用户说"没懂"即换比喻重讲</li><li><b>朗读输出</b>：SpeechSynthesis 一键朗读给老人听</li></ul></div>            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">LLM API</span><span class="tag">Web Speech</span><span class="tag">模板引擎</span></div></div>            <div class="idea-section"><h3>开发代码示例</h3>
+<p class="code-caption">Prompt 模板：强制大白话与比喻</p>
+<pre><code class="language-python">def plain_prompt(concept, level="入门"):
+    return f"""请用{level}水平解释「{concept}」：
+1. 先用一句话给出大白话定义
+2. 用一个生活中的比喻展开
+3. 举个具体例子说明用途
+4. 最后问我一个确认问题，检验是否听懂
+禁止使用任何专业术语，必须假设听众是零基础。"""
+
+# 用户回复"没懂" → 追加："请换一个比喻，用更简单的词重新解释。"</code></pre></div>            <div class="idea-section"><h3>来源与参考</h3><ul class="src-list"><li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Speech_API" target="_blank" rel="noopener">Web Speech API</a>：浏览器内置语音合成朗读</li><li><a href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank" rel="noopener">Prompt 工程指南</a>：如何让模型输出更易懂</li></ul></div>            <div class="idea-section"><h3>开发操作步骤与流程</h3><h4 class="step-phase">阶段：MVP</h4><ol class="flow"><li>搭 Prompt 模板与难度分级</li><li>接一个 LLM API 并做"没懂重讲"循环</li><li>加朗读按钮，适配手机端</li></ol></div>
+</div>
+        </article>
+
+<article class="idea-card reveal" data-id="52" id="idea-52" data-direction="AI应用 本地零联网"><div class="idea-head">
+            <span class="idea-badge">B000039</span>
+            <div class="idea-head-main">
+              <h2>离线家庭知识库</h2>
+              <p class="idea-subtitle">完全断网的本地 RAG：把全家文档、相册说明、菜谱、病历归档进一台旧电脑，内网随时问。</p>
+              <div class="idea-tags"><span class="tag">本地零联网</span><span class="tag">AI应用</span><span class="tag">隐私</span></div>
+              <div class="idea-meta"><span>预估周期：1-2 周</span><span>价值点：数据不出屋、断网可用，直击隐私焦虑与老年家庭的"记不住、找不到"。</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情" data-i18n-attr="aria-label=ideas_expand">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>家里文件散落在文档、微信、相册里，问"上次体检医生说了啥""那道红烧肉怎么做的"永远找不到。把资料本地向量化，用自然语言问答，全程不联网。</p></div>            <div class="idea-section"><h3>核心功能清单</h3><ul><li><b>文档入库</b>：批量解析 PDF / DOCX / 图片 OCR</li><li><b>本地向量检索</b>：嵌入式模型离线打分召回</li><li><b>问答界面</b>：浏览器访问，支持语音提问</li><li><b>权限隔离</b>：按家庭成员分库，隐私互不可见</li></ul></div>            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">Ollama</span><span class="tag">sentence-transformers</span><span class="tag">SQLite</span><span class="tag">Flask</span></div></div>            <div class="idea-section"><h3>开发代码示例</h3>
+<p class="code-caption">本地检索：向量余弦召回</p>
+<pre><code class="language-python">import numpy as np
+
+def search_local(query_emb, docs, k=3):
+    scores = [(doc_id, float(np.dot(query_emb, emb)))
+              for doc_id, emb in docs]
+    scores.sort(key=lambda x: -x[1])
+    return scores[:k]
+
+# docs: [(doc_id, embedding)], 全部在本机生成
+# 检索命中后拼接上下文交给本地 LLM 生成回答</code></pre></div>            <div class="idea-section"><h3>来源与参考</h3><ul class="src-list"><li><a href="https://ollama.com/library" target="_blank" rel="noopener">Ollama 模型库</a>：本地可运行的 LLM 与嵌入模型</li><li><a href="https://www.sbert.net/" target="_blank" rel="noopener">sentence-transformers</a>：离线句向量生成</li></ul></div>            <div class="idea-section"><h3>开发操作步骤与流程</h3><h4 class="step-phase">阶段：MVP</h4><ol class="flow"><li>装 Ollama 并下载小模型（约 4GB）</li><li>写文档解析与入库脚本</li><li>做问答页并接入本地检索</li></ol></div>
+</div>
+        </article>
+
+<article class="idea-card reveal" data-id="53" id="idea-53" data-direction="工具 老人友好"><div class="idea-head">
+            <span class="idea-badge">B000040</span>
+            <div class="idea-head-main">
+              <h2>大字版家庭助手</h2>
+              <p class="idea-subtitle">为长辈定制的极简应用：一键拨号、吃药提醒、天气播报，字大图大按钮大，没有广告和弹窗。</p>
+              <div class="idea-tags"><span class="tag">老人友好</span><span class="tag">工具</span><span class="tag">无障碍</span></div>
+              <div class="idea-meta"><span>预估周期：1 周</span><span>价值点：适老化是真实刚需，功能越少越克制，反而越难做好。</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情" data-i18n-attr="aria-label=ideas_expand">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>老人的手机字太小、操作太复杂，应用充满广告。用一个全屏大字、三步之内能完成一件事的应用，覆盖打电话、吃药、看天气三个高频动作。</p></div>            <div class="idea-section"><h3>核心功能清单</h3><ul><li><b>一键拨号</b>：子女 / 老伴 / 社区大按钮直拨</li><li><b>吃药提醒</b>：到点语音 + 大字弹窗，确认已吃</li><li><b>天气播报</b>：首页大字显示并朗读今日天气</li><li><b>防误触</b>：关键操作需长按 2 秒确认</li></ul></div>            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">PWA</span><span class="tag">Notification API</span><span class="tag">SpeechSynthesis</span></div></div>            <div class="idea-section"><h3>开发代码示例</h3>
+<p class="code-caption">吃药提醒：长按确认 + 语音播报</p>
+<pre><code class="language-javascript">// 长按 2 秒才确认"已吃药"，防误触
+let timer;
+btn.addEventListener("pointerdown", () => {
+  timer = setTimeout(() => {
+    speak("已记录今天吃过药");
+    markTaken(today());
+  }, 2000);
+});
+btn.addEventListener("pointerup", () => clearTimeout(timer));</code></pre></div>            <div class="idea-section"><h3>来源与参考</h3><ul class="src-list"><li><a href="https://developer.mozilla.org/zh-CN/docs/Web/Progressive_web_apps" target="_blank" rel="noopener">PWA</a>：可安装到手机桌面的网页应用</li><li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Notifications_API" target="_blank" rel="noopener">Notification API</a>：本地通知提醒</li></ul></div>            <div class="idea-section"><h3>开发操作步骤与流程</h3><h4 class="step-phase">阶段：MVP</h4><ol class="flow"><li>做首页三宫格大字入口</li><li>接拨号链接与通知权限</li><li>让长辈真机试用并记录误触点</li></ol></div>
+</div>
+        </article>
+
+<article class="idea-card reveal" data-id="54" id="idea-54" data-direction="开源部署 工具"><div class="idea-head">
+            <span class="idea-badge">B000041</span>
+            <div class="idea-head-main">
+              <h2>家庭 NAS 一键部署栈</h2>
+              <p class="idea-subtitle">docker-compose 一键拉起相册、网盘、密码库、监控面板，开源组件全家桶，旧电脑秒变私有云。</p>
+              <div class="idea-tags"><span class="tag">开源部署</span><span class="tag">Docker</span><span class="tag">私有云</span></div>
+              <div class="idea-meta"><span>预估周期：2-3 天</span><span>价值点：把零散开源项目变成"一条命令的完整方案"，是开源部署最有价值的封装。</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情" data-i18n-attr="aria-label=ideas_expand">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>家庭 / 小型工作室想自建私有云，但每个开源项目都要单独配置。提供一份编排好的 compose 栈：装好 Docker 后执行一条命令，即可获得相册备份、文件网盘、密码管理与资源监控。</p></div>            <div class="idea-section"><h3>核心功能清单</h3><ul><li><b>相册备份</b>：Immich / PhotoPrism 自动备份手机照片</li><li><b>文件网盘</b>：Nextcloud 多端同步与分享</li><li><b>密码管理</b>：Vaultwarden 自托管密码库</li><li><b>统一入口</b>：Nginx 反代 + HTTPS 证书自动续期</li></ul></div>            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">docker-compose</span><span class="tag">Nginx</span><span class="tag">Certbot</span><span class="tag">Tailscale</span></div></div>            <div class="idea-section"><h3>开发代码示例</h3>
+<p class="code-caption">compose 服务骨架</p>
+<pre><code class="language-yaml">services:
+  photos:
+    image: ghcr.io/immich-app/immich-server
+    volumes: ["/data/photos:/usr/src/app/upload"]
+    restart: unless-stopped
+  files:
+    image: nextcloud:stable
+    ports: ["8080:80"]
+  proxy:
+    image: nginx:alpine
+    ports: ["443:443", "80:80"]
+    volumes: ["./conf:/etc/nginx/conf.d"]</code></pre></div>            <div class="idea-section"><h3>来源与参考</h3><ul class="src-list"><li><a href="https://immich.app/" target="_blank" rel="noopener">Immich</a>：开源照片备份与管理</li><li><a href="https://hub.docker.com/_/nextcloud" target="_blank" rel="noopener">Nextcloud</a>：自托管网盘</li></ul></div>            <div class="idea-section"><h3>开发操作步骤与流程</h3><h4 class="step-phase">阶段：MVP</h4><ol class="flow"><li>准备一台旧电脑装 Docker</li><li>编写 compose 并跑通相册 + 网盘</li><li>配反代与证书，写一键安装脚本</li></ol></div>
+</div>
+        </article>
+
+<article class="idea-card reveal" data-id="55" id="idea-55" data-direction="本地零联网 AI应用"><div class="idea-head">
+            <span class="idea-badge">B000042</span>
+            <div class="idea-head-main">
+              <h2>离线语音输入与转写</h2>
+              <p class="idea-subtitle">本地语音转文字：开会录音转纪要、口述写作，数据不出设备，免费无限时长。</p>
+              <div class="idea-tags"><span class="tag">本地零联网</span><span class="tag">AI应用</span><span class="tag">语音</span></div>
+              <div class="idea-meta"><span>预估周期：3-5 天</span><span>价值点：云转写按分钟收费又怕泄露，本地模型一次性部署即可无限使用。</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情" data-i18n-attr="aria-label=ideas_expand">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>采访者、学生、自媒体人需要把长录音变成文字：本地 whisper 模型转写后自动分句、标时间戳、生成摘要，无需上传任何音频。</p></div>            <div class="idea-section"><h3>核心功能清单</h3><ul><li><b>批量转写</b>：拖入多个音频排队处理</li><li><b>时间戳</b>：每句话对应时间点，点击跳转</li><li><b>智能分句</b>：按语气停顿与语义切分段落</li><li><b>摘要生成</b>：本地 LLM 提炼要点与待办</li></ul></div>            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">whisper.cpp</span><span class="tag">ffmpeg</span><span class="tag">Ollama</span><span class="tag">Python</span></div></div>            <div class="idea-section"><h3>开发代码示例</h3>
+<p class="code-caption">转写并生成 SRT 时间轴</p>
+<pre><code class="language-python">from whispercpp import Whisper
+
+model = Whisper.from_pretrained("small")  # 本地模型
+segments = model.transcribe("meeting.mp3")
+
+for i, seg in enumerate(segments, 1):
+    start = fmt(seg.start); end = fmt(seg.end)
+    print(f"{i}\n{start} --&gt; {end}\n{seg.text}\n")</code></pre></div>            <div class="idea-section"><h3>来源与参考</h3><ul class="src-list"><li><a href="https://github.com/ggerganov/whisper.cpp" target="_blank" rel="noopener">whisper.cpp</a>：CPU 可跑的离线语音识别</li><li><a href="https://ffmpeg.org/" target="_blank" rel="noopener">ffmpeg</a>：音频格式转换与切分</li></ul></div>            <div class="idea-section"><h3>开发操作步骤与流程</h3><h4 class="step-phase">阶段：MVP</h4><ol class="flow"><li>安装 whisper.cpp 并下载 small 模型</li><li>写转写脚本，输出 SRT</li><li>加批量队列与摘要接口</li></ol></div>
+</div>
+        </article>
+
+<article class="idea-card reveal" data-id="56" id="idea-56" data-direction="老人友好 工具"><div class="idea-head">
+            <span class="idea-badge">B000043</span>
+            <div class="idea-head-main">
+              <h2>语音遥控器 · 一句话控制家电</h2>
+              <p class="idea-subtitle">给普通电视 / 机顶盒加语音控制：喊"中央一台""音量小一点"，语音指令转红外遥控信号。</p>
+              <div class="idea-tags"><span class="tag">老人友好</span><span class="tag">硬件</span><span class="tag">语音控制</span></div>
+              <div class="idea-meta"><span>预估周期：1 周</span><span>价值点：不用教老人按遥控器，说话就能换台，是适老化改造的典型硬件项目。</span></div>
+            </div>
+            <button class="idea-toggle" type="button" aria-expanded="false" aria-label="展开详情" data-i18n-attr="aria-label=ideas_expand">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="idea-detail">
+            <div class="idea-section"><h3>目标场景</h3><p>长辈记不住遥控器按键：麦克风阵列收音 → 本地语音识别 → 解析频道 / 音量意图 → 红外发射器模拟原遥控码，一句话完成换台与调音。</p></div>            <div class="idea-section"><h3>核心功能清单</h3><ul><li><b>语音识别</b>：离线关键词识别，仅识别频道与指令词</li><li><b>意图解析</b>："中央一台"→ 频道号，"大点声"→ 音量步进</li><li><b>红外码库</b>：学习并回放主流品牌遥控码</li><li><b>误唤醒抑制</b>：需说唤醒词"小帮手"再下指令</li></ul></div>            <div class="idea-section"><h3>技术栈</h3><div class="idea-tech"><span class="tag">ESP32</span><span class="tag">离线唤醒词</span><span class="tag">红外发射</span><span class="tag">KWS</span></div></div>            <div class="idea-section"><h3>开发代码示例</h3>
+<p class="code-caption">频道名到红外码的映射</p>
+<pre><code class="language-python">CHANNELS = {
+    "中央一台": 1, "中央二台": 2,
+    "中央三台": 3, "中央五台": 5,
+    "湖南卫视": 8, "浙江卫视": 9,
+}
+def parse(cmd):
+    # "中央一台" → (channel, 1)；“大点声” → (volume, +1)
+    if cmd in CHANNELS:
+        return ("channel", CHANNELS[cmd])
+    if "大" in cmd or "响" in cmd:
+        return ("volume", 1)
+    if "小" in cmd:
+        return ("volume", -1)
+    return None</code></pre></div>            <div class="idea-section"><h3>来源与参考</h3><ul class="src-list"><li><a href="https://github.com/espressif/esp-who" target="_blank" rel="noopener">ESP-WHO</a>：ESP32 语音唤醒与识别方案</li><li><a href="https://www.irremote.hk/" target="_blank" rel="noopener">IRremoteESP8266</a>：红外发送与码库参考</li></ul></div>            <div class="idea-section"><h3>开发操作步骤与流程</h3><h4 class="step-phase">阶段：硬件准备</h4><ol class="flow"><li>ESP32 + 麦克风阵列 + 红外发射管</li><li>采集家中遥控器红外码入库</li></ol><h4 class="step-phase">阶段：验证</h4><ol class="flow"><li>离线识别 20 条指令准确率达标</li><li>真实电视换台 / 调音实测</li></ol></div>
+</div>
+        </article>
+
         <div class="idea-group reveal" data-group="works">
           <span class="idea-group-mark" aria-hidden="true">works</span>
           <div class="idea-group-head">
@@ -4772,9 +4952,11 @@ registry.upsert(entry);  // 写库并同步索引</code></pre>
         <span class="footer-slogan" data-i18n="footer_slogan">让科技引领文明进步</span>
       </span>
       <nav class="footer-links">
-        <a href="projects.html" data-i18n="nav_projects">作品集</a>
         <a href="about.html" data-i18n="nav_about">关于</a>
+        <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
         <a href="contact.html" data-i18n="nav_contact">联系</a>
+          <a href="services.html" data-i18n="nav_services">定制服务</a>
+
       </nav>
     </div>
   </footer>

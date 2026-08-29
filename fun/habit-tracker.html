@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>习惯打卡与连续天数 · nocau 代码开发</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+  <meta name="description" content="每日打卡、连续坚持天数统计与日历热力图，localStorage 本地存储。" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="fun.css" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
+</head>
+<body class="fun-page">
+  <header class="site-header fun-header">
+    <div class="container nav">
+      <a href="../index.html" class="brand">
+        <img class="brand-logo" src="../assets/img/logo.svg" alt="nocau" width="30" height="30" />
+        <span class="brand-name">NOCAU</span>
+      </a>
+      <div class="nav-actions">
+        <nav class="nav-links" id="nav-links">
+          <a href="../index.html">首页</a>
+          <a href="index.html" class="active">代码开发</a>
+          <a href="../ideas.html">想法项目</a>
+          <a href="../star-db.html">星空数据库</a>
+          <a href="../about.html">关于</a>
+          <a href="../contact.html">联系</a>
+          <a href="../services.html">定制服务</a>
+
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
+        </button>
+        <button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="code-page">
+    <div class="container-inner">
+      <div class="code-hero">
+        <h1 data-i18n="pg_habit_tracker">习惯打卡与连续天数</h1>
+        <p class="sub">每日打卡、连续坚持天数统计与日历热力图，localStorage 本地存储。</p>
+        <div class="meta-line">
+          <span class="tag">场景：效率工具</span>
+          <span class="tag">技术栈：HTML / JS</span>
+          <span class="tag">来源：GitHub 参考</span>
+        </div>
+      </div>
+<section class="code-section"><h2>项目简介</h2><div class="code-card"><p>把目标拆成每天可重复的小动作，是养成习惯最朴素的方法。本页提供<strong>打卡数据模型</strong>与<strong>连续天数算法</strong>：用 localStorage 持久化日期集合，支持补卡判断、断签重置和日历热力图展示，可直接嵌入个人效率工具。</p></div></section><section class="code-section"><h2>代码示例：打卡数据模型</h2><div class="code-block"><span class="code-lang-badge">js</span><pre><code>const KEY = "nocau-habit-log";
+const today = () =&gt; new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+function loadLog() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; }
+}
+function saveLog(log) { localStorage.setItem(KEY, JSON.stringify(log)); }
+
+function toggleCheck(date = today()) {
+  const log = loadLog();
+  const i = log.indexOf(date);
+  if (i &gt;= 0) log.splice(i, 1); else log.push(date);
+  saveLog(log);
+  return i &lt; 0;
+}</code></pre></div></section><section class="code-section"><h2>代码示例：连续天数与热力图</h2><div class="code-block"><span class="code-lang-badge">js</span><pre><code>const DAY = 86400000;
+function parse(d) { return new Date(d + "T00:00:00Z").getTime(); }
+
+// 从最近一天往前数连续打卡天数（昨天中断即清零）
+function streakDays(log) {
+  const set = new Set(log);
+  let streak = 0;
+  let cursor = parse(today());
+  while (set.has(new Date(cursor).toISOString().slice(0, 10))) {
+    streak += 1;
+    cursor -= DAY;
+  }
+  return streak;
+}
+
+// 近 28 周热力图数据：week 数组内 7 天是否打卡
+function heatmap(log, weeks = 28) {
+  const set = new Set(log);
+  const rows = [];
+  const end = parse(today()) + DAY;
+  for (let w = 0; w &lt; weeks; w++) {
+    const week = [];
+    for (let d = 0; d &lt; 7; d++) {
+      const t = end - (weeks - w) * 7 * DAY + d * DAY;
+      const key = new Date(t).toISOString().slice(0, 10);
+      week.push({ date: key, done: set.has(key), future: t &gt;= end });
+    }
+    rows.push(week);
+  }
+  return rows;
+}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>点击“今日打卡”写入当天日期，再次点击可撤销误操作。</li><li>顶部展示连续天数：断签后重新从 1 计算，符合真实习惯养成节奏。</li><li>热力图按周渲染，颜色深浅表达坚持密度；数据全部存本地，可扩展多习惯维度。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>habit-tracker-vanilla</code>、<code>streak-counter</code>、<code>github-style-heatmap</code>（链接可替换为实际仓库地址）。</p></div></section>
+      <div class="fun-footer">
+        <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">
+        <img class="mini-logo" src="../assets/img/logo.svg" alt="nocau" width="16" height="16" />
+        © <span id="year">2026</span> nocau.com
+      </span>
+      <nav class="footer-links">
+        <a href="index.html">代码开发</a>
+        <a href="../index.html">首页</a>
+          <a href="../services.html">定制服务</a>
+
+      </nav>
+    </div>
+  </footer>
+
+  <script src="../assets/js/i18n.js"></script>
+  <script src="js/fun-common.js"></script>
+  <script src="js/habit-tracker.js"></script>
+</body>
+</html>

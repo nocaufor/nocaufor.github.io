@@ -29,6 +29,6 @@
 
   /* 默认全部分组（URL 锚点支持，如 #security） */
   var anchor = (location.hash || "").replace("#", "");
-  var valid = ["all", "classic", "tool", "miniapp", "auto", "mcu", "crawler", "security", "frontier", "knowledge"];
+  var valid = ["all", "ent", "func", "dev"];
   applyFilter(valid.indexOf(anchor) !== -1 ? anchor : "all");
 })();

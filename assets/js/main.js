@@ -29,8 +29,13 @@
     try { saved = localStorage.getItem("nocau-theme"); } catch (e) { /* noop */ }
     var initial = saved || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
     sync(initial);
+    var themeTimer = null;
     btn.addEventListener("click", function () {
       var cur = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      var root = document.documentElement;
+      root.classList.add("theme-switching");
+      if (themeTimer) clearTimeout(themeTimer);
+      themeTimer = setTimeout(function () { root.classList.remove("theme-switching"); }, 320);
       sync(cur);
     });
   }

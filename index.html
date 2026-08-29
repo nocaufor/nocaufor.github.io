@@ -8,8 +8,8 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <meta name="description" content="nocau 个人开发者作品集：微信小程序、Android 应用与 AI 平台开发项目。" />
   <link rel="stylesheet" href="assets/css/style.css" />
-  <link rel="stylesheet" href="assets/css/stars3d.css" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <link rel="stylesheet" href="assets/css/home.css" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
@@ -29,11 +29,13 @@
       <div class="nav-actions">
         <nav class="nav-links" id="nav-links">
           <a href="index.html" data-i18n="nav_home">首页</a>
-          <a href="projects.html" data-i18n="nav_projects">作品集</a>
           <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
           <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
+          <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
           <a href="about.html" data-i18n="nav_about">关于</a>
           <a href="contact.html" data-i18n="nav_contact">联系</a>
+          <a href="services.html" data-i18n="nav_services">定制服务</a>
+
         </nav>
         <button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言" data-i18n-attr="aria-label=lang_aria">EN</button>
         <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式" data-i18n-attr="aria-label=theme_aria">
@@ -51,7 +53,7 @@
 
     <!-- ============ 01 Hero ============ -->
     <section class="section-panel hero" id="sec-hero">
-<div class="hero-orb" aria-hidden="true"></div>
+      <div class="hero-orb" aria-hidden="true"></div>
       <div class="slant-accent" aria-hidden="true" style="top: 16%; right: 6%"></div>
       <div class="container">
         <div class="hero-identity reveal">
@@ -65,39 +67,106 @@
         <h2 class="reveal display-title" data-i18n-html="hero_title_html">用实践将想法变成现实。</h2>
         <div class="type-line reveal"><span id="typewriter" data-text="开发者 · nocau" data-i18n-type="hero_typing"></span><span class="cursor"></span></div>
         <div class="hero-actions reveal">
-          <a href="projects.html" class="btn btn-primary btn-lg" data-i18n="btn_projects">查看作品集</a>
-          <a href="ideas.html" class="btn btn-outline btn-lg" data-i18n="btn_ideas">想法项目</a>
+          <a href="star-db.html" class="btn btn-primary btn-lg" data-i18n="btn_stars">星空数据库</a>
+          <a href="fun/index.html" class="btn btn-outline btn-lg" data-i18n="nav_fun">代码开发</a>
         </div>
       </div>
     </section>
 
-    <!-- ============ 02 3D 项目星空（纯星空沉浸板块，无文字） ============ -->
-    <section class="section-panel stars-section" id="sec-stars" aria-label="3D 项目星空">
-      <canvas id="stars-canvas" aria-hidden="true"></canvas>
-      <div class="star-panel-mask" id="star-panel-mask" hidden></div>
-      <aside class="star-panel" id="star-panel" role="dialog" aria-modal="true" aria-labelledby="star-name" hidden>
-        <button type="button" class="star-panel-close" id="star-close" aria-label="关闭" data-i18n-attr="aria-label=stars3d_close_aria">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-        </button>
-        <div class="star-panel-head">
-          <span class="star-panel-code" id="star-code"></span>
-          <span class="star-panel-type tag" id="star-type"></span>
+    <!-- ============ 02 开发者简介 ============ -->
+    <section class="section section-home" id="sec-brief">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">Profile</span>
+          <div class="section-divider"></div>
+          <h2 class="section-title" data-i18n-html="home_brief_title">开发者<span class="gradient-text">简介</span></h2>
+          <p class="section-desc" data-i18n="home_brief_desc">独立开发者，专注小程序、Android 应用与 AI 平台的实践落地；持续把想法沉淀为代码，把代码沉淀为作品。</p>
         </div>
-        <h3 class="star-panel-name" id="star-name"></h3>
-        <p class="star-panel-desc" id="star-desc"></p>
-        <div class="star-panel-actions">
-          <button type="button" class="btn btn-primary btn-sm" id="star-like" data-i18n="stars3d_like">赞一下</button>
-          <button type="button" class="btn btn-outline btn-sm" id="star-dislike" data-i18n="stars3d_dislike">不感兴趣</button>
+        <div class="stats-grid home-stats">
+          <div class="stat reveal"><b>67</b><span data-i18n="home_stat_code">代码项目</span></div>
+          <div class="stat reveal"><b>56</b><span data-i18n="home_stat_idea">想法方案</span></div>
+          <div class="stat reveal"><b>123</b><span data-i18n="home_stat_star">星空星星</span></div>
         </div>
-        <p class="star-panel-note" data-i18n="stars3d_note">点赞会让星星更亮，不感兴趣会变暗。</p>
-        <div class="star-panel-links">
-          <a class="btn btn-primary btn-sm" id="star-link" href="#" target="_self">查看项目</a>
-          <a class="btn btn-outline btn-sm" id="star-link2" href="#" target="_self" hidden>查看相关想法</a>
-        </div>
-      </aside>
+      </div>
     </section>
 
-      </main>
+    <!-- ============ 04 技能方向 ============ -->
+    <section class="section section-home" id="sec-skills">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">Skill Directions</span>
+          <div class="section-divider"></div>
+          <h2 class="section-title" data-i18n-html="home_skill_title">技能<span class="gradient-text">方向</span></h2>
+          <p class="section-desc" data-i18n="home_skill_desc">代码开发板块按类型分三类，编号前缀一目了然。</p>
+        </div>
+        <div class="home-skills-grid">
+          <div class="home-skill-card reveal">
+            <div class="home-skill-head">
+              <span class="home-skill-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="m6 6 2.1 2.1"/><path d="m15.9 15.9 2.1 2.1"/><path d="m17.9 6-2.1 2.1"/><path d="M8.1 15.9 6 18"/></svg></span>
+              <h3 data-i18n="home_skill_ent">娱乐代码</h3>
+            </div>
+            <p data-i18n="home_skill_ent_desc">E 系列 · 游戏、动画与趣味交互，把创意玩起来。</p>
+            <div><span class="skill-tag">E000001–E000027</span></div>
+          </div>
+          <div class="home-skill-card reveal">
+            <div class="home-skill-head">
+              <span class="home-skill-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2.4"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+              <h3 data-i18n="home_skill_func">功能代码</h3>
+            </div>
+            <p data-i18n="home_skill_func_desc">F 系列 · 效率工具、自动化与可复用功能组件。</p>
+            <div><span class="skill-tag">F000001–F000014</span></div>
+          </div>
+          <div class="home-skill-card reveal">
+            <div class="home-skill-head">
+              <span class="home-skill-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.3.9-4.5 4.4 1.1 6.2L12 17l-5.6 3 1.1-6.2L3 9.4l6.3-.9L12 3z"/></svg></span>
+              <h3 data-i18n="home_skill_dev">实用代码</h3>
+            </div>
+            <p data-i18n="home_skill_dev_desc">P 系列 · 日常实用脚本、工具集与即开即用的解决方案。</p>
+            <div><span class="skill-tag">P000001–P000026</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 05 快捷入口 ============ -->
+    <section class="section section-home" id="sec-quick">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">Quick Access</span>
+          <div class="section-divider"></div>
+          <h2 class="section-title" data-i18n-html="home_quick_title">快捷<span class="gradient-text">入口</span></h2>
+          <p class="section-desc" data-i18n="home_quick_desc">直达代码、想法与星空数据库。</p>
+        </div>
+        <div class="home-quick-grid">
+          <a class="home-quick-card reveal" href="fun/index.html">
+            <span class="home-quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m13.5 4-3 16"/></svg></span>
+            <h3 data-i18n="home_quick_fun">代码开发</h3>
+            <p data-i18n="home_quick_fun_desc">娱乐 / 功能 / 实用三类代码，67 个页面持续更新。</p>
+            <span class="home-quick-arrow" data-i18n="home_quick_go">前往 →</span>
+          </a>
+          <a class="home-quick-card reveal" href="ideas.html">
+            <span class="home-quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6.5 6.5 0 0 0-3.7 11.8c.8.6 1.2 1.2 1.2 2.2h5c0-1 .4-1.6 1.2-2.2A6.5 6.5 0 0 0 12 3z"/></svg></span>
+            <h3 data-i18n="home_quick_ideas">想法项目</h3>
+            <p data-i18n="home_quick_ideas_desc">56 个想法方案，按分区沉淀、筛选与推进。</p>
+            <span class="home-quick-arrow" data-i18n="home_quick_go">前往 →</span>
+          </a>
+          <a class="home-quick-card reveal" href="star-db.html">
+            <span class="home-quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.3.9-4.5 4.4 1.1 6.2L12 17l-5.6 3 1.1-6.2L3 9.4l6.3-.9L12 3z"/></svg></span>
+            <h3 data-i18n="home_quick_stars">星空数据库</h3>
+            <p data-i18n="home_quick_stars_desc">所有程序与想法化身为星，搜索、筛选、探索。</p>
+            <span class="home-quick-arrow" data-i18n="home_quick_go">前往 →</span>
+          </a>
+          <a class="home-quick-card reveal" href="services.html">
+            <span class="home-quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span>
+            <h3 data-i18n="home_quick_services">定制服务</h3>
+            <p data-i18n="home_quick_services_desc">根据实际需求，打造专属工具包。</p>
+            <span class="home-quick-arrow" data-i18n="home_quick_go">前往 →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
 
   <!-- ==================== 页脚 ==================== -->
   <footer class="site-footer">
@@ -108,10 +177,13 @@
         <span class="footer-slogan" data-i18n="footer_slogan">让科技引领文明进步</span>
       </span>
       <nav class="footer-links">
-        <a href="projects.html" data-i18n="nav_projects">作品集</a>
         <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
+        <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
+        <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
         <a href="about.html" data-i18n="nav_about">关于</a>
         <a href="contact.html" data-i18n="nav_contact">联系</a>
+          <a href="services.html" data-i18n="nav_services">定制服务</a>
+
       </nav>
     </div>
   </footer>
@@ -120,8 +192,6 @@
   <button id="back-to-top" class="back-to-top" aria-label="回到顶部" data-i18n-attr="aria-label=back_aria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
 
   <script src="assets/js/i18n.js"></script>
-  <script src="assets/js/star-data.js"></script>
   <script src="assets/js/main.js"></script>
-  <script src="assets/js/stars3d.js"></script>
-  </body>
+</body>
 </html>

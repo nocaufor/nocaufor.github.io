@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>通用单位换算器 · nocau 代码开发</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+  <meta name="description" content="长度、重量、温度、数据量等常见单位互转，离线可用、实时更新。" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="fun.css" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
+</head>
+<body class="fun-page">
+  <header class="site-header fun-header">
+    <div class="container nav">
+      <a href="../index.html" class="brand">
+        <img class="brand-logo" src="../assets/img/logo.svg" alt="nocau" width="30" height="30" />
+        <span class="brand-name">NOCAU</span>
+      </a>
+      <div class="nav-actions">
+        <nav class="nav-links" id="nav-links">
+          <a href="../index.html">首页</a>
+          <a href="index.html" class="active">代码开发</a>
+          <a href="../ideas.html">想法项目</a>
+          <a href="../star-db.html">星空数据库</a>
+          <a href="../about.html">关于</a>
+          <a href="../contact.html">联系</a>
+          <a href="../services.html">定制服务</a>
+
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
+        </button>
+        <button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="code-page">
+    <div class="container-inner">
+      <div class="code-hero">
+        <h1 data-i18n="pg_unit_converter">通用单位换算器</h1>
+        <p class="sub">长度、重量、温度、数据量等常见单位互转，离线可用、实时更新。</p>
+        <div class="meta-line">
+          <span class="tag">场景：效率工具</span>
+          <span class="tag">技术栈：HTML / JS</span>
+          <span class="tag">来源：GitHub 参考</span>
+        </div>
+      </div>
+<section class="code-section"><h2>项目简介</h2><div class="code-card"><p>日常开发与写作里最常见的需求之一：把 16 寸换算成厘米、把 1.5TB 换算成 GB。本页给出一个<strong>因子表驱动</strong>的单位换算器：每种物理量维护一张换算因子表，输入数值即可在任意单位间实时换算，逻辑清晰、易于扩展。</p></div></section><section class="code-section"><h2>代码示例：因子表驱动换算</h2><div class="code-block"><span class="code-lang-badge">js</span><pre><code>const CATEGORIES = {
+  length: { base: "m",
+    units: { mm: 0.001, cm: 0.01, m: 1, km: 1000,
+             inch: 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.344 } },
+  weight: { base: "kg",
+    units: { mg: 1e-6, g: 0.001, kg: 1, t: 1000,
+             oz: 0.028349523, lb: 0.45359237 } },
+  data: { base: "byte",
+    units: { b: 1, kb: 1024, mb: 1024 ** 2, gb: 1024 ** 3,
+             tb: 1024 ** 4, pb: 1024 ** 5 } }
+};
+
+function convert(category, value, from, to) {
+  const { units } = CATEGORIES[category];
+  if (!(from in units) || !(to in units)) return null;
+  return value * units[from] / units[to]; // 统一先换算到基准单位
+}
+
+function format(n) {
+  if (!isFinite(n)) return "∞";
+  return Math.abs(n) &gt;= 10000 || (Math.abs(n) &lt; 0.001 &amp;&amp; n !== 0)
+    ? n.toExponential(4)
+    : String(parseFloat(n.toFixed(6)));
+}</code></pre></div></section><section class="code-section"><h2>代码示例：温度换算（非均匀公式）</h2><div class="code-block"><span class="code-lang-badge">js</span><pre><code>// 温度换算不是线性因子，单独处理
+const TEMP = {
+  c: { f: v =&gt; v * 9 / 5 + 32, k: v =&gt; v + 273.15 },
+  f: { c: v =&gt; (v - 32) * 5 / 9, k: v =&gt; (v - 32) * 5 / 9 + 273.15 },
+  k: { c: v =&gt; v - 273.15, f: v =&gt; (v - 273.15) * 9 / 5 + 32 }
+};
+function convertTemp(value, from, to) {
+  if (from === to) return value;
+  return TEMP[from][to](value);
+}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>选择物理量（长度 / 重量 / 数据量 / 温度），输入数值并选择源单位与目标单位。</li><li>结果实时更新：线性量走因子表统一换算，温度走公式分支。</li><li>新增单位只需在 <code>units</code> 表里加一行因子，无需改动换算逻辑。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>unit-converter-js</code>、<code>measurement-conversion</code>（链接可替换为实际仓库地址）。</p></div></section>
+      <div class="fun-footer">
+        <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">
+        <img class="mini-logo" src="../assets/img/logo.svg" alt="nocau" width="16" height="16" />
+        © <span id="year">2026</span> nocau.com
+      </span>
+      <nav class="footer-links">
+        <a href="index.html">代码开发</a>
+        <a href="../index.html">首页</a>
+          <a href="../services.html">定制服务</a>
+
+      </nav>
+    </div>
+  </footer>
+
+  <script src="../assets/js/i18n.js"></script>
+  <script src="js/fun-common.js"></script>
+  <script src="js/unit-converter.js"></script>
+</body>
+</html>
