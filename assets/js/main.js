@@ -45,16 +45,37 @@
     var toggle = $(".nav-toggle");
     var links = $("#nav-links");
     if (!toggle || !links) return;
-    toggle.addEventListener("click", function () {
-      var open = links.classList.toggle("open");
+    function setNav(open) {
+      links.classList.toggle("open", open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      /* 打开菜单时锁定页面滚动，防止滚动穿透 */
+      document.body.classList.toggle("nav-open", open);
+    }
+    function closeNav() {
+      if (links.classList.contains("open")) setNav(false);
+    }
+    toggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setNav(!links.classList.contains("open"));
     });
+    /* 点击链接关闭菜单 */
     $all("a", links).forEach(function (a) {
-      a.addEventListener("click", function () {
-        links.classList.remove("open");
-        toggle.setAttribute("aria-expanded", "false");
-      });
+      a.addEventListener("click", function () { closeNav(); });
     });
+    /* 点击菜单与按钮外部关闭 */
+    document.addEventListener("click", function (e) {
+      if (!links.classList.contains("open")) return;
+      if (e.target && e.target.closest && (e.target.closest("#nav-links") || e.target.closest(".nav-toggle"))) return;
+      closeNav();
+    });
+    /* Escape 关闭 */
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeNav();
+    });
+    /* 视口拉宽到桌面断点以上时清理锁定状态 */
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 900 && links.classList.contains("open")) setNav(false);
+    }, { passive: true });
   }
 
   /* ============ 3. 打字机 ============ */

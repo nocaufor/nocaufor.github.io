@@ -65,7 +65,18 @@
 
   function render() {
     var rows = state.rows, cols = state.cols;
-    boardEl.style.gridTemplateColumns = "repeat(" + cols + ", 30px)";
+    boardEl.style.setProperty("--n", cols);
+    /* 触控目标：默认 38px；窄屏放不下时自适应收缩（9×9 等小列），大列数保持 38px + 横向滚动兜底 */
+    var cell = 38;
+    if (cols <= 12 && boardEl.parentElement) {
+      var wrapW = boardEl.parentElement.clientWidth;
+      if (wrapW > 0) {
+        var fit = Math.floor((wrapW - 4 - 2 * (cols - 1)) / cols); /* padding 2*2 + gap 1*(cols-1) */
+        if (fit < cell) cell = Math.max(24, fit);
+      }
+    }
+    boardEl.style.setProperty("--cell", cell + "px");
+    boardEl.style.gridTemplateColumns = "repeat(" + cols + ", var(--cell))";
     boardEl.innerHTML = "";
     for (var r = 0; r < rows; r++) {
       for (var c = 0; c < cols; c++) {
@@ -88,6 +99,9 @@
         boardEl.appendChild(div);
       }
     }
+    /* 超宽棋盘左对齐交由 ms-wrap 横向滚动；未超宽保持居中（9×9 无横滚） */
+    var wrapW2 = boardEl.parentElement ? boardEl.parentElement.clientWidth : 0;
+    boardEl.classList.toggle("wide", boardEl.offsetWidth > wrapW2);
   }
 
   function onLeft(ev) {

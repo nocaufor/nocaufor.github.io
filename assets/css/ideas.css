@@ -501,6 +501,11 @@ html[data-theme="light"] .idea-panel-body pre { background: #f2f4f6; }
   .idea-panel-head { padding: 20px 52px 14px 18px; }
   .idea-panel-body { padding: 14px 18px 18px; }
   .idea-panel-head h2 { font-size: 1.18rem; }
+  #idea-search { font-size: 16px; }
+  .idea-filter-btn { min-height: 38px; padding: 8px 16px; }
+  .idea-zone-btn { min-height: 38px; padding: 8px 14px; }
+  .idea-collapse-btn { min-height: 38px; }
+  .ideas-list .idea-card .idea-toggle { width: 36px; height: 36px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

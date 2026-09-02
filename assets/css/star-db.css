@@ -21,6 +21,9 @@
 
 /* ---------- 悬浮控制条：融合于星空顶部，不破坏沉浸感 ---------- */
 .star-db-controls {
+  /* 移动端控制栏悬浮/正常流均覆盖星空画布上部，容器放行点击穿透，
+     仅具体控件接收事件，保证星星可点、控件可操作 */
+  pointer-events: none;
   position: absolute;
   top: 14px;
   left: 50%;
@@ -41,6 +44,16 @@
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.32);
+}
+/* 控制栏容器 pointer-events:none 放行穿透后，具体交互控件重新接收事件 */
+.star-db-search,
+.star-db-search-clear,
+.star-db-filter .filter-btn,
+.filter-btn,
+.star-db-sort,
+.star-db-sort-select,
+.star-db-count {
+  pointer-events: auto;
 }
 .star-db-search-wrap {
   position: relative;
@@ -257,9 +270,18 @@
 /* ---------- 移动端 ---------- */
 @media (max-width: 640px) {
   .star-db-head { padding: 22px 0 2px; }
-  .star-db-stage { min-height: 460px; margin-top: 10px; }
+  .star-db-stage {
+    display: flex;
+    flex-direction: column;
+    min-height: 460px;
+    margin-top: 10px;
+  }
+  /* 控制栏改正常流顶部：不再悬浮遮挡星空，触控目标加大 */
   .star-db-controls {
-    top: 10px;
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
     width: calc(100% - 24px);
     max-width: none;
     flex-direction: column;
@@ -267,9 +289,16 @@
     gap: 8px;
     padding: 10px 12px;
     border-radius: 14px;
+    margin: 10px auto 0;
+    flex: 0 0 auto;
+    z-index: 9;
   }
   .star-db-search-wrap { width: 100%; }
+  .star-db-search { font-size: 16px; padding: 11px 76px 11px 40px; }
+  .star-db-search-clear { width: 32px; height: 32px; }
   .star-db-filter { justify-content: center; flex-wrap: wrap; }
+  .star-db-filter .filter-btn { min-height: 38px; padding: 8px 14px; }
+  .star-db-sort-select { min-height: 40px; padding: 8px 32px 8px 12px; }
   .star-db-toolbar { justify-content: space-between; }
   .star-db-count { font-size: 0.78rem; }
 }

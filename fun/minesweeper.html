@@ -44,12 +44,15 @@
     </div>
     <div class="fun-box">
       <style>
-        .ms-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:8px}
+        /* 移动端修复：棋盘可横向滚动兜底，375px 下 16×16/30×16 全格可达；9×9 无横滚 */
+        .fun-box{width:min(680px,100vw)}
+        .ms-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:8px;width:100%;max-width:100%;overflow-x:auto;min-width:0}
         .ms-panel{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
         .ms-ctrl{display:flex;align-items:center;gap:8px}
         .ms-ctrl select,.ms-ctrl button{font-size:0.85rem}
-        .ms-board{display:grid;gap:2px;background:var(--color-border,#333);padding:4px;border-radius:8px;touch-action:manipulation}
-        .ms-cell{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:600;cursor:pointer;user-select:none;border-radius:4px;background:var(--color-card,#1e1e24);color:var(--color-text,#e8e8ea);transition:background .1s}
+        .ms-board{display:grid;gap:1px;background:var(--color-border,#333);padding:2px;border-radius:8px;touch-action:pan-x pan-y;--n:9;--cell:38px;grid-template-columns:repeat(var(--n),var(--cell));width:max-content;max-width:none;margin:0 auto}
+        .ms-board.wide{margin-right:auto;align-self:flex-start}
+        .ms-cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:600;cursor:pointer;user-select:none;border-radius:4px;background:var(--color-card,#1e1e24);color:var(--color-text,#e8e8ea);transition:background .1s}
         .ms-cell:not(.open):hover{background:var(--color-accent,#7aa2f7)}
         .ms-cell.open{background:var(--color-bg,#121216);cursor:default}
         .ms-cell.mine-hit{background:#e06c75;color:#fff}

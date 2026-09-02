@@ -603,7 +603,7 @@
   function resize() {
     var r = section.getBoundingClientRect();
     W = Math.max(1, r.width); H = Math.max(1, r.height);
-    DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    DPR = Math.min(window.devicePixelRatio || 1, isTouchDevice ? 1.25 : 1.5);
     canvas.width = Math.round(W * DPR);
     canvas.height = Math.round(H * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -615,7 +615,7 @@
     if (!pLayer || !pCtx) return;
     var r = section.getBoundingClientRect();
     pW = Math.max(1, r.width); pH = Math.max(1, r.height);
-    pDPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    pDPR = Math.min(window.devicePixelRatio || 1, isTouchDevice ? 1.25 : 1.5);
     pLayer.width = Math.round(pW * pDPR);
     pLayer.height = Math.round(pH * pDPR);
     pCtx.setTransform(pDPR, 0, 0, pDPR, 0, 0);
@@ -789,7 +789,7 @@
         var ux = dx0 / dist0, uy = dy0 / dist0;
         var dPh = (Math.sin(ts * p.breathSpeed * 1.18 + p.breathPhase + 0.9) + 1) / 2;
         var dE = easeIO(dPh);
-        for (var k = 0; k < 3; k++) {
+        for (var k = 0; k < (isTouchDevice ? 1 : 3); k++) {
           var off = size * (0.85 + dE * 2.1 + k * 0.9);
           var dw = size * (0.26 + 0.18 * dE);
           var da = (0.20 + 0.16 * (1 - Math.abs(dE * 2 - 1))) * alpha;
@@ -861,9 +861,10 @@
   }
 
   /* ---------- 全局鼠标控制：缩放 / 方向 / 点击（绑定整个星空板块，页面内任意位置均可操控） ---------- */
+  var isTouchDevice = ("ontouchstart" in window) || (navigator.maxTouchPoints > 0);
   var finePointer = false;
   try { finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches; } catch (e) {}
-  var isTouch = ("ontouchstart" in window) || (navigator.maxTouchPoints > 0);
+  var isTouch = isTouchDevice;
 
   function pos(e) {
     var r = section.getBoundingClientRect();
@@ -885,6 +886,8 @@
   var pointerState = { id: null, x: 0, y: 0, px: 0, py: 0, active: 0, d0: 0, pinch: 0 };
   section.addEventListener("pointerdown", function (e) {
     if (panel && !panel.hidden) return;
+    /* 仅具体控件/空状态层上的点击不触发星空拖拽；控制栏容器已由 CSS pointer-events:none 放行穿透，覆盖区星星可点 */
+    if (e.target && e.target.closest && e.target.closest(".star-db-search, .star-db-search-clear, .star-db-search-wrap, .star-db-filter, .filter-btn, .star-db-sort, .star-db-sort-select, .star-db-count, .star-db-empty")) return;
     e.preventDefault();
     try { section.setPointerCapture(e.pointerId); } catch (err) {}
     pointerState.active++;
@@ -1036,11 +1039,13 @@
       sy = pr.top + pr.height / 2 - sr.top;
     }
     if (toX == null || isNaN(toX)) { toX = W / 2; toY = H / 2; }
-    spawnParticles(sx, sy, 22);
+    spawnParticles(sx, sy, isTouchDevice ? 12 : 22);
     particleAnim = { mode: "close", t0: performance.now(), dur: 480, sx: sx, sy: sy, tx: toX, ty: toY, onDone: hidePanelNow };
     ensureAnimLoop();
   }
   function showPanelNow() {
+    /* 锁定页面滚动，防止面板下层滚动穿透 */
+    document.body.classList.add("star-panel-open");
     if (mask) {
       mask.hidden = false;
       requestAnimationFrame(function () { mask.classList.add("mask-in"); });
@@ -1052,6 +1057,7 @@
     renderFrame(performance.now());
   }
   function hidePanelNow() {
+    document.body.classList.remove("star-panel-open");
     if (mask) mask.hidden = true;
     if (panel) panel.hidden = true;
   }
@@ -1148,6 +1154,9 @@
   });
   if (elClose) elClose.addEventListener("click", function () { closePanel(); });
   if (mask) mask.addEventListener("click", function () { closePanel(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && panel && !panel.hidden) closePanel();
+  });
 
   /* ---------- 语言切换时刷新面板 + 动态统计 ---------- */
   document.addEventListener("click", function (e) {

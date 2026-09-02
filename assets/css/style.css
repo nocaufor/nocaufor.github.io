@@ -934,7 +934,8 @@ html.theme-switching * {
     box-shadow: var(--shadow);
   }
   .nav-links.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-  .nav-links a { padding: 10px 4px; font-size: 1rem; }
+  .nav-links { max-height: calc(100vh - var(--header-h) - 12px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .nav-links a { padding: 13px 6px; font-size: 1.02rem; min-height: 44px; display: flex; align-items: center; }
   .nav-toggle { display: flex; }
 }
 
@@ -944,6 +945,15 @@ html.theme-switching * {
   .idea-card { padding: 18px 18px; }
   .hero-actions { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 48px; }
   .hero-actions .btn { width: 100%; }
+}
+
+/* 移动导航 / 星空详情面板打开时锁定页面滚动（防滚动穿透） */
+body.nav-open,
+body.star-panel-open { overflow: hidden; }
+
+/* 小屏表单控件字号 16px，防止 iOS 聚焦自动缩放 */
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1342,6 +1352,9 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
           mask-image: radial-gradient(ellipse 90% 70% at 50% 12%, #000 25%, transparent 78%);
 }
 .main, .site-header, .site-footer { position: relative; z-index: 1; }
+/* 移动端折叠菜单修复：恢复 .site-header sticky 定位并抬高其层级，
+   使其内部 fixed 折叠面板(.nav-links.open)浮于 .main 之上，避免被主体遮挡 */
+.site-header { position: sticky; top: 0; z-index: 60; }
 
 /* ---- 角标线框 ---- */
 .corner-frame { position: relative; }

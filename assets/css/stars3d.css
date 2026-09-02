@@ -186,7 +186,16 @@
 
 /* ---------- 移动端 ---------- */
 @media (max-width: 640px) {
-  .star-panel { padding: 22px 18px 18px; }
+  .star-panel {
+    padding: 22px 18px 18px;
+    width: min(400px, calc(100vw - 32px));
+    max-height: calc(100dvh - 36px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .star-panel-close { width: 36px; height: 36px; top: 12px; right: 12px; }
+  .star-panel-actions { flex-direction: column; }
+  .star-panel-links .btn { width: 100%; }
 }
 
 /* ---------- 减弱动效：静态星空 ---------- */
@@ -197,7 +206,10 @@
 }
 /* ---------- 全屏自适应（窄屏不挤压） ---------- */
 @media (max-width: 640px) {
-  .stars-section { height: 100vh; }
+  .stars-section { height: 100vh; height: min(100vh, 100dvh); }
+  /* 允许页面垂直滚动（控制栏改正常流后舞台可滚动），禁止画布吞掉滑动手势 */
+  .stars-section,
+  #stars-canvas { touch-action: pan-y; }
 }
 
 /* ---------- 宇宙大爆炸转场：每次下滑进入星空时播放 ----------
