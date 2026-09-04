@@ -20,7 +20,7 @@
   <div class="bg-fog" aria-hidden="true"></div>
 
   <!-- ==================== 顶部导航 ==================== -->
-  <header class="site-header">
+  <header class="site-header star-db-header">
     <div class="container nav">
       <a href="index.html" class="brand">
         <img class="brand-logo" src="assets/img/logo.svg" alt="nocau" width="30" height="30" />
@@ -34,7 +34,7 @@
           <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
           <a href="about.html" data-i18n="nav_about">关于</a>
           <a href="contact.html" data-i18n="nav_contact">联系</a>
-          <a href="services.html" data-i18n="nav_services">定制服务</a>
+          <a href="contact.html#custom-services" data-i18n="nav_services">定制服务</a>
 
         </nav>
         <button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言" data-i18n-attr="aria-label=lang_aria">EN</button>
@@ -50,18 +50,6 @@
   </header>
 
   <main class="main star-db-main">
-
-    <!-- ============ 星空数据库标题区 ============ -->
-    <section class="star-db-head">
-      <div class="container star-db-head-inner">
-        <div class="section-head reveal">
-          <span class="section-tag">Star Database</span>
-          <div class="section-divider"></div>
-          <h1 class="section-title" data-i18n-html="star_db_title">星空<span class="gradient-text">数据库</span></h1>
-          <p class="section-desc" data-i18n="star_db_desc">每一个程序与想法，都是一颗星星。筛选、搜索、排序，点击星星展开详情。</p>
-        </div>
-      </div>
-    </section>
 
     <!-- ============ 3D 星空展示区（唯一主体：控制栏悬浮、粒子层、详情面板） ============ -->
     <section class="section-panel stars-section star-db-stage" id="sec-stars" aria-label="3D 星空数据库">
@@ -81,7 +69,6 @@
         </div>
         <div class="star-db-toolbar">
           <label class="star-db-sort">
-            <span class="star-db-sort-label" data-i18n="star_db_sort">排序</span>
             <select id="star-db-sort" class="star-db-sort-select">
               <option value="code-asc" data-i18n="star_db_sort_code_asc">编号 ↑</option>
               <option value="code-desc" data-i18n="star_db_sort_code_desc">编号 ↓</option>
@@ -98,7 +85,6 @@
         <div class="star-db-empty-inner">
           <svg class="star-db-empty-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
           <h3 class="star-db-empty-title" data-i18n="star_db_empty_title">没有找到匹配的星星</h3>
-          <p class="star-db-empty-desc" data-i18n="star_db_empty_desc">换个关键词或清除筛选条件再试试。</p>
           <button type="button" class="btn btn-outline btn-sm star-db-empty-reset" data-i18n="star_db_empty_reset">清空筛选</button>
         </div>
       </div>
@@ -118,7 +104,6 @@
           <button type="button" class="btn btn-primary btn-sm star-rate-btn" id="star-like" data-i18n="stars3d_like">赞一下</button>
           <button type="button" class="btn btn-outline btn-sm star-rate-btn" id="star-dislike" data-i18n="stars3d_dislike">不感兴趣</button>
         </div>
-        <p class="star-panel-note" data-i18n="stars3d_note">点赞会让星星更亮，不感兴趣会变暗。</p>
         <div class="star-panel-links">
           <a class="btn btn-primary btn-sm" id="star-link" href="#" target="_self">查看项目</a>
           <a class="btn btn-outline btn-sm" id="star-link2" href="#" target="_self" hidden>查看相关想法</a>
@@ -127,27 +112,6 @@
     </section>
 
   </main>
-
-  <!-- ==================== 页脚 ==================== -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <span class="footer-brand">
-        <img class="mini-logo" src="assets/img/logo.svg" alt="nocau" width="16" height="16" />
-        © <span id="year">2026</span> nocau.com
-        <span class="footer-slogan" data-i18n="footer_slogan">让科技引领文明进步</span>
-      </span>
-      <nav class="footer-links">
-        <a href="index.html" data-i18n="nav_home">首页</a>
-        <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
-        <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
-        <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
-        <a href="about.html" data-i18n="nav_about">关于</a>
-        <a href="contact.html" data-i18n="nav_contact">联系</a>
-          <a href="services.html" data-i18n="nav_services">定制服务</a>
-
-      </nav>
-    </div>
-  </footer>
 
   <button id="back-to-top" class="back-to-top" aria-label="回到顶部" data-i18n-attr="aria-label=back_aria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
 

@@ -23,4 +23,4 @@ pages/
     └── index.html       # 博客/新闻
 
 所有页面使用相对路径引用 assets 资源（如 ../assets/css/style.css）。
-*（内容由AI生成，仅供参考）*
+

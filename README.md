@@ -1,13 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 6e300d47393ccbbdb5ddea648378e4bb_c26bc0ea9ecc11f1a413525400287e28
-    ReservedCode1: ky90rSzs3uu8ryejrRoGbhyOkCCjRnz0nzbEm9IZDrk1NZeIx6K2lYlWJ9obHrLZ5df3+T7pz2Gs7uAioT66237oo3WsDifZFOtgUnghuSx2tauk4udNiVcgKv1r5C2LkR0oavhzyHHsIn1MUMKFagtdHlSCoz+8BXyDpxETl6ymvV7Kw4SF9C4rh5w=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 6e300d47393ccbbdb5ddea648378e4bb_c26bc0ea9ecc11f1a413525400287e28
-    ReservedCode2: ky90rSzs3uu8ryejrRoGbhyOkCCjRnz0nzbEm9IZDrk1NZeIx6K2lYlWJ9obHrLZ5df3+T7pz2Gs7uAioT66237oo3WsDifZFOtgUnghuSx2tauk4udNiVcgKv1r5C2LkR0oavhzyHHsIn1MUMKFagtdHlSCoz+8BXyDpxETl6ymvV7Kw4SF9C4rh5w=
----
 # nocau.com — 个人开发者作品集
 
 开发者 LINGAo 的个人作品集站点，托管于 GitHub Pages，绑定自定义域名 www.nocau.com。
@@ -101,4 +91,3 @@ npm start
 - 代码开发合集：在 `fun/` 新增独立页面，并同步登记到 `fun/index.html` 对应分组；
 - 星空数据库数据：维护 `assets/js/star-data.js`，新增项目或想法后同步更新。
 
-*（内容由AI生成，仅供参考）*

@@ -118,4 +118,4 @@ server {
 - 日志：服务启动日志在控制台；生产用 PM2 的 `pm2 logs nocau`
 - 监控：`/api/health` 接入可用性监控
 - 更新：`git pull` 后 `pm2 restart nocau`
-*（内容由AI生成，仅供参考）*
+

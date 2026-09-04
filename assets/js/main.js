@@ -497,7 +497,29 @@
 
   /* ============ 12f. 想法项目：卡片筛选 ============
 
-  /* ============ 13. 页面过渡（站内链接淡出） ============ */
+  /* ============ 13. 页面过渡（站内链接：预加载 + 丝滑离场 + 入场动画） ============ */
+  var navTimer = null;
+  /* 经站内链接跳转进入时，新页加载后播放入场动画（旧页在离场前写入 sessionStorage 标记） */
+  function applyPageEnter() {
+    if (prefersReduced) return;
+    var pending = null;
+    try { pending = sessionStorage.getItem("nocau-pending-page"); } catch (e) {}
+    if (!pending) return;
+    try { sessionStorage.removeItem("nocau-pending-page"); } catch (e) {}
+    var bodyEl = document.body;
+    bodyEl.classList.add("page-enter");
+    setTimeout(function () { bodyEl.classList.remove("page-enter"); }, 650);
+  }
+  /* 点击目标链接后预取页面 HTML，让新页资源更快就绪 */
+  function prefetchPage(href) {
+    try {
+      var l = document.createElement("link");
+      l.rel = "prefetch";
+      l.as = "document";
+      l.href = href;
+      document.head.appendChild(l);
+    } catch (e) { /* 预取失败不影响跳转 */ }
+  }
   function initPageTransitions() {
     if (prefersReduced) return;
     $all("a").forEach(function (a) {
@@ -507,8 +529,11 @@
       a.addEventListener("click", function (e) {
         if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
         e.preventDefault();
+        prefetchPage(href);
         document.body.classList.add("page-leaving");
-        setTimeout(function () { window.location.href = href; }, 200);
+        try { sessionStorage.setItem("nocau-pending-page", "1"); } catch (err) {}
+        clearTimeout(navTimer);
+        navTimer = setTimeout(function () { window.location.href = href; }, 300);
       });
     });
   }
@@ -593,6 +618,7 @@
 
   /* ============ 启动 ============ */
   document.addEventListener("DOMContentLoaded", function () {
+    applyPageEnter();
     initThemeToggle();
     initNavToggle();
     initNavActive();

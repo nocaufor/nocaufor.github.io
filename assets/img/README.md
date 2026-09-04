@@ -15,4 +15,4 @@ AIGC:
 如需真实图片：
 1. 将图片放入本目录；
 2. 修改 projects.html 中对应 .project-cover 区块的背景或新增 <img> 标签。
-*（内容由AI生成，仅供参考）*
+

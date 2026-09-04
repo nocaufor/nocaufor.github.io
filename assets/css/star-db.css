@@ -3,20 +3,28 @@
    精简标题区 + 星空舞台（控制栏悬浮于星空上）
    ============================================================ */
 
-/* ---------- 页面布局：标题区 + 星空舞台占满剩余视口 ---------- */
+/* ---------- 页面布局：全屏沉浸（无标题区/页脚，导航悬浮于星空之上） ---------- */
+html,
+body {
+  overflow: hidden;
+}
 .star-db-main {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - var(--header-h, 64px) - 90px);
+  display: block;
+  min-height: 100vh;
 }
-.star-db-head {
-  padding: 30px 0 4px;
-}
-.star-db-head-inner {
-  text-align: center;
-}
-.star-db-head .section-head {
-  margin-bottom: 0;
+/* 悬浮导航：毛玻璃浮条叠在星空上方，不占版心、不挤压舞台 */
+.site-header.star-db-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  height: var(--header-h, 64px);
+  background: linear-gradient(180deg, rgba(4, 7, 16, 0.78), rgba(4, 7, 16, 0.34) 62%, rgba(4, 7, 16, 0));
+  border-bottom: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: none;
 }
 
 /* ---------- 悬浮控制条：融合于星空顶部，不破坏沉浸感 ---------- */
@@ -25,7 +33,7 @@
      仅具体控件接收事件，保证星星可点、控件可操作 */
   pointer-events: none;
   position: absolute;
-  top: 14px;
+  top: calc(var(--header-h, 64px) + 14px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 8;
@@ -214,7 +222,6 @@
   z-index: 3;
   pointer-events: auto;
   background: rgba(4, 6, 16, 0.42);
-  border-radius: 18px;
   backdrop-filter: blur(2px);
 }
 .star-db-empty-inner {
@@ -240,25 +247,23 @@
   font-weight: 600;
   color: var(--text);
 }
-.star-db-empty-desc {
-  margin: 0;
-  font-size: 0.86rem;
-  color: var(--text-2);
-}
 .star-db-empty-reset {
   margin-top: 6px;
 }
 .star-db-empty[hidden] { display: none; }
 
-/* ---------- 3D 星空舞台：占满标题区之后剩余高度 ---------- */
+/* ---------- 3D 星空舞台：铺满整个可视区（进入即沉浸） ---------- */
 .star-db-stage {
-  flex: 1;
-  height: auto;
-  min-height: 480px;
-  margin-top: 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(170, 182, 200, 0.10);
+  display: block;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0;
+  border-radius: 0;
+  border: none;
   position: relative;
+  overflow: hidden;
 }
 .star-db-stage #stars-canvas {
   width: 100%;
@@ -269,28 +274,28 @@
 
 /* ---------- 移动端 ---------- */
 @media (max-width: 640px) {
-  .star-db-head { padding: 22px 0 2px; }
   .star-db-stage {
-    display: flex;
-    flex-direction: column;
-    min-height: 460px;
-    margin-top: 10px;
+    display: block;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    margin: 0;
   }
-  /* 控制栏改正常流顶部：不再悬浮遮挡星空，触控目标加大 */
+  /* 控制栏保持悬浮于星空顶部：不占流、触控目标加大（页脚/标题已移除） */
   .star-db-controls {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
-    width: calc(100% - 24px);
-    max-width: none;
-    flex-direction: column;
-    align-items: stretch;
+    position: absolute;
+    top: calc(var(--header-h, 64px) + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100% - 16px);
+    flex-direction: row;
+    align-items: center;
     gap: 8px;
     padding: 10px 12px;
-    border-radius: 14px;
-    margin: 10px auto 0;
-    flex: 0 0 auto;
+    border-radius: 16px;
+    margin: 0;
+    flex: none;
     z-index: 9;
   }
   .star-db-search-wrap { width: 100%; }
@@ -301,6 +306,19 @@
   .star-db-sort-select { min-height: 40px; padding: 8px 32px 8px 12px; }
   .star-db-toolbar { justify-content: space-between; }
   .star-db-count { font-size: 0.78rem; }
+}
+
+/* ---------- 弱交互窄屏（手机全屏时让顶部浮层纵向排布） ---------- */
+@media (max-width: 480px) {
+  .star-db-controls {
+    top: calc(var(--header-h, 64px) + 8px);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: calc(100% - 16px);
+    max-width: none;
+  }
+  .star-db-filter { flex-wrap: wrap; }
 }
 
 /* ---------- 减弱动效 ---------- */
