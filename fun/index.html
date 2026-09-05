@@ -6,7 +6,7 @@
   <title>代码开发 · nocau</title>
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
-  <meta name="description" content="nocau 代码开发合集：娱乐代码（视觉互动与小游戏）、功能代码（日常实用工具）、实用代码（面向开发者的可复用功能代码）三大类，共 67 个可独立运行的页面。" />
+  <meta name="description" content="nocau 代码开发合集：娱乐代码（视觉互动与小游戏）、功能代码（日常实用工具）、实用代码（面向开发者的可复用功能代码）三大类，共 73 个可独立运行的页面。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -49,7 +49,7 @@
           <span class="section-tag">Fun Zone</span>
           <div class="section-divider"></div>
           <h1 class="section-title">代码开发<span class="gradient-text">合集</span></h1>
-          <p class="section-desc">67 个可独立运行的代码页面，按用途分为三类：娱乐代码（视觉互动与小游戏）、功能代码（日常实用工具）、实用代码（面向开发者的可复用功能代码）。每个都是纯 HTML + 外部 JS，CSP 兼容、零依赖。</p>
+          <p class="section-desc">73 个可独立运行的代码页面，按用途分为三类：娱乐代码（视觉互动与小游戏）、功能代码（日常实用工具）、实用代码（面向开发者的可复用功能代码与视觉/感知 demo）。每个都是纯 HTML + 外部 JS，CSP 兼容、零依赖。</p>
         </div>
         <div class="fun-filters reveal" id="fun-filters">
           <button type="button" class="btn is-active" data-filter="all">全部</button>
@@ -57,7 +57,7 @@
           <button type="button" class="btn" data-filter="func">功能代码</button>
           <button type="button" class="btn" data-filter="dev">实用代码</button>
         </div>
-        <p class="fun-count reveal" id="fun-count">共 67 个可运行页面</p>
+        <p class="fun-count reveal" id="fun-count">共 73 个可运行页面</p>
         <div class="fun-section reveal" id="sec-ent" data-group="ent">
           <div class="fun-section-head">
             <span class="fun-section-kicker">Entertainment · E Series</span>
@@ -484,6 +484,42 @@
             <h3>图像批量压缩与水印</h3>
             <p>Pillow 批量缩放、质量压缩与文字 / 图片水印，统计节省空间。</p>
             <div class="fun-card-tags"><span class="tag">Pillow</span><span class="tag">图片处理</span></div>
+          </a>
+          <a class="fun-card reveal" href="radar.html" data-cat="dev">
+            <span class="fun-card-index">P000027</span>
+            <h3>雷达扫描</h3>
+            <p>Canvas 雷达扫描线旋转与目标亮点回波，带距离/角度读数，速度与目标数可调。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas</span><span class="tag">视觉感知</span></div>
+          </a>
+          <a class="fun-card reveal" href="laser.html" data-cat="dev">
+            <span class="fun-card-index">P000028</span>
+            <h3>激光束折射演示</h3>
+            <p>Canvas 动态激光束：入射角与镜面角度可调，光路反射、折返与能量集中点模拟。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas</span><span class="tag">视觉感知</span></div>
+          </a>
+          <a class="fun-card reveal" href="face-detect.html" data-cat="dev">
+            <span class="fun-card-index">P000029</span>
+            <h3>人脸识别 demo</h3>
+            <p>face-api.js（jsdelivr CDN）轻量模型，上传图片即本地人脸检测并画框标注关键点。</p>
+            <div class="fun-card-tags"><span class="tag">视觉</span><span class="tag">AI 推理</span></div>
+          </a>
+          <a class="fun-card reveal" href="object-detect.html" data-cat="dev">
+            <span class="fun-card-index">P000030</span>
+            <h3>目标检测 demo</h3>
+            <p>TensorFlow.js + COCO-SSD（jsdelivr CDN）本地推理，上传图片标注常见物体类别与置信度。</p>
+            <div class="fun-card-tags"><span class="tag">视觉</span><span class="tag">AI 推理</span></div>
+          </a>
+          <a class="fun-card reveal" href="image-filter.html" data-cat="dev">
+            <span class="fun-card-index">P000031</span>
+            <h3>图像滤镜</h3>
+            <p>Canvas 像素级本地算法：灰度/反色/锐化/模糊/边缘检测，强度可调，图片不上传。</p>
+            <div class="fun-card-tags"><span class="tag">像素算法</span><span class="tag">视觉</span></div>
+          </a>
+          <a class="fun-card reveal" href="image-lab.html" data-cat="dev">
+            <span class="fun-card-index">P000032</span>
+            <h3>图像处理实验</h3>
+            <p>Sobel 边缘检测、素描风、浮雕等算法对照实验台，阈值实时调节。</p>
+            <div class="fun-card-tags"><span class="tag">像素算法</span><span class="tag">视觉</span></div>
           </a>
           </div>
         </div>

@@ -1422,20 +1422,23 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   position: absolute;
   inset: 20px;
   border-radius: 50%;
-  border: 1px solid rgba(150, 214, 236, .4);
-  box-shadow: 0 0 12px rgba(110, 200, 235, .16), inset 0 0 5px rgba(110, 200, 235, .08);
+  border: 1px solid rgba(148, 215, 240, .48);
+  box-shadow: 0 0 14px rgba(110, 205, 245, .18), inset 0 0 8px rgba(110, 205, 245, .10);
+  animation: hero-ring-breathe 3.6s ease-in-out infinite;
 }
-/* 中心太阳：暖色圆圈 + 光晕 */
+/* 中心太阳：镂空暖色圆环 + 呼吸光晕（无填充） */
 .hero-orbit-sun {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
   border-radius: 50%;
-  background: #ffce79;
-  box-shadow: 0 0 10px rgba(255, 196, 110, .85), 0 0 24px rgba(255, 178, 92, .4);
+  border: 1.6px solid rgba(255, 196, 128, .92);
+  background: transparent;
+  box-shadow: 0 0 8px rgba(255, 180, 110, .4), inset 0 0 6px rgba(255, 180, 110, .3);
+  animation: hero-sun-breathe 2.6s ease-in-out infinite;
 }
 /* 地球公转容器：带动地球沿主轨道环绕太阳 */
 .hero-orbit-track-earth {
@@ -1443,56 +1446,72 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   inset: 0;
   animation: hero-earth-orbit 22s linear infinite;
 }
-/* 地球：小圆点示意（尺寸大于月球、小于太阳） */
+/* 地球：空心圆环，中心落在主轨道线上（无填充） */
 .hero-orbit-earth {
   position: absolute;
   left: 50%;
-  top: 15px;
-  width: 9px;
-  height: 9px;
-  margin-left: -4.5px;
+  top: 12px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
   border-radius: 50%;
-  background: #5fb4ee;
-  box-shadow: 0 0 8px rgba(95, 180, 238, .5);
+  border: 1.4px solid rgba(140, 198, 250, .95);
+  background: transparent;
+  box-shadow: 0 0 7px rgba(120, 185, 248, .45), inset 0 0 5px rgba(120, 185, 248, .28);
+  animation: hero-earth-breathe 3.4s ease-in-out infinite;
 }
 /* 月球次级轨道线：以地球为圆心的细环 */
 .hero-orbit-moon-path {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 24px;
-  height: 24px;
-  margin: -12px 0 0 -12px;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
   border-radius: 50%;
-  border: 1px solid rgba(210, 225, 245, .36);
+  border: 1px solid rgba(215, 230, 250, .34);
 }
 /* 月球公转容器 */
 .hero-orbit-track-moon {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 24px;
-  height: 24px;
-  margin: -12px 0 0 -12px;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
   animation: hero-moon-orbit 7s linear infinite;
 }
-/* 月球：更小的浅色圆点 */
+/* 月球：更小的空心细环（无填充） */
 .hero-orbit-moon {
   position: absolute;
   left: 50%;
-  top: -2.5px;
-  width: 5px;
-  height: 5px;
-  margin-left: -2.5px;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
   border-radius: 50%;
-  background: #dce5f2;
-  box-shadow: 0 0 6px rgba(210, 226, 250, .55);
+  border: 1.1px solid rgba(236, 243, 253, .9);
+  background: transparent;
+  box-shadow: 0 0 5px rgba(220, 235, 255, .45), inset 0 0 4px rgba(220, 235, 255, .28);
 }
 @keyframes hero-earth-orbit { to { transform: rotate(360deg); } }
 @keyframes hero-moon-orbit { to { transform: rotate(360deg); } }
+@keyframes hero-ring-breathe {
+  0%, 100% { box-shadow: 0 0 10px rgba(110, 205, 245, .14), inset 0 0 6px rgba(110, 205, 245, .08); }
+  50% { box-shadow: 0 0 20px rgba(110, 205, 245, .34), inset 0 0 12px rgba(110, 205, 245, .18); }
+}
+@keyframes hero-sun-breathe {
+  0%, 100% { box-shadow: 0 0 6px rgba(255, 180, 110, .28), inset 0 0 5px rgba(255, 180, 110, .22); }
+  50% { box-shadow: 0 0 14px rgba(255, 180, 110, .6), inset 0 0 9px rgba(255, 180, 110, .42); }
+}
+@keyframes hero-earth-breathe {
+  0%, 100% { box-shadow: 0 0 4px rgba(120, 185, 248, .3), inset 0 0 4px rgba(120, 185, 248, .2); }
+  50% { box-shadow: 0 0 10px rgba(120, 185, 248, .62), inset 0 0 7px rgba(120, 185, 248, .4); }
+}
 @media (prefers-reduced-motion: reduce) {
   .hero-orbit-track-earth { animation: none; }
   .hero-orbit-track-moon { animation: none; }
+  .hero-orbit-ring, .hero-orbit-sun, .hero-orbit-earth { animation: none; }
 }
 /* 首页 hero 层级：主标识（logo/字标/口号）与次层级（标语/打字行/按钮）拉开节奏 */
 .hero .display-title { font-size: clamp(20px, 3.6vw, 30px); font-weight: 600; letter-spacing: -0.01em; line-height: 1.4; margin-top: clamp(26px, 4vh, 44px); }

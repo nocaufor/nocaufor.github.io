@@ -78,7 +78,7 @@
       home_stat_code: "代码项目",
       home_stat_idea: "想法方案",
       home_stat_work: "代表作品",
-      home_stat_star: "星空星星",
+      home_stat_star: "收录条目",
       home_work_title: "代表<span class=\"gradient-text\">作品</span>",
       home_work_desc: "从作品集中精选的四个方向：小程序、Android、适老安全与 AI 平台。",
       home_work_w1: "服装管理工具 · 微信小程序，记录、分类、检索与日常衣物管理。",
@@ -98,11 +98,11 @@
       home_quick_projects: "作品集",
       home_quick_projects_desc: "微信小程序、Android 应用与 AI 平台代表作。",
       home_quick_fun: "代码开发",
-      home_quick_fun_desc: "娱乐 / 功能 / 实用三类代码，67 个页面持续更新。",
+      home_quick_fun_desc: "娱乐 / 功能 / 实用三类代码，73 个页面持续更新。",
       home_quick_ideas: "想法项目",
       home_quick_ideas_desc: "56 个想法方案，按分区沉淀、筛选与推进。",
       home_quick_stars: "星空数据库",
-      home_quick_stars_desc: "所有程序与想法化身为星，搜索、筛选、探索。",
+      home_quick_stars_desc: "集中收录代码与想法条目，支持搜索、筛选与探索。",
       home_quick_go: "前往 →",
       sec_stats: "数据统计",
       sec_capabilities: "能力矩阵",
@@ -244,7 +244,7 @@
       star_db_empty_title: "没有找到匹配的星星",
       star_db_empty_desc: "换个关键词或清除筛选条件再试试。",
       star_db_empty_reset: "清空筛选",
-      star_db_count: "共 123 颗星星"
+      star_db_count: "共 129 颗星星"
     },
     en: {
       nav_home: "Home",
@@ -319,7 +319,7 @@
       home_stat_code: "Code Projects",
       home_stat_idea: "Ideas",
       home_stat_work: "Featured Works",
-      home_stat_star: "Stars",
+      home_stat_star: "Entries",
       home_work_title: "Featured <span class=\"gradient-text\">Works</span>",
       home_work_desc: "Four directions from the portfolio: mini-program, Android, elder-safe security and AI platform.",
       home_work_w1: "Wardrobe assistant mini-program: record, classify, search and manage daily clothing.",
@@ -339,11 +339,11 @@
       home_quick_projects: "Projects",
       home_quick_projects_desc: "Featured mini-programs, Android apps and AI platforms.",
       home_quick_fun: "Code Lab",
-      home_quick_fun_desc: "67 pages across entertainment / functional / utility code.",
+      home_quick_fun_desc: "73 pages across entertainment / functional / utility code.",
       home_quick_ideas: "Ideas",
       home_quick_ideas_desc: "56 idea proposals organized, filtered and tracked.",
       home_quick_stars: "Star Database",
-      home_quick_stars_desc: "Every program and idea becomes a star to explore.",
+      home_quick_stars_desc: "A centralized catalog of code and idea entries to search and explore.",
       home_quick_go: "Go →",
       sec_stats: "By the Numbers",
       sec_capabilities: "Capabilities",
@@ -485,7 +485,7 @@
       star_db_empty_title: "No matching stars",
       star_db_empty_desc: "Try another keyword or clear the filters.",
       star_db_empty_reset: "Clear filters",
-      star_db_count: "123 stars in total"
+      star_db_count: "129 stars in total"
     }
   };
 
