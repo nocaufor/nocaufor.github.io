@@ -4,21 +4,28 @@
   var filterBar = document.getElementById("fun-filters");
   if (!filterBar) return;
   var cards = Array.prototype.slice.call(document.querySelectorAll(".fun-card"));
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".fun-section[data-group]"));
   var countEl = document.getElementById("fun-count");
 
   function applyFilter(filter) {
     var shown = 0;
+    var valid = filter === "all" || ["ent", "func", "dev"].indexOf(filter) !== -1;
+    filter = valid ? filter : "all";
+    sections.forEach(function (section) {
+      var group = section.getAttribute("data-group");
+      section.classList.toggle("is-hidden", filter !== "all" && group !== filter);
+    });
     cards.forEach(function (card) {
       var cat = card.getAttribute("data-cat") || "classic";
       var match = filter === "all" || cat === filter;
-      card.style.display = match ? "" : "none";
+      card.classList.toggle("is-hidden", !match);
       if (match) shown += 1;
     });
     Array.prototype.forEach.call(filterBar.querySelectorAll(".btn"), function (btn) {
       var isActive = btn.getAttribute("data-filter") === filter;
       btn.classList.toggle("is-active", isActive);
     });
-    if (countEl) countEl.textContent = "共 " + shown + " / " + cards.length + " 个可运行页面";
+    if (countEl) countEl.textContent = "共 " + shown + " 个可运行页面";
   }
 
   filterBar.addEventListener("click", function (ev) {

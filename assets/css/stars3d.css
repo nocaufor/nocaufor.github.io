@@ -212,10 +212,9 @@
   #stars-canvas { touch-action: pan-y; }
 }
 
-/* ---------- 宇宙大爆炸转场：每次下滑进入星空时播放 ----------
-   亮度脉冲（canvas 同步绘制主光球/扩张波环/星尘喷涌/星星生长） */
+/* ---------- 星空入场过渡：一次低对比的柔光晕开，无硬边圆环 ---------- */
 .stars-section.light-burst {
-  animation: starsBurstFlash 1.5s ease-out;
+  animation: starsBurstFlash 1.4s ease-out;
 }
 .stars-section.light-burst::before,
 .stars-section.light-burst::after {
@@ -223,30 +222,32 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 48px;
-  height: 48px;
+  width: 24vmax;
+  height: 24vmax;
   border-radius: 50%;
-  border: 2px solid rgba(224, 234, 255, 0.85);
-  transform: translate(-50%, -50%) scale(0.08);
+  transform: translate(-50%, -50%) scale(0.12);
   opacity: 0;
-  animation: starsBurstRing 1.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  filter: blur(8px);
   pointer-events: none;
   z-index: 6;
+  animation: starsBurstGlow 1.5s ease-out forwards;
+}
+.stars-section.light-burst::before {
+  background: radial-gradient(circle, rgba(222, 232, 255, 0.6) 0%, rgba(160, 172, 238, 0.22) 34%, rgba(130, 118, 220, 0) 72%);
 }
 .stars-section.light-burst::after {
-  animation-delay: 0.14s;
-  border-color: rgba(168, 182, 240, 0.5);
-  border-width: 1.5px;
+  animation-delay: 0.18s;
+  background: radial-gradient(circle, rgba(255, 248, 234, 0.34) 0%, rgba(188, 168, 236, 0.14) 42%, rgba(128, 118, 216, 0) 70%);
 }
 @keyframes starsBurstFlash {
-  0% { filter: brightness(2.2) saturate(1.35); }
-  28% { filter: brightness(1.55); }
-  58% { filter: brightness(1.12); }
+  0% { filter: brightness(1.5) saturate(1.15); }
+  30% { filter: brightness(1.22); }
+  60% { filter: brightness(1.06); }
   100% { filter: brightness(1); }
 }
-@keyframes starsBurstRing {
-  0% { transform: translate(-50%, -50%) scale(0.08); opacity: 0.95; }
-  100% { transform: translate(-50%, -50%) scale(30); opacity: 0; }
+@keyframes starsBurstGlow {
+  0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.55; }
+  100% { transform: translate(-50%, -50%) scale(8); opacity: 0; }
 }
 
 /* ---------- 减弱动效：宇宙大爆炸降级为柔光淡入 ---------- */

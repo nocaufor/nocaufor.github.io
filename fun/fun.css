@@ -362,3 +362,59 @@
   .fun-section-head { text-align: center; }
   .fun-section-desc { margin-left: auto; margin-right: auto; }
 }
+
+/* ============ 合集入口页排版整理（保持 67 入口完整） ============ */
+/* 筛选时隐藏整段分区，避免出现“只有标题没有卡片”的空段 */
+.fun-section.is-hidden,
+.fun-card.is-hidden { display: none; }
+
+/* 分区节奏：标题块与网格间距统一 */
+.fun-section { margin-bottom: 56px; }
+.fun-section:last-of-type { margin-bottom: 0; }
+.fun-section-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.fun-section-kicker { font-size: 0.7rem; letter-spacing: 0.22em; color: var(--brand); text-transform: uppercase; }
+.fun-section-title { margin: 0; font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; }
+.fun-section-desc { margin: 0; color: var(--text-soft); font-size: 0.9rem; line-height: 1.7; max-width: 760px; }
+
+/* 卡片网格：等高行、统一留白，标题/简介/标签层级对齐 */
+.fun-grid { align-items: stretch; gap: 20px; }
+.fun-card {
+  min-height: 172px;
+  padding: 22px 20px;
+  gap: 9px;
+  text-align: left;
+}
+.fun-card h3 { margin: 0; font-size: 1.02rem; font-weight: 700; min-height: 1.4em; }
+.fun-card p { margin: 0; font-size: 0.86rem; color: var(--text-soft); line-height: 1.65; min-height: 2.7em; }
+.fun-card .fun-card-tags { margin-top: auto; padding-top: 8px; }
+
+/* 顶部说明与筛选条间距 */
+.fun-filters { margin-bottom: 24px; }
+.fun-count { margin-bottom: 28px; }
+.opensrc-note { margin-top: 40px; }
+
+/* 卡片宽度分级：大屏 4 列 / 中屏 3 列 / 窄屏 2 列 / 极窄 1 列 */
+@media (min-width: 1024px) {
+  .fun-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 1023px) and (min-width: 700px) {
+  .fun-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 699px) and (min-width: 481px) {
+  .fun-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .fun-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .fun-section-head { align-items: center; text-align: center; }
+  .fun-section-desc { margin-left: auto; margin-right: auto; }
+}

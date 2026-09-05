@@ -644,25 +644,21 @@
       return;
     }
     section.classList.add("light-burst");
-    burst = { dur: 2100, start: performance.now(), parts: [], rings: [] };
+    burst = { dur: 1500, start: performance.now(), parts: [], rings: [] };
     var bx = W / 2, by = H / 2;
-    /* 星尘喷涌：更多、更远、更快，带湍流漂移 */
-    for (var i = 0; i < 170; i++) {
+    /* 星尘：数量减半、速度放缓，只作入场的柔和点缀 */
+    for (var i = 0; i < 80; i++) {
       var ang = rand2() * Math.PI * 2;
-      var spd = 0.10 + Math.pow(rand2(), 0.7) * 1.05;
+      var spd = 0.08 + Math.pow(rand2(), 0.8) * 0.55;
       burst.parts.push({
         x: bx, y: by,
-        vx: Math.cos(ang) * spd * 118,
-        vy: Math.sin(ang) * spd * 118,
-        r: 0.7 + rand2() * 3.4,
-        life: 760 + rand2() * 1240,
-        drift: 0.4 + rand2() * 1.1,
+        vx: Math.cos(ang) * spd * 66,
+        vy: Math.sin(ang) * spd * 66,
+        r: 0.5 + rand2() * 1.7,
+        life: 520 + rand2() * 620,
+        drift: 0.25 + rand2() * 0.55,
         driftA: rand2() * Math.PI * 2
       });
-    }
-    /* 双层扩张波环（第二层稍晚出现） */
-    for (var r = 0; r < 2; r++) {
-      burst.rings.push({ delay: r * 0.12 * 1000, done: false });
     }
     setTimeout(function () { section.classList.remove("light-burst"); }, 2650);
     wake();
@@ -674,36 +670,17 @@
     var ease = 1 - Math.pow(1 - p, 3);
     var cx = W / 2, cy = H / 2;
     var R = Math.max(W, H) * 0.72;
-    /* 亮度脉冲：主光球先闪后稳（白 → 蓝紫 → 透明），带脉冲峰值 */
-    var pulse = Math.max(0, 1 - p) * (1 + 0.55 * Math.sin(p * Math.PI * 3));
-    var gr = Math.max(1, ease * R * (1 + 0.12 * (1 - p)));
+    /* 柔和光晕脉冲：中心一次低透明度的径向辉光，无硬边圆环 */
+    var pulse = Math.max(0, 1 - p) * (1 + 0.28 * Math.sin(p * Math.PI * 3));
+    var gr = Math.max(1, ease * R * (0.6 + 0.08 * (1 - p)));
     var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr);
-    g.addColorStop(0, "rgba(255,255,255," + (0.95 * pulse).toFixed(3) + ")");
-    g.addColorStop(0.3, "rgba(202,216,255," + (0.6 * pulse).toFixed(3) + ")");
-    g.addColorStop(0.66, "rgba(146,126,228," + (0.3 * pulse).toFixed(3) + ")");
+    g.addColorStop(0, "rgba(235,242,255," + (0.42 * pulse).toFixed(3) + ")");
+    g.addColorStop(0.28, "rgba(196,208,255," + (0.24 * pulse).toFixed(3) + ")");
+    g.addColorStop(0.66, "rgba(150,132,228," + (0.12 * pulse).toFixed(3) + ")");
     g.addColorStop(1, "rgba(110,100,200,0)");
     ctx.fillStyle = g;
     ctx.fillRect(cx - gr, cy - gr, gr * 2, gr * 2);
-    /* 扩张波环：同心圆环从中心炸开扩散 */
-    ctx.lineWidth = 2;
-    for (var ri = 0; ri < burst.rings.length; ri++) {
-      var ring = burst.rings[ri];
-      var rp = (ts - burst.start - ring.delay) / 1300;
-      if (rp <= 0) continue;
-      if (rp >= 1) { ring.done = true; continue; }
-      var rr = easeOutCubic(rp) * R * 1.05;
-      var ra = Math.max(0, 1 - rp) * 0.5;
-      ctx.strokeStyle = "rgba(226,236,255," + ra.toFixed(3) + ")";
-      ctx.beginPath();
-      ctx.arc(cx, cy, Math.max(2, rr), 0, Math.PI * 2);
-      ctx.stroke();
-      /* 环外柔和尾迹 */
-      ctx.strokeStyle = "rgba(170,182,238," + (ra * 0.4).toFixed(3) + ")";
-      ctx.beginPath();
-      ctx.arc(cx, cy, Math.max(2, rr * 0.86), 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    /* 星尘喷涌：快速向外扩散 + 湍流随机游走漂移 */
+    /* 星尘喷涌：向外扩散 + 湍流随机游走漂移 */
     for (var i = 0; i < burst.parts.length; i++) {
       var pt = burst.parts[i];
       pt.x += pt.vx * 0.016;
@@ -1265,7 +1242,7 @@
     }
     if (particleAnim) { particleAnim = null; particles = []; }
     if (fromX == null || isNaN(fromX)) { fromX = W / 2; fromY = H / 2; }
-    spawnParticles(fromX, fromY, 26);
+    spawnParticles(fromX, fromY, 8);
     particleAnim = { mode: "open", t0: performance.now(), dur: 540, sx: fromX, sy: fromY, onDone: showPanelNow };
     ensureAnimLoop();
     renderFrame(performance.now());
@@ -1286,7 +1263,7 @@
       sy = pr.top + pr.height / 2 - sr.top;
     }
     if (toX == null || isNaN(toX)) { toX = W / 2; toY = H / 2; }
-    spawnParticles(sx, sy, isTouchDevice ? 12 : 22);
+    spawnParticles(sx, sy, isTouchDevice ? 6 : 10);
     particleAnim = { mode: "close", t0: performance.now(), dur: 480, sx: sx, sy: sy, tx: toX, ty: toY, onDone: hidePanelNow };
     ensureAnimLoop();
   }
@@ -1313,13 +1290,13 @@
   function spawnParticles(x, y, n) {
     for (var i = 0; i < n; i++) {
       var ang = Math.random() * Math.PI * 2;
-      var spd = 1.2 + Math.random() * 3.6;
+      var spd = 0.5 + Math.random() * 1.7;
       particles.push({
         x: x, y: y,
         vx: Math.cos(ang) * spd,
         vy: Math.sin(ang) * spd,
-        r: 0.8 + Math.random() * 2.1,
-        alpha: 0.5 + Math.random() * 0.35
+        r: 0.5 + Math.random() * 1.0,
+        alpha: 0.3 + Math.random() * 0.3
       });
     }
   }
@@ -1368,7 +1345,7 @@
         pCtx.beginPath();
         pCtx.arc(pp.x, pp.y, Math.max(0.5, pp.r), 0, Math.PI * 2);
         pCtx.fill();
-        pCtx.globalAlpha = pp.alpha * 0.32;
+        pCtx.globalAlpha = pp.alpha * 0.16;
         pCtx.fillStyle = "#8fa6d8";
         pCtx.beginPath();
         pCtx.arc(pp.x, pp.y, pp.r * 2.8, 0, Math.PI * 2);
