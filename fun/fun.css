@@ -413,6 +413,26 @@
 }
 @media (max-width: 480px) {
   .fun-grid { grid-template-columns: 1fr; }
+  .fun-main { padding: 72px 12px 36px; }
+  .fun-intro { margin-bottom: 20px; }
+  .fun-box { width: 100%; min-height: 0; }
+  .fun-controls { gap: 8px; margin-top: 14px; }
+  .fun-controls .btn { min-width: 0; }
+  .fun-card { min-width: 0; min-height: 0; padding: 18px 16px; }
+  .fun-card h3, .fun-card p { overflow-wrap: anywhere; }
+  .fun-card p { min-height: 0; }
+  .fun-filters {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    margin: 0 -4px 14px;
+    padding: 2px 4px 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .fun-filters::-webkit-scrollbar { display: none; }
+  .fun-filters .btn { flex: 0 0 auto; white-space: nowrap; margin-right: 6px; }
+  .fun-footer { padding: 16px 10px 26px; }
 }
 @media (max-width: 900px) {
   .fun-section-head { align-items: center; text-align: center; }

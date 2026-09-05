@@ -320,9 +320,11 @@
       ["#1c2c5e", "#7f8fd0"], ["#18264f", "#9a8ed2"], ["#22335f", "#6793d8"],
       ["#2b2354", "#b098dc"], ["#1d2c55", "#6aa8dc"], ["#18264e", "#8b7fc4"],
       ["#141f3f", "#546ab8"], ["#3a2f4e", "#b095c2"], ["#162c50", "#5a90d0"],
-      ["#40213f", "#cc7f8e"], ["#1c2c5e", "#86b4e0"], ["#232053", "#ad7fda"]
+      ["#40213f", "#cc7f8e"], ["#1c2c5e", "#86b4e0"], ["#232053", "#ad7fda"],
+      ["#123a4a", "#74b6d8"], ["#3f2140", "#d590b0"], ["#1c2e63", "#94a8ee"],
+      ["#312a58", "#c3a0da"]
     ];
-    for (var n = 0; n < 12; n++) {
+    for (var n = 0; n < 16; n++) {
       var nx = W2 * (0.22 + rand() * 0.56), ny = H2 * (0.26 + rand() * 0.5);
       var nr = Math.max(W2, H2) * (0.14 + rand() * 0.20);
       var coreCol = nebColors[n % nebColors.length][0];
@@ -468,15 +470,33 @@
     return c;
   }
   function drawBand(g, cx, cy, bw, bh, rot, stops, w, h) {
+    /* 先在离屏层绘制：长轴线性渐变 + 短轴垂直羽化遮罩，
+       消除椭圆上下边缘的硬边弧线（原"生硬白圈"观感的主要来源） */
+    var bwPx = Math.max(2, Math.round(bw));
+    var bhPx = Math.max(2, Math.round(bh));
+    var t = document.createElement("canvas");
+    t.width = bwPx; t.height = bhPx;
+    var tg = t.getContext("2d");
+    var grad = tg.createLinearGradient(0, 0, bwPx, 0);
+    for (var i = 0; i < stops.length; i++) grad.addColorStop(stops[i][0], stops[i][1]);
+    tg.fillStyle = grad;
+    tg.beginPath();
+    tg.ellipse(bwPx / 2, bhPx / 2, bwPx / 2, bhPx / 2, 0, 0, Math.PI * 2);
+    tg.fill();
+    var yTop = bhPx * 0.16, yBot = bhPx * 0.84;
+    var mask = tg.createLinearGradient(0, 0, 0, bhPx);
+    mask.addColorStop(0, "rgba(0,0,0,0)");
+    mask.addColorStop(Math.max(0.001, yTop / bhPx), "rgba(0,0,0,1)");
+    mask.addColorStop(Math.min(0.999, yBot / bhPx), "rgba(0,0,0,1)");
+    mask.addColorStop(1, "rgba(0,0,0,0)");
+    tg.globalCompositeOperation = "destination-in";
+    tg.fillStyle = mask;
+    tg.fillRect(0, 0, bwPx, bhPx);
+    tg.globalCompositeOperation = "source-over";
     g.save();
     g.translate(cx, cy);
     g.rotate(rot);
-    var grad = g.createLinearGradient(-bw / 2, 0, bw / 2, 0);
-    for (var i = 0; i < stops.length; i++) grad.addColorStop(stops[i][0], stops[i][1]);
-    g.fillStyle = grad;
-    g.beginPath();
-    g.ellipse(0, 0, bw / 2, bh / 2, 0, 0, Math.PI * 2);
-    g.fill();
+    g.drawImage(t, -bwPx / 2, -bhPx / 2, bwPx, bhPx);
     g.restore();
   }
   function hexA(hex, a) {
@@ -1010,12 +1030,18 @@
         ctx.globalAlpha = 1;
       }
       if (hoverStar === st.id) {
-        ctx.globalAlpha = 0.35;
-        ctx.strokeStyle = "rgba(190, 205, 235, 0.9)";
-        ctx.lineWidth = 1;
+        /* 柔光光圈：径向渐变弥散辉光替代硬边描边圆环，肉眼只见柔和光斑 */
+        var hR = size * 5.2 + 12;
+        var hg = ctx.createRadialGradient(it.x, it.y, 0, it.x, it.y, hR);
+        hg.addColorStop(0, "rgba(226, 236, 255, 0.34)");
+        hg.addColorStop(0.32, "rgba(184, 200, 246, 0.16)");
+        hg.addColorStop(0.65, "rgba(150, 168, 230, 0.06)");
+        hg.addColorStop(1, "rgba(140, 158, 228, 0)");
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = hg;
         ctx.beginPath();
-        ctx.arc(it.x, it.y, size * 1.6 + 4, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.arc(it.x, it.y, hR, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
     ctx.globalAlpha = 1;

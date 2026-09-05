@@ -98,7 +98,7 @@
       home_quick_projects: "作品集",
       home_quick_projects_desc: "微信小程序、Android 应用与 AI 平台代表作。",
       home_quick_fun: "代码开发",
-      home_quick_fun_desc: "娱乐 / 功能 / 实用三类代码，73 个页面持续更新。",
+      home_quick_fun_desc: "娱乐 / 功能 / 实用三类代码，81 个页面持续更新。",
       home_quick_ideas: "想法项目",
       home_quick_ideas_desc: "56 个想法方案，按分区沉淀、筛选与推进。",
       home_quick_stars: "星空数据库",
@@ -244,7 +244,7 @@
       star_db_empty_title: "没有找到匹配的星星",
       star_db_empty_desc: "换个关键词或清除筛选条件再试试。",
       star_db_empty_reset: "清空筛选",
-      star_db_count: "共 129 颗星星"
+      star_db_count: "共 137 颗星星"
     },
     en: {
       nav_home: "Home",
@@ -339,7 +339,7 @@
       home_quick_projects: "Projects",
       home_quick_projects_desc: "Featured mini-programs, Android apps and AI platforms.",
       home_quick_fun: "Code Lab",
-      home_quick_fun_desc: "73 pages across entertainment / functional / utility code.",
+      home_quick_fun_desc: "81 pages across entertainment / functional / utility code.",
       home_quick_ideas: "Ideas",
       home_quick_ideas_desc: "56 idea proposals organized, filtered and tracked.",
       home_quick_stars: "Star Database",
@@ -485,7 +485,7 @@
       star_db_empty_title: "No matching stars",
       star_db_empty_desc: "Try another keyword or clear the filters.",
       star_db_empty_reset: "Clear filters",
-      star_db_count: "129 stars in total"
+      star_db_count: "137 stars in total"
     }
   };
 

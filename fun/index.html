@@ -6,7 +6,7 @@
   <title>代码开发 · nocau</title>
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
-  <meta name="description" content="nocau 代码开发合集：娱乐代码（视觉互动与小游戏）、功能代码（日常实用工具）、实用代码（面向开发者的可复用功能代码）三大类，共 73 个可独立运行的页面。" />
+  <meta name="description" content="nocau 代码开发合集：娱乐代码（视觉互动与小游戏）、功能代码（日常实用工具）、实用代码（面向开发者的可复用功能代码）三大类，共 81 个可独立运行的页面。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -38,6 +38,9 @@
           <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
         </button>
+        <button class="nav-toggle" aria-label="切换导航菜单" aria-expanded="false" aria-controls="nav-links">
+          <span></span><span></span><span></span>
+        </button>
       </div>
     </div>
   </header>
@@ -57,7 +60,7 @@
           <button type="button" class="btn" data-filter="func">功能代码</button>
           <button type="button" class="btn" data-filter="dev">实用代码</button>
         </div>
-        <p class="fun-count reveal" id="fun-count">共 73 个可运行页面</p>
+        <p class="fun-count reveal" id="fun-count">共 81 个可运行页面</p>
         <div class="fun-section reveal" id="sec-ent" data-group="ent">
           <div class="fun-section-head">
             <span class="fun-section-kicker">Entertainment · E Series</span>
@@ -520,6 +523,54 @@
             <h3>图像处理实验</h3>
             <p>Sobel 边缘检测、素描风、浮雕等算法对照实验台，阈值实时调节。</p>
             <div class="fun-card-tags"><span class="tag">像素算法</span><span class="tag">视觉</span></div>
+          </a>
+          <a class="fun-card reveal" href="qr-scanner.html" data-cat="dev">
+            <span class="fun-card-index">P000033</span>
+            <h3>二维码扫码</h3>
+            <p>jsQR 摄像头 / 传图扫码解码，附可离线演示的示例二维码生成。</p>
+            <div class="fun-card-tags"><span class="tag">二维码</span><span class="tag">视觉</span></div>
+          </a>
+          <a class="fun-card reveal" href="ocr-text.html" data-cat="dev">
+            <span class="fun-card-index">P000034</span>
+            <h3>OCR 文字识别</h3>
+            <p>Tesseract.js 在浏览器识别图片文字，支持中英文与模型进度提示（需联网）。</p>
+            <div class="fun-card-tags"><span class="tag">OCR</span><span class="tag">AI 推理</span></div>
+          </a>
+          <a class="fun-card reveal" href="ascii-art.html" data-cat="dev">
+            <span class="fun-card-index">P000035</span>
+            <h3>字符画转换</h3>
+            <p>图片转 ASCII 字符画：密度与宽度可调、支持复制，纯本地零依赖。</p>
+            <div class="fun-card-tags"><span class="tag">字符画</span><span class="tag">图像处理</span></div>
+          </a>
+          <a class="fun-card reveal" href="motion-detector.html" data-cat="dev">
+            <span class="fun-card-index">P000036</span>
+            <h3>摄像头运动检测</h3>
+            <p>帧差法实时检测画面运动区域并画框，可调灵敏度，无摄像头可用演示模式。</p>
+            <div class="fun-card-tags"><span class="tag">运动检测</span><span class="tag">摄像头</span></div>
+          </a>
+          <a class="fun-card reveal" href="cartoon-filter.html" data-cat="dev">
+            <span class="fun-card-index">P000037</span>
+            <h3>卡通 / 水彩滤镜</h3>
+            <p>色阶量化 + 边缘描线的卡通化与低饱和水彩变体，纯本地算法。</p>
+            <div class="fun-card-tags"><span class="tag">卡通滤镜</span><span class="tag">像素算法</span></div>
+          </a>
+          <a class="fun-card reveal" href="palette-extractor.html" data-cat="dev">
+            <span class="fun-card-index">P000038</span>
+            <h3>图片取色 / 调色板</h3>
+            <p>K 均值聚类提取 6 主色，点击画面取任意像素色并复制色值。</p>
+            <div class="fun-card-tags"><span class="tag">取色</span><span class="tag">K 均值</span></div>
+          </a>
+          <a class="fun-card reveal" href="starfield.html" data-cat="dev">
+            <span class="fun-card-index">P000039</span>
+            <h3>3D 星空投影</h3>
+            <p>三视深恒星层 + 星云 + 拖拽旋转的轻量 Canvas 3D 星空，零依赖。</p>
+            <div class="fun-card-tags"><span class="tag">Canvas</span><span class="tag">3D 星空</span></div>
+          </a>
+          <a class="fun-card reveal" href="hands-gesture.html" data-cat="dev">
+            <span class="fun-card-index">P000040</span>
+            <h3>手势识别（MediaPipe）</h3>
+            <p>MediaPipe Hands 21 点手部关键点与抬指计数，模型经 CDN 加载（需联网）。</p>
+            <div class="fun-card-tags"><span class="tag">手势识别</span><span class="tag">AI 推理</span></div>
           </a>
           </div>
         </div>

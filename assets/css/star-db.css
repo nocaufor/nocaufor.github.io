@@ -318,7 +318,21 @@ body {
     width: calc(100% - 16px);
     max-width: none;
   }
-  .star-db-filter { flex-wrap: wrap; }
+  /* 筛选按钮在窄屏自动换行，宽度锁定在视口内，避免外层 overflow 裁切 */
+  .star-db-filter {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 2px 0 6px;
+    overflow: visible;
+    gap: 6px 8px;
+  }
+  .star-db-filter .filter-btn { flex: 0 0 auto; white-space: nowrap; }
+  .star-db-toolbar { flex-wrap: nowrap; gap: 6px; }
+  .star-db-count { white-space: nowrap; min-width: 0; }
+  .star-db-sort-select { max-width: 132px; }
 }
 
 /* ---------- 减弱动效 ---------- */
