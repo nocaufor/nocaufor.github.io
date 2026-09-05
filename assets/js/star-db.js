@@ -315,18 +315,55 @@
     g.fillStyle = diag;
     g.fillRect(0, 0, W2, H2);
 
-    /* 2) 大尺度星云色斑（紫/蓝混合，柔和层次） */
-    var nebColors = ["#1c2c5e", "#18264f", "#22335f", "#2b2354", "#1d2c55", "#18264e", "#141f3f", "#3a2f4e", "#162c50"];
-    for (var n = 0; n < 8; n++) {
-      var nx = W2 * (0.25 + rand() * 0.5), ny = H2 * (0.3 + rand() * 0.45);
-      var nr = Math.max(W2, H2) * (0.16 + rand() * 0.20);
+    /* 2) 大尺度星云色斑（紫/蓝/暖褐双色分层 + 致密核 + 絮状丝，低反差、柔和但仍成结构） */
+    var nebColors = [
+      ["#1c2c5e", "#7f8fd0"], ["#18264f", "#9a8ed2"], ["#22335f", "#6793d8"],
+      ["#2b2354", "#b098dc"], ["#1d2c55", "#6aa8dc"], ["#18264e", "#8b7fc4"],
+      ["#141f3f", "#546ab8"], ["#3a2f4e", "#b095c2"], ["#162c50", "#5a90d0"],
+      ["#40213f", "#cc7f8e"], ["#1c2c5e", "#86b4e0"], ["#232053", "#ad7fda"]
+    ];
+    for (var n = 0; n < 12; n++) {
+      var nx = W2 * (0.22 + rand() * 0.56), ny = H2 * (0.26 + rand() * 0.5);
+      var nr = Math.max(W2, H2) * (0.14 + rand() * 0.20);
+      var coreCol = nebColors[n % nebColors.length][0];
+      var tintCol = nebColors[n % nebColors.length][1];
+      var nebA = 0.10 + rand() * 0.08;
+      /* 外晕：大半径低透明，边缘自然融入夜空 */
       var ng = g.createRadialGradient(nx, ny, 0, nx, ny, nr);
-      var nebA = 0.11 + rand() * 0.07;
-      ng.addColorStop(0, hexA(nebColors[n % nebColors.length], nebA));
-      ng.addColorStop(0.42, hexA(nebColors[n % nebColors.length], nebA * 0.42));
-      ng.addColorStop(1, hexA(nebColors[n % nebColors.length], 0));
+      ng.addColorStop(0, hexA(tintCol, nebA * 0.75));
+      ng.addColorStop(0.55, hexA(coreCol, nebA * 0.38));
+      ng.addColorStop(1, hexA(coreCol, 0));
       g.fillStyle = ng;
       g.fillRect(nx - nr, ny - nr, nr * 2, nr * 2);
+      /* 内致密核：偏置小半径亮核，形成星云内部明暗层次 */
+      var nk = nr * (0.16 + rand() * 0.16);
+      var kx = nx + (rand() - 0.5) * nr * 0.28;
+      var ky = ny + (rand() - 0.5) * nr * 0.28;
+      var kg = g.createRadialGradient(kx, ky, 0, kx, ky, nk);
+      var coreA = Math.min(0.30, nebA * (1.4 + rand() * 0.8));
+      kg.addColorStop(0, hexA(tintCol, coreA * 0.6));
+      kg.addColorStop(0.6, hexA(tintCol, coreA * 0.2));
+      kg.addColorStop(1, hexA(tintCol, 0));
+      g.fillStyle = kg;
+      g.fillRect(kx - nk, ky - nk, nk * 2, nk * 2);
+      /* 絮状尘埃丝：2~3 条低对比短弧，为星云内部补一点织理感（alpha 极低，仅近距离可见） */
+      if (n % 3 !== 0) {
+        var fCount = 2 + (n % 2);
+        g.lineWidth = 1;
+        g.lineCap = "round";
+        for (var fl = 0; fl < fCount; fl++) {
+          var fa = rand() * Math.PI * 2;
+          var fr = nr * (0.25 + rand() * 0.5);
+          var fx2 = nx + Math.cos(fa) * fr, fy2 = ny + Math.sin(fa) * fr * 0.8;
+          var fL = nr * (0.18 + rand() * 0.3);
+          var fb = ((n * 7 + fl * 13 + 0.6) % 3) - 1.5;
+          g.strokeStyle = hexA(tintCol, 0.020 + rand() * 0.028);
+          g.beginPath();
+          g.moveTo(fx2 - Math.cos(fb) * fL, fy2 - Math.sin(fb) * fL * 0.7);
+          g.quadraticCurveTo(fx2 + Math.cos(fb + 0.6) * fL * 0.2, fy2 - Math.sin(fb + 0.3) * fL * 0.3, fx2 + Math.cos(fb + 1.2) * fL, fy2 + Math.sin(fb + 0.9) * fL * 0.6);
+          g.stroke();
+        }
+      }
     }
 
     /* 3) 倾斜椭圆光带（盘状星系/尘埃带）：主带横贯 + 极弱辅带，边缘柔滑模糊 */
@@ -334,17 +371,39 @@
     var bandW = Math.max(W2, H2) * 1.05, bandH = Math.max(W2, H2) * 0.20;
     drawBand(g, cx, cy - Math.max(W2, H2) * 0.02, bandW, bandH, -0.50, [[0, "rgba(148, 172, 218, 0.16)"], [0.35, "rgba(120, 146, 198, 0.10)"], [0.7, "rgba(96, 120, 176, 0.05)"], [1, "rgba(90, 114, 170, 0)"]], W2, H2);
     drawBand(g, cx + Math.max(W2, H2) * 0.04, cy + Math.max(W2, H2) * 0.06, bandW * 0.72, bandH * 0.5, -0.50, [[0, "rgba(176, 194, 232, 0.07)"], [0.6, "rgba(150, 170, 214, 0.03)"], [1, "rgba(140, 160, 206, 0)"]], W2, H2);
+    /* 3b) 银河结构纵深：带内高亮主轴 + 偏置暗尘缝（窄椭圆叠加，制造明暗纵深而非平涂） */
+    drawBand(g, cx, cy - Math.max(W2, H2) * 0.028, bandW * 0.92, bandH * 0.30, -0.50, [[0, "rgba(228, 234, 252, 0.17)"], [0.5, "rgba(210, 218, 244, 0.08)"], [1, "rgba(200, 208, 238, 0)"]], W2, H2);
+    drawBand(g, cx + Math.max(W2, H2) * 0.02, cy + Math.max(W2, H2) * 0.012, bandW * 0.66, bandH * 0.13, -0.50, [[0, "rgba(240, 244, 255, 0.13)"], [1, "rgba(228, 234, 252, 0)"]], W2, H2);
+    drawBand(g, cx - Math.max(W2, H2) * 0.07, cy + Math.max(W2, H2) * 0.095, bandW * 0.88, bandH * 0.11, -0.50, [[0, "rgba(4, 6, 16, 0.24)"], [0.55, "rgba(6, 9, 24, 0.11)"], [1, "rgba(8, 11, 28, 0)"]], W2, H2);
 
-    /* 4) 银河带内亮星点（更密、更亮，仍低饱和） */
-    for (var s = 0; s < 110; s++) {
+    /* 4) 银河带内亮星点（更密、更亮，仍低饱和；含少量暖白亮星做星群色温点缀） */
+    for (var s = 0; s < 150; s++) {
       var t = rand();
       var sx = cx + Math.cos(-0.42) * (t - 0.5) * bandW * 2 - Math.sin(-0.42) * (rand() - 0.5) * bandH * 3;
       var sy = cy + Math.sin(-0.42) * (t - 0.5) * bandW * 2 + Math.cos(-0.42) * (rand() - 0.5) * bandH * 3;
-      var sr = 0.6 + rand() * 1.2;
-      g.globalAlpha = 0.20 + rand() * 0.34;
+      var sr = 0.6 + rand() * 1.3;
+      g.globalAlpha = 0.22 + rand() * 0.36;
       var gc = rand();
-      g.fillStyle = gc > 0.86 ? "#ece3d4" : (gc > 0.6 ? "#e6ecfb" : "#a9badb");
+      g.fillStyle = gc > 0.92 ? "#f2eadc" : (gc > 0.62 ? "#e6ecfb" : (gc > 0.34 ? "#a9badb" : "#8fa4d0"));
       g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
+    }
+    /* 带内最亮星微星芒：沿带轴稀疏分布，让银河带内有可读焦点而非均匀噪点 */
+    for (var sp = 0; sp < 14; sp++) {
+      var tp = rand();
+      var spx = cx + Math.cos(-0.42) * (tp - 0.5) * bandW * 2 - Math.sin(-0.42) * (rand() - 0.5) * bandH * 1.6;
+      var spy = cy + Math.sin(-0.42) * (tp - 0.5) * bandW * 2 + Math.cos(-0.42) * (rand() - 0.5) * bandH * 1.6;
+      var sl = 1.6 + rand() * 1.8;
+      g.strokeStyle = rand() > 0.5 ? "rgba(232, 240, 255, 1)" : "rgba(255, 238, 222, 1)";
+      g.globalAlpha = 0.26 + rand() * 0.30;
+      g.lineWidth = 1;
+      g.lineCap = "round";
+      g.beginPath();
+      g.moveTo(spx - sl, spy); g.lineTo(spx + sl, spy);
+      g.moveTo(spx, spy - sl); g.lineTo(spx, spy + sl);
+      g.stroke();
+      g.globalAlpha = 0.6 + rand() * 0.3;
+      g.fillStyle = "#f4f6ff";
+      g.beginPath(); g.arc(spx, spy, 0.7 + rand() * 0.6, 0, Math.PI * 2); g.fill();
     }
 
     /* 5) 远景星点（两层疏密：近远景可辨 + 远远景微光，低饱和不刺眼） */
@@ -430,14 +489,15 @@
   function initFlowGlows() {
     flowGlows = [];
     var count = reduced ? 0 : 4;
+    var flowHues = ["168,196,242", "176,142,228", "150,182,240", "234,204,178"];
     for (var i = 0; i < count; i++) {
       flowGlows.push({
         baseAngle: (i / count) * Math.PI * 2 + 0.6,
         speed: 0.024 + detRand(i + 21000) * 0.030,
         t: detRand(i + 22000) * 1.3,
         radius: 0.20 + detRand(i + 23000) * 0.20,
-        hue: i % 2 === 0 ? "168,196,242" : "176,142,228",
-        alpha: 0.045 + detRand(i + 24000) * 0.055,
+        hue: flowHues[i % flowHues.length],
+        alpha: (i % flowHues.length === 3 ? 0.038 : 0.045) + detRand(i + 24000) * 0.055,
         pulse: 0.5 + detRand(i + 25000),
         pulseSpeed: 0.00040 + detRand(i + 26000) * 0.00055
       });
@@ -487,6 +547,25 @@
     ctx.fillRect(0, 0, W, H);
   }
 
+  /* 星系带内渐变纹理：在带局部坐标系内以 scale 绘制径向椭圆（scale→径向圆），
+     用于亮主轴与暗尘缝，均为软边，避免硬边缘破坏柔光带 */ 
+  function bandVein(x, y, rx, ry, rot, color, a) {
+    if (a <= 0.004) return;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.scale(rx, ry);
+    var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    g.addColorStop(0, "rgba(" + color + "," + a.toFixed(3) + ")");
+    g.addColorStop(0.55, "rgba(" + color + "," + (a * 0.38).toFixed(3) + ")");
+    g.addColorStop(1, "rgba(" + color + ",0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
   /* ---------- 星系带：沿银道面的柔光星云带，多层 radial 渐变柔边，跟随旋转缓慢漂移 ---------- */
   function drawGalaxyBand(ts) {
     if (reduced) return;
@@ -498,19 +577,31 @@
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(tilt);
+    /* 色温层：中心青蓝为主、两端渐转紫罗兰，银河色相随长度变化，层次更丰富 */
     var n = 8;
     for (var i = 0; i < n; i++) {
       var fx = (i / (n - 1) - 0.5) * w;
       var pr = w * 0.13;
-      var alpha = 0.055 + 0.045 * Math.sin(ts * 0.00008 + i * 1.6);
+      var alpha = 0.058 + 0.046 * Math.sin(ts * 0.00008 + i * 1.6);
       if (alpha <= 0.008) continue;
+      var edgeMix = Math.abs(i / (n - 1) - 0.5) * 2; /* 0=中心 1=边缘 */
+      var rgb = i % 3 === 2
+        ? "176,152,226"
+        : (edgeMix > 0.72 ? "164,168,224" : "150,172,224");
       var g = ctx.createRadialGradient(fx, 0, 0, fx, 0, pr);
-      g.addColorStop(0, "rgba(150,172,224," + alpha.toFixed(3) + ")");
+      g.addColorStop(0, "rgba(" + rgb + "," + alpha.toFixed(3) + ")");
       g.addColorStop(0.5, "rgba(136,160,212," + (alpha * 0.5).toFixed(3) + ")");
       g.addColorStop(1, "rgba(128,152,206,0)");
       ctx.fillStyle = g;
       ctx.fillRect(fx - pr, -h * 1.7, pr * 2, h * 3.4);
     }
+    /* 亮主轴：贴近银道面的细亮带（随呼吸微明暗） */
+    bandVein(0, 0, w * 0.46, h * 0.30, 0, "236,240,255", 0.050 + 0.022 * Math.sin(ts * 0.000085));
+    /* 两条暗尘缝：沿轴错位的低透暗带，叠加在亮带上形成断续纵深 */
+    bandVein(-w * 0.13, h * 0.14, w * 0.20, h * 0.085, 0.06, "4,6,16", 0.10 + 0.02 * Math.sin(ts * 0.00010 + 1.2));
+    bandVein(w * 0.15, -h * 0.11, w * 0.17, h * 0.07, -0.05, "4,6,16", 0.075 + 0.02 * Math.cos(ts * 0.000095));
+    /* 远端低温微紫晕：让银道远离中心侧偏冷，增强空间纵深 */
+    bandVein(w * 0.38, h * 0.22, w * 0.24, h * 0.16, -0.2, "150,138,214", 0.035 + 0.012 * Math.sin(ts * 0.000075 + 2.4));
     ctx.restore();
   }
 
@@ -524,12 +615,12 @@
     drawFlowBg(ts);
     drawGalaxyBand(ts);
     drawFlowGlow(ts);
-    /* 暗角（避免光污染） */
+    /* 暗角（柔和收边，保留四角近黑的同时不压死星云边缘层次） */
     var vg = fxCtx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.28, W / 2, H / 2, Math.max(W, H) * 0.8);
     vg.addColorStop(0, "rgba(0,0,0,0)");
-    vg.addColorStop(0.42, "rgba(1,2,6,0.05)");
-    vg.addColorStop(0.78, "rgba(2,3,8,0.26)");
-    vg.addColorStop(1, "rgba(2,3,8,0.54)");
+    vg.addColorStop(0.4, "rgba(1,2,6,0.045)");
+    vg.addColorStop(0.74, "rgba(2,3,8,0.20)");
+    vg.addColorStop(1, "rgba(2,3,8,0.48)");
     fxCtx.fillStyle = vg;
     fxCtx.fillRect(0, 0, W, H);
     ctx = prevCtx;
@@ -951,15 +1042,16 @@
       }
     }
     ctx.globalAlpha = 1;
-    /* 中央核心气辉：低饱和柔光，内亮外散，形成星球核心的柔和光团 */
+    /* 中央核心气辉：低饱和柔光，内亮外散，形成星球核心的柔和光团（近白核 → 薰衣草紫外晕，更接近真实气辉色温渐变） */
     if (!reduced && viewRadius > 40) {
       var cgPulse = 0.20 + 0.035 * Math.sin(ts * 0.0008);
-      var cgR = viewRadius * 0.92;
+      var cgR = viewRadius * 1.02;
       var cg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, cgR);
-      cg.addColorStop(0, "rgba(228,224,250," + cgPulse.toFixed(3) + ")");
-      cg.addColorStop(0.30, "rgba(206,214,248," + (cgPulse * 0.42).toFixed(3) + ")");
-      cg.addColorStop(0.72, "rgba(180,200,242," + (cgPulse * 0.12).toFixed(3) + ")");
-      cg.addColorStop(1, "rgba(180,200,242,0)");
+      cg.addColorStop(0, "rgba(242,240,253," + cgPulse.toFixed(3) + ")");
+      cg.addColorStop(0.20, "rgba(222,220,250," + (cgPulse * 0.62).toFixed(3) + ")");
+      cg.addColorStop(0.50, "rgba(192,186,246," + (cgPulse * 0.30).toFixed(3) + ")");
+      cg.addColorStop(0.80, "rgba(168,158,240," + (cgPulse * 0.10).toFixed(3) + ")");
+      cg.addColorStop(1, "rgba(168,158,240,0)");
       ctx.fillStyle = cg;
       ctx.fillRect(W / 2 - cgR, H / 2 - cgR, cgR * 2, cgR * 2);
     }
