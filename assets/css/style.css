@@ -1426,18 +1426,18 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   box-shadow: 0 0 14px rgba(110, 205, 245, .18), inset 0 0 8px rgba(110, 205, 245, .10);
   animation: hero-ring-breathe 3.6s ease-in-out infinite;
 }
-/* 中心太阳：镂空暖色圆环 + 呼吸光晕（无填充） */
+/* 中心太阳：低饱和实心暖色圆点 + 呼吸光晕（简约几何） */
 .hero-orbit-sun {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 24px;
-  height: 24px;
-  margin: -12px 0 0 -12px;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
   border-radius: 50%;
-  border: 1.6px solid rgba(255, 196, 128, .92);
-  background: transparent;
-  box-shadow: 0 0 8px rgba(255, 180, 110, .4), inset 0 0 6px rgba(255, 180, 110, .3);
+  border: 0;
+  background: #e3bd82;
+  box-shadow: 0 0 8px rgba(227, 189, 130, .5);
   animation: hero-sun-breathe 2.6s ease-in-out infinite;
 }
 /* 地球公转容器：带动地球沿主轨道环绕太阳 */
@@ -1446,18 +1446,18 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   inset: 0;
   animation: hero-earth-orbit 22s linear infinite;
 }
-/* 地球：空心圆环，中心落在主轨道线上（无填充） */
+/* 地球：低饱和实心蓝色圆点，中心落在主轨道线上（简约几何） */
 .hero-orbit-earth {
   position: absolute;
   left: 50%;
   top: 12px;
-  width: 16px;
-  height: 16px;
-  margin-left: -8px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
   border-radius: 50%;
-  border: 1.4px solid rgba(140, 198, 250, .95);
-  background: transparent;
-  box-shadow: 0 0 7px rgba(120, 185, 248, .45), inset 0 0 5px rgba(120, 185, 248, .28);
+  border: 0;
+  background: #8fb3d6;
+  box-shadow: 0 0 6px rgba(143, 179, 214, .55);
   animation: hero-earth-breathe 3.4s ease-in-out infinite;
 }
 /* 月球次级轨道线：以地球为圆心的细环 */
@@ -1481,18 +1481,18 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   margin: -15px 0 0 -15px;
   animation: hero-moon-orbit 7s linear infinite;
 }
-/* 月球：更小的空心细环（无填充） */
+/* 月球：比地球更小的实心浅色圆点（简约几何） */
 .hero-orbit-moon {
   position: absolute;
   left: 50%;
-  top: -5px;
-  width: 10px;
-  height: 10px;
-  margin-left: -5px;
+  top: -2.5px;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
   border-radius: 50%;
-  border: 1.1px solid rgba(236, 243, 253, .9);
-  background: transparent;
-  box-shadow: 0 0 5px rgba(220, 235, 255, .45), inset 0 0 4px rgba(220, 235, 255, .28);
+  border: 0;
+  background: #d9e1ec;
+  box-shadow: 0 0 4px rgba(217, 225, 236, .55);
 }
 @keyframes hero-earth-orbit { to { transform: rotate(360deg); } }
 @keyframes hero-moon-orbit { to { transform: rotate(360deg); } }
@@ -1501,12 +1501,12 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   50% { box-shadow: 0 0 20px rgba(110, 205, 245, .34), inset 0 0 12px rgba(110, 205, 245, .18); }
 }
 @keyframes hero-sun-breathe {
-  0%, 100% { box-shadow: 0 0 6px rgba(255, 180, 110, .28), inset 0 0 5px rgba(255, 180, 110, .22); }
-  50% { box-shadow: 0 0 14px rgba(255, 180, 110, .6), inset 0 0 9px rgba(255, 180, 110, .42); }
+  0%, 100% { box-shadow: 0 0 4px rgba(227, 189, 130, .28); }
+  50% { box-shadow: 0 0 12px rgba(227, 189, 130, .62); }
 }
 @keyframes hero-earth-breathe {
-  0%, 100% { box-shadow: 0 0 4px rgba(120, 185, 248, .3), inset 0 0 4px rgba(120, 185, 248, .2); }
-  50% { box-shadow: 0 0 10px rgba(120, 185, 248, .62), inset 0 0 7px rgba(120, 185, 248, .4); }
+  0%, 100% { box-shadow: 0 0 3px rgba(143, 179, 214, .3); }
+  50% { box-shadow: 0 0 8px rgba(143, 179, 214, .62); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-orbit-track-earth { animation: none; }
