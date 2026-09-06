@@ -189,8 +189,7 @@
   }
 
   function start() {
-    if (!state) reset(1, false);
-    if (state.over) return;
+    if (!state || state.over) reset(1, false);
     running = !running;
     if (running) {
       if (startBtn) startBtn.textContent = "暂停";
@@ -208,7 +207,7 @@
     if (startBtn) startBtn.textContent = "开始 / 暂停";
     draw();
     var status = document.getElementById("fx-status");
-    if (status) status.textContent = won ? "🎉 通关！点击「开始」进入下一关" : "💀 生命耗尽，点击「重开」再来一次";
+    if (status) status.textContent = won ? "通关！点击「开始」进入下一关" : "生命耗尽，点击「重开」再来一次";
     if (won && !state) return;
     if (won) {
       state = null;
