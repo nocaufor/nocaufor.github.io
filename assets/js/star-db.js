@@ -67,6 +67,11 @@
   var W = 0, H = 0, DPR = 1, bgCanvas = null, bgPad = 0;
   /* FX 合成层：流动渐变/星系带/流光/暗角低频绘制到离屏，主循环零渐变开销 */
   var fxCanvas = null, fxCtx = null, fxLastTs = -1e9, fxFresh = false, fxForce = false;
+  /* WebGL 深空背景模式：由 star-db-bg-webgl.js 在 DOM 解析阶段先行初始化并置位。
+     置位成功时跳过本文件的 2D buildBg/drawBand/FX 背景链（代码保留为 fallback）。 */
+  function useWebglBg() {
+    return !!(window.__starDbWebGLBg && document.getElementById("stars-bg-canvas"));
+  }
   var reduced = false;
   try { reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
 
@@ -746,13 +751,21 @@
     canvas.width = Math.round(W * DPR);
     canvas.height = Math.round(H * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    bgCanvas = buildBg(W, H);
-    /* FX 合成层尺寸同步（离屏，与主画布同 DPR） */
-    if (!fxCanvas) { fxCanvas = document.createElement("canvas"); fxCtx = fxCanvas.getContext("2d"); }
-    fxCanvas.width = Math.round(W * DPR);
-    fxCanvas.height = Math.round(H * DPR);
-    fxFresh = false;
-    fxForce = true;
+    ctx.clearRect(0, 0, W, H);
+    if (useWebglBg()) {
+      /* WebGL 底层画布已负责深空背景：2D 主画布只保留透明清空，数据星交互层原样绘制 */
+      bgCanvas = null;
+      fxCanvas = null; fxCtx = null;
+      fxFresh = false; fxForce = false; fxLastTs = -1e9;
+    } else {
+      bgCanvas = buildBg(W, H);
+      /* FX 合成层尺寸同步（离屏，与主画布同 DPR） */
+      if (!fxCanvas) { fxCanvas = document.createElement("canvas"); fxCtx = fxCanvas.getContext("2d"); }
+      fxCanvas.width = Math.round(W * DPR);
+      fxCanvas.height = Math.round(H * DPR);
+      fxFresh = false;
+      fxForce = true;
+    }
     makeDust();
     sizeParticleLayer();
     renderFrame(performance.now());
@@ -944,17 +957,19 @@
 
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    /* 渐变夜空背景（视差） */
-    var px = Math.sin(rotationY) * W * 0.03;
-    var py = Math.sin(rotationX) * H * 0.02;
-    ctx.drawImage(bgCanvas, -bgPad + px, -bgPad + py, W + bgPad * 2, H + bgPad * 2);
-    /* FX 背景层（流动渐变/星系带/流光/暗角）：≤10fps 离屏缓存，消除每帧径向渐变开销 */
-    if (fxLastTs < 0 || ts - fxLastTs >= 100 || fxForce) {
-      makeFxLayer(ts);
-      fxLastTs = ts;
-      fxForce = false;
+    if (!useWebglBg()) {
+      /* 渐变夜空背景（视差） */
+      var px = Math.sin(rotationY) * W * 0.03;
+      var py = Math.sin(rotationX) * H * 0.02;
+      ctx.drawImage(bgCanvas, -bgPad + px, -bgPad + py, W + bgPad * 2, H + bgPad * 2);
+      /* FX 背景层（流动渐变/星系带/流光/暗角）：≤10fps 离屏缓存，消除每帧径向渐变开销 */
+      if (fxLastTs < 0 || ts - fxLastTs >= 100 || fxForce) {
+        makeFxLayer(ts);
+        fxLastTs = ts;
+        fxForce = false;
+      }
+      if (fxFresh) ctx.drawImage(fxCanvas, 0, 0, W, H);
     }
-    if (fxFresh) ctx.drawImage(fxCanvas, 0, 0, W, H);
 
     var lightX = Math.cos(rotationY + 0.9) * Math.cos(rotationX * 0.6);
     var lightY = Math.sin(rotationX * 0.9);

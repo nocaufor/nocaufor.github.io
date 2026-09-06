@@ -6,7 +6,7 @@
   <title>作品集 · nocau</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <meta name="description" content="nocau 开发者项目作品集：衣件通、好友检测、LINGO 广告拦截、AI hub、答案、AI 父母体验。" />
+  <meta name="description" content="nocau 开发者项目作品集：衣件通、好友检测、LINGO 广告拦截、AI hub、答案、AI Workbench（个人工作台）、AI 父母体验。" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
@@ -185,28 +185,30 @@
 
           <!-- ============ 项目 5：答案 ============ -->
           <article class="project-card reveal" data-category="android">
-            <div class="project-cover cover-gradient-5">
+            <div class="project-cover cover-gradient-5 cover-shot">
               <svg class="cover-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.2a8.6 8.6 0 0 1 8.6 8.6 8.6 8.6 0 0 1-8.6 8.6c-1.2 0-2.4-.25-3.5-.7L4 21.6l1.1-4A8.6 8.6 0 0 1 12 4.2z"/><circle cx="8.6" cy="12.7" r=".85"/><circle cx="12" cy="12.7" r=".85"/><circle cx="15.4" cy="12.7" r=".85"/></svg>
               <span class="cover-title">答案</span>
               <span class="cover-en">Answer · Healing Q&amp;A</span>
               <span class="cover-index">05</span>
-              <div class="cover-meta"><span class="platform-badge">Android / iOS</span></div>
+              <img class="shot-img" src="assets/projects/daan/daan-feature-login.png" alt="《答案》登录注册界面截图" loading="lazy" />
+              <div class="cover-meta"><span class="platform-badge">Android</span></div>
             </div>
             <div class="project-body">
               <h3>答案</h3>
-              <p class="project-subtitle">青少年治愈问答社区 · 移动应用</p>
+              <p class="project-subtitle">React 19 + TypeScript · Capacitor Android 移动应用</p>
               <p class="project-desc">
-                面向青少年的匿名问答与情绪陪伴应用：漂流瓶式匿名倾诉、双向确认公开的治愈问答广场，
-                以及白噪音、番茄钟、名著听书组成的灵静空间。低龄友好，强隐私、强风控。
+                移动端应用《答案》：基于 React 19 + TypeScript + Vite + Tailwind CSS 构建，
+                经 Capacitor 8 打包为 Android 应用。代码内含问答广场、树洞倾诉、心情日记与灵静空间
+                （白噪音 / 番茄钟 / 听书）等功能模块。
               </p>
               <div class="project-features">
-                <span class="tag">匿名问答</span>
-                <span class="tag">情绪陪伴</span>
-                <span class="tag">隐私风控</span>
-                <span class="tag">Android / iOS</span>
+                <span class="tag">React 19</span>
+                <span class="tag">TypeScript</span>
+                <span class="tag">Tailwind CSS</span>
+                <span class="tag">Capacitor Android</span>
               </div>
               <div class="project-links">
-                <a href="#" class="project-link disabled" aria-disabled="true" tabindex="-1" data-i18n="btn_view">查看详情</a>
+                <a href="#daan-shots" class="project-link">查看截图</a>
                 <a href="#" class="project-link disabled" aria-disabled="true" tabindex="-1">源码</a>
               </div>
             </div>
@@ -241,6 +243,70 @@
             </div>
           </article>
 
+          <!-- ============ 项目 7：AI Workbench（个人工作台） ============ -->
+          <article class="project-card reveal" data-category="ai-platform">
+            <div class="project-cover cover-gradient-7 cover-shot-wide">
+              <img class="shot-bg" src="assets/projects/workbench/workbench-overview.png" alt="AI Workbench 总控中心界面截图" loading="lazy" />
+              <span class="cover-title">AI Workbench</span>
+              <span class="cover-en">AI Personal Workbench</span>
+              <span class="cover-index">07</span>
+              <div class="cover-meta"><span class="platform-badge">AI 平台 / Web</span></div>
+            </div>
+            <div class="project-body">
+              <h3>AI Workbench · 个人工作台</h3>
+              <p class="project-subtitle">本地 Web 个人工作台 · FastAPI + Python</p>
+              <p class="project-desc">
+                整合 AI 工具管理、系统监控、令牌加密存储、软件仓、实时资讯、知识库与个人隐私库等模块的本地个人工作台；
+                FastAPI + Python 后端，隐私数据仅存本机加密，服务仅监听 127.0.0.1。
+              </p>
+              <div class="project-features">
+                <span class="tag">FastAPI · Python</span>
+                <span class="tag">系统监控</span>
+                <span class="tag">令牌 / 隐私加密</span>
+                <span class="tag">AI 工具聚合</span>
+              </div>
+              <div class="project-links">
+                <a href="#wb-shots" class="project-link">查看截图</a>
+                <a href="#" class="project-link disabled" aria-disabled="true" tabindex="-1">源码</a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- ============ 截图灯箱（CSS :target 实现，无内联脚本） ============ -->
+        <div id="daan-shots" class="shot-lightbox" role="dialog" aria-modal="true" aria-label="《答案》应用界面截图">
+          <div class="lb-panel">
+            <a class="lb-close" href="#" aria-label="关闭">×</a>
+            <h4 class="lb-title">《答案》 · 手机界面截图</h4>
+            <div class="lb-grid">
+              <figure class="lb-fig">
+                <img src="assets/projects/daan/daan-feature-login.png" alt="《答案》登录注册页" />
+                <figcaption>登录 / 注册页</figcaption>
+              </figure>
+              <figure class="lb-fig">
+                <img src="assets/projects/daan/daan-home-welcome.png" alt="《答案》协议欢迎页" />
+                <figcaption>协议欢迎页</figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+
+        <div id="wb-shots" class="shot-lightbox" role="dialog" aria-modal="true" aria-label="AI Workbench 界面截图">
+          <div class="lb-panel lb-panel-wide">
+            <a class="lb-close" href="#" aria-label="关闭">×</a>
+            <h4 class="lb-title">AI Workbench · 界面截图</h4>
+            <div class="lb-grid">
+              <figure class="lb-fig">
+                <img src="assets/projects/workbench/workbench-overview.png" alt="AI Workbench 总控中心" />
+                <figcaption>总控中心 / 首页总览</figcaption>
+              </figure>
+              <figure class="lb-fig">
+                <img src="assets/projects/workbench/workbench-tools.png" alt="AI Workbench 小工具页面" />
+                <figcaption>效率小工具页面</figcaption>
+              </figure>
+            </div>
+          </div>
         </div>
 
         <div id="empty-tip" class="empty-tip" data-i18n="ideas_empty">当前分类暂无项目。</div>

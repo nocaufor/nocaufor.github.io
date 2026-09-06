@@ -335,6 +335,22 @@ body {
   .star-db-sort-select { max-width: 132px; }
 }
 
+/* ---------- WebGL 深空背景层（垫底，位于 #stars-canvas / 粒子层之下） ---------- */
+#stars-bg-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+  pointer-events: none;
+}
+/* WebGL 不可用/初始化失败时隐藏背景画布，回到 2D fallback 或纯底色 */
+#stars-bg-canvas.stars-bg-fallback {
+  display: none;
+}
+
 /* ---------- 减弱动效 ---------- */
 @media (prefers-reduced-motion: reduce) {
   .star-db-controls { transition: none; }

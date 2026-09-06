@@ -1415,98 +1415,98 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
 .hero-slogan-cn { font-size: 1.15rem; letter-spacing: .12em; color: var(--text); font-weight: 600; line-height: 1.7; }
 .hero-slogan-en { font-size: .8rem; letter-spacing: .26em; text-transform: uppercase; color: var(--text-3); margin-top: 7px; }
 /* ---- 太阳系轨道示意图（首页 hero 主标识） ----
-   只保留轨道线条 + 星球大小圆圈，无纹理/仿真贴图 */
+   几何风 · 黄金比例：中心点 34 : 中球 21 : 小球 13（相邻比≈1.618）
+   单一银白中性色 #e8eaf1 + 1px 细线低透明轨道 + 同色系弱辉光（保留轻微呼吸，非霓虹）
+   纯 CSS，无 img/SVG/JS 参与 */
 .hero-orbit-logo { position: relative; width: 132px; height: 132px; }
-/* 地球绕太阳的主轨道线 */
+/* 主轨道线：半径 42px（inset 24px），1px 细线、低透明度同色系 */
 .hero-orbit-ring {
   position: absolute;
-  inset: 20px;
+  inset: 24px;
   border-radius: 50%;
-  border: 1px solid rgba(148, 215, 240, .48);
-  box-shadow: 0 0 14px rgba(110, 205, 245, .18), inset 0 0 8px rgba(110, 205, 245, .10);
-  animation: hero-ring-breathe 3.6s ease-in-out infinite;
+  border: 1px solid rgba(232, 234, 241, .32);
+  box-shadow: 0 0 10px rgba(232, 234, 241, .08), inset 0 0 6px rgba(232, 234, 241, .05);
+  animation: hero-ring-breathe 5s ease-in-out infinite;
 }
-/* 中心太阳：低饱和实心暖色圆点 + 呼吸光晕（简约几何） */
+/* 中心点 34px（斐波那契 F9）：银白实心圆 + 同色系微呼吸 */
 .hero-orbit-sun {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 18px;
-  height: 18px;
-  margin: -9px 0 0 -9px;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
   border-radius: 50%;
   border: 0;
-  background: #e3bd82;
-  box-shadow: 0 0 8px rgba(227, 189, 130, .5);
-  animation: hero-sun-breathe 2.6s ease-in-out infinite;
+  background: #e8eaf1;
+  box-shadow: 0 0 12px rgba(232, 234, 241, .26);
+  animation: hero-sun-breathe 4s ease-in-out infinite;
 }
-/* 地球公转容器：带动地球沿主轨道环绕太阳 */
+/* 中球公转容器：绕画布中心旋转，中球球心轨道半径 = 42px（骑在主轨线上） */
 .hero-orbit-track-earth {
   position: absolute;
   inset: 0;
-  animation: hero-earth-orbit 22s linear infinite;
+  animation: hero-earth-orbit 24s linear infinite;
 }
-/* 地球：低饱和实心蓝色圆点，中心落在主轨道线上（简约几何） */
+/* 中球 21px（F8）：球心位于半径 42px 处，不压线、不外飘 */
 .hero-orbit-earth {
   position: absolute;
   left: 50%;
-  top: 12px;
-  width: 10px;
-  height: 10px;
-  margin-left: -5px;
+  top: 13.5px;
+  width: 21px;
+  height: 21px;
+  margin-left: -10.5px;
   border-radius: 50%;
   border: 0;
-  background: #8fb3d6;
-  box-shadow: 0 0 6px rgba(143, 179, 214, .55);
-  animation: hero-earth-breathe 3.4s ease-in-out infinite;
+  background: #e8eaf1;
+  box-shadow: 0 0 8px rgba(232, 234, 241, .20);
+  animation: hero-earth-breathe 4.2s ease-in-out infinite;
 }
-/* 月球次级轨道线：以地球为圆心的细环 */
+/* 小球次级轨道线：以中球为圆心、半径 17px（= 两球半径之和，嵌套不重叠） */
 .hero-orbit-moon-path {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 30px;
-  height: 30px;
-  margin: -15px 0 0 -15px;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
   border-radius: 50%;
-  border: 1px solid rgba(215, 230, 250, .34);
+  border: 1px solid rgba(232, 234, 241, .22);
 }
-/* 月球公转容器 */
+/* 小球公转容器：0×0 定位于中球圆心，旋转带动小球沿半径 17px 轨道运行 */
 .hero-orbit-track-moon {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 30px;
-  height: 30px;
-  margin: -15px 0 0 -15px;
-  animation: hero-moon-orbit 7s linear infinite;
+  width: 0;
+  height: 0;
+  animation: hero-moon-orbit 9s linear infinite;
 }
-/* 月球：比地球更小的实心浅色圆点（简约几何） */
+/* 小球 13px（F7）：球心沿次级轨道运行 */
 .hero-orbit-moon {
   position: absolute;
-  left: 50%;
-  top: -2.5px;
-  width: 5px;
-  height: 5px;
-  margin-left: -2.5px;
+  left: -6.5px;
+  top: -23.5px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   border: 0;
-  background: #d9e1ec;
-  box-shadow: 0 0 4px rgba(217, 225, 236, .55);
+  background: #e8eaf1;
+  box-shadow: 0 0 6px rgba(232, 234, 241, .16);
 }
 @keyframes hero-earth-orbit { to { transform: rotate(360deg); } }
 @keyframes hero-moon-orbit { to { transform: rotate(360deg); } }
 @keyframes hero-ring-breathe {
-  0%, 100% { box-shadow: 0 0 10px rgba(110, 205, 245, .14), inset 0 0 6px rgba(110, 205, 245, .08); }
-  50% { box-shadow: 0 0 20px rgba(110, 205, 245, .34), inset 0 0 12px rgba(110, 205, 245, .18); }
+  0%, 100% { box-shadow: 0 0 6px rgba(232, 234, 241, .06), inset 0 0 4px rgba(232, 234, 241, .04); }
+  50% { box-shadow: 0 0 14px rgba(232, 234, 241, .15), inset 0 0 9px rgba(232, 234, 241, .08); }
 }
 @keyframes hero-sun-breathe {
-  0%, 100% { box-shadow: 0 0 4px rgba(227, 189, 130, .28); }
-  50% { box-shadow: 0 0 12px rgba(227, 189, 130, .62); }
+  0%, 100% { box-shadow: 0 0 6px rgba(232, 234, 241, .14); }
+  50% { box-shadow: 0 0 14px rgba(232, 234, 241, .38); }
 }
 @keyframes hero-earth-breathe {
-  0%, 100% { box-shadow: 0 0 3px rgba(143, 179, 214, .3); }
-  50% { box-shadow: 0 0 8px rgba(143, 179, 214, .62); }
+  0%, 100% { box-shadow: 0 0 4px rgba(232, 234, 241, .10); }
+  50% { box-shadow: 0 0 10px rgba(232, 234, 241, .28); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-orbit-track-earth { animation: none; }
@@ -1851,4 +1851,107 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   .about-min-values {
     grid-template-columns: 1fr;
   }
+}
+
+/* ============ Portfolio 真实截图卡（答案 / AI Workbench） ============ */
+.cover-gradient-7 { background: linear-gradient(135deg, #20262a, #2a343c 70%, #38465a); }
+
+/* 手机视口截图（竖版，置于封面右侧） */
+.cover-shot .cover-icon { display: none; }
+.cover-shot .shot-img {
+  position: absolute;
+  top: 44px; right: 18px;
+  height: 126px; width: auto;
+  aspect-ratio: 375 / 812;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 10px;
+  border: 3px solid rgba(255, 255, 255, 0.26);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  z-index: 1;
+}
+.cover-shot .cover-title,
+.cover-shot .cover-en,
+.cover-shot .cover-index,
+.cover-shot .cover-meta { z-index: 2; }
+
+/* 桌面 Web 全幅截图封面 */
+.cover-shot-wide { padding: 0; margin-bottom: 22px; }
+.cover-shot-wide .shot-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  opacity: 0.92;
+  transition: transform var(--transition);
+}
+.project-card:hover .cover-shot-wide .shot-bg { transform: scale(1.02); }
+.cover-shot-wide::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(10, 12, 16, 0.15) 0%, rgba(10, 12, 16, 0.35) 55%, rgba(10, 12, 16, 0.78) 100%);
+  z-index: 1;
+}
+.cover-shot-wide .cover-title,
+.cover-shot-wide .cover-en,
+.cover-shot-wide .cover-index,
+.cover-shot-wide .cover-meta { z-index: 2; }
+
+/* 截图灯箱（纯 CSS :target，无脚本） */
+.shot-lightbox {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  align-items: center; justify-content: center;
+  background: rgba(8, 10, 14, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 24px;
+}
+.shot-lightbox:target { display: flex; }
+.lb-panel {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px;
+  width: min(520px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+}
+.lb-panel-wide { width: min(920px, 100%); }
+.lb-close {
+  position: absolute; top: 12px; right: 16px;
+  font-size: 1.6rem; line-height: 1;
+  color: var(--text-2);
+  text-decoration: none;
+  padding: 2px 6px;
+  border-radius: 8px;
+  transition: color var(--transition), background var(--transition);
+}
+.lb-close:hover { color: var(--text); background: var(--bg-soft); }
+.lb-title { margin-bottom: 18px; font-weight: 650; }
+.lb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+.lb-fig { margin: 0; }
+.lb-fig img {
+  width: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: #0e1116;
+}
+.lb-fig figcaption {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--text-2);
+  text-align: center;
+}
+@media (max-width: 640px) {
+  .lb-panel, .lb-panel-wide { padding: 20px; }
+  .lb-grid { grid-template-columns: 1fr; }
 }

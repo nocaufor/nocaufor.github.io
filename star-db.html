@@ -52,6 +52,7 @@
 
     <!-- ============ 3D 星空展示区（唯一主体：控制栏悬浮、粒子层、详情面板） ============ -->
     <section class="section-panel stars-section star-db-stage" id="sec-stars" aria-label="3D 星空数据库">
+      <canvas id="stars-bg-canvas" aria-hidden="true"></canvas>
       <div class="star-db-controls">
         <div class="star-db-search-wrap">
           <svg class="star-db-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
@@ -117,6 +118,9 @@
   <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/star-data.js"></script>
+  <!-- WebGL 深空背景必须先于 star-db.js 执行：初始化成功则置 window.__starDbWebGLBg=true，
+       star-db.js 据此跳过 2D buildBg/drawBand 背景链；失败则隐藏背景画布并走 2D fallback -->
+  <script src="assets/js/star-db-bg-webgl.js"></script>
   <script src="assets/js/star-db.js"></script>
 </body>
 </html>
