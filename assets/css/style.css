@@ -39,6 +39,7 @@
 
 html[data-theme="dark"] {
   color-scheme: dark;
+  --hero-ink: #e8eaf1;
   --bg: #0b0d0f;
   --bg-soft: #121518;
   --bg-card: #15181c;
@@ -75,6 +76,7 @@ html[data-theme="light"] {
   --grad-b: rgba(158, 186, 240, 0.36);
   --grad-c: rgba(198, 170, 234, 0.32);
   --shadow: 0 20px 50px rgba(20, 24, 30, 0.07);
+  --hero-ink: #2a2f36; /* hero 轨道图标主色：浅色主题深墨，与 --bg(#f6f7f8) 对比度 ≥7:1 */
 }
 
 /* ============ 02 基础与重置 ============ */
@@ -1420,7 +1422,7 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
 .hero-slogan-en { font-size: .8rem; letter-spacing: .26em; text-transform: uppercase; color: var(--text-3); margin-top: 7px; }
 /* ---- 太阳系轨道示意图（首页 hero 主标识） ----
    几何风 · 黄金比例：中心点 34 : 中球 21 : 小球 13（相邻比≈1.618）
-   单一银白中性色 #e8eaf1 + 1px 细线低透明轨道 + 同色系弱辉光（保留轻微呼吸，非霓虹）
+   单一中性色 var(--hero-ink)（深色 #e8eaf1 / 浅色深墨）+ 1px 细线低透明轨道 + 同色系弱辉光（保留轻微呼吸，非霓虹）
    纯 CSS，无 img/SVG/JS 参与 */
 .hero-orbit-logo { position: relative; width: 132px; height: 132px; }
 /* 主轨道线：半径 42px（inset 24px），1px 细线、低透明度同色系 */
@@ -1428,11 +1430,11 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   position: absolute;
   inset: 24px;
   border-radius: 50%;
-  border: 1px solid rgba(232, 234, 241, .32);
-  box-shadow: 0 0 10px rgba(232, 234, 241, .08), inset 0 0 6px rgba(232, 234, 241, .05);
+  border: 1px solid color-mix(in srgb, var(--hero-ink) 32%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--hero-ink) 8%, transparent), inset 0 0 6px color-mix(in srgb, var(--hero-ink) 5%, transparent);
   animation: hero-ring-breathe 5s ease-in-out infinite;
 }
-/* 中心点 34px（斐波那契 F9）：银白实心圆 + 同色系微呼吸 */
+/* 中心点 34px（斐波那契 F9）：实心圆 + 同色系微呼吸 */
 .hero-orbit-sun {
   position: absolute;
   left: 50%;
@@ -1442,8 +1444,8 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   margin: -17px 0 0 -17px;
   border-radius: 50%;
   border: 0;
-  background: #e8eaf1;
-  box-shadow: 0 0 12px rgba(232, 234, 241, .26);
+  background: var(--hero-ink);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--hero-ink) 26%, transparent);
   animation: hero-sun-breathe 4s ease-in-out infinite;
 }
 /* 中球公转容器：绕画布中心旋转，中球球心轨道半径 = 42px（骑在主轨线上） */
@@ -1462,22 +1464,22 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   margin-left: -10.5px;
   border-radius: 50%;
   border: 0;
-  background: #e8eaf1;
-  box-shadow: 0 0 8px rgba(232, 234, 241, .20);
+  background: var(--hero-ink);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--hero-ink) 20%, transparent);
   animation: hero-earth-breathe 4.2s ease-in-out infinite;
 }
-/* 小球次级轨道线：以中球为圆心、半径 17px（= 两球半径之和，嵌套不重叠） */
+/* 小球次级轨道线：以中球为圆心、半径 21px（中球 10.5 + 小球 6.5 + 4px 间隙，嵌套不重叠） */
 .hero-orbit-moon-path {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
+  width: 42px;
+  height: 42px;
+  margin: -21px 0 0 -21px;
   border-radius: 50%;
-  border: 1px solid rgba(232, 234, 241, .22);
+  border: 1px solid color-mix(in srgb, var(--hero-ink) 22%, transparent);
 }
-/* 小球公转容器：0×0 定位于中球圆心，旋转带动小球沿半径 17px 轨道运行 */
+/* 小球公转容器：0×0 定位于中球圆心，旋转带动小球沿半径 21px 轨道运行 */
 .hero-orbit-track-moon {
   position: absolute;
   left: 50%;
@@ -1490,27 +1492,27 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
 .hero-orbit-moon {
   position: absolute;
   left: -6.5px;
-  top: -23.5px;
+  top: -27.5px;
   width: 13px;
   height: 13px;
   border-radius: 50%;
   border: 0;
-  background: #e8eaf1;
-  box-shadow: 0 0 6px rgba(232, 234, 241, .16);
+  background: var(--hero-ink);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--hero-ink) 16%, transparent);
 }
 @keyframes hero-earth-orbit { to { transform: rotate(360deg); } }
 @keyframes hero-moon-orbit { to { transform: rotate(360deg); } }
 @keyframes hero-ring-breathe {
-  0%, 100% { box-shadow: 0 0 6px rgba(232, 234, 241, .06), inset 0 0 4px rgba(232, 234, 241, .04); }
-  50% { box-shadow: 0 0 14px rgba(232, 234, 241, .15), inset 0 0 9px rgba(232, 234, 241, .08); }
+  0%, 100% { box-shadow: 0 0 6px color-mix(in srgb, var(--hero-ink) 6%, transparent), inset 0 0 4px color-mix(in srgb, var(--hero-ink) 4%, transparent); }
+  50% { box-shadow: 0 0 14px color-mix(in srgb, var(--hero-ink) 15%, transparent), inset 0 0 9px color-mix(in srgb, var(--hero-ink) 8%, transparent); }
 }
 @keyframes hero-sun-breathe {
-  0%, 100% { box-shadow: 0 0 6px rgba(232, 234, 241, .14); }
-  50% { box-shadow: 0 0 14px rgba(232, 234, 241, .38); }
+  0%, 100% { box-shadow: 0 0 6px color-mix(in srgb, var(--hero-ink) 14%, transparent); }
+  50% { box-shadow: 0 0 14px color-mix(in srgb, var(--hero-ink) 38%, transparent); }
 }
 @keyframes hero-earth-breathe {
-  0%, 100% { box-shadow: 0 0 4px rgba(232, 234, 241, .10); }
-  50% { box-shadow: 0 0 10px rgba(232, 234, 241, .28); }
+  0%, 100% { box-shadow: 0 0 4px color-mix(in srgb, var(--hero-ink) 10%, transparent); }
+  50% { box-shadow: 0 0 10px color-mix(in srgb, var(--hero-ink) 28%, transparent); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-orbit-track-earth { animation: none; }
