@@ -327,7 +327,7 @@ body::before {
 
 /* 视差元素（滚动时标题/按钮轻微上移淡出，由 main.js 驱动） */
 .hero .display-title, .hero .type-line, .hero .hero-actions { will-change: transform, opacity; }
-.reveal.parallax-live { transition: opacity 0.3s ease, transform 0.08s linear; }
+html.js .reveal.parallax-live { transition: opacity 0.3s ease, transform 0.08s linear; }
 
 /* Hero 整体入场（克制淡入上浮，不干扰子元素 reveal） */
 @keyframes heroIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -865,11 +865,13 @@ body.cursor-on .cursor-glow.cursor-hover {
 }
 
 /* ============ 19 渐入动画与页面过渡 ============ */
-.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
-.reveal.is-visible { opacity: 1; transform: translateY(0); }
-.reveal[data-delay="1"] { transition-delay: 0.08s; }
-.reveal[data-delay="2"] { transition-delay: 0.16s; }
-.reveal[data-delay="3"] { transition-delay: 0.24s; }
+/* reveal 隐藏门控仅在 JS 就绪(html.js)后启用：
+   无 JS / 截图渲染器异常 / IO 永不触发时 .reveal 保持默认可见，首屏内容不透明 */
+html.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
+html.js .reveal.is-visible { opacity: 1; transform: translateY(0); }
+html.js .reveal[data-delay="1"] { transition-delay: 0.08s; }
+html.js .reveal[data-delay="2"] { transition-delay: 0.16s; }
+html.js .reveal[data-delay="3"] { transition-delay: 0.24s; }
 /* 方案卡片：合规与风险提示 */
 .idea-warn {
   margin: 14px 0 0;
@@ -881,8 +883,8 @@ body.cursor-on .cursor-glow.cursor-hover {
   line-height: 1.7;
 }
 /* 想法卡片：进入动画与 tilt 跟手过渡协调 */
-.idea-card.reveal { transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
-.idea-card.reveal.tilt-live { transition: opacity 0.3s ease, transform 0.16s ease-out, border-color var(--transition), box-shadow var(--transition), background var(--transition); }
+html.js .idea-card.reveal { transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
+html.js .idea-card.reveal.tilt-live { transition: opacity 0.3s ease, transform 0.16s ease-out, border-color var(--transition), box-shadow var(--transition), background var(--transition); }
 
 /* 页面离开过渡（点击站内链接）：0.3s 淡出 + 轻微上移，切页不突兀 */
 body.page-leaving {
@@ -981,7 +983,7 @@ body.star-panel-open { overflow: hidden; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.001s !important;
   }
-  .reveal { opacity: 1; transform: none; }
+  .reveal, html.js .reveal { opacity: 1; transform: none; }
   body::before { animation: none; }
   .cursor-glow { display: none !important; }
   .scroll-progress { display: none; }
@@ -1358,6 +1360,8 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
 }
 .mini-logo { display: inline-block; width: 20px; height: 20px; color: var(--brand); vertical-align: -4px; border-radius: 4px; transition: transform var(--transition); }
 .mini-logo:hover { transform: rotate(180deg); }
+/* 首屏兜底：左上角品牌区（img.brand-logo 及其容器）不依赖任何入场/IO 透明门控，整页截图/后台加载也必显；不改几何样式 */
+.site-header .brand { opacity: 1; visibility: visible; transform: none; }
 
 /* ---- 网格线背景 ---- */
 .bg-grid {

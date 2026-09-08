@@ -29,3 +29,6 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# ---------- 验收截图目录（不入库） ----------
+.marvis-accept/

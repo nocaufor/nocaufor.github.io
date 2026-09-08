@@ -6,6 +6,10 @@
 (function () {
   "use strict";
 
+  /* 渐进增强：JS 就绪后开启 reveal 隐藏门控；无 JS / 脚本环境异常时 .reveal 保持默认可见，
+     保证整页截图、后台加载等 IO 无法触发的场景首屏内容不透明 */
+  document.documentElement.classList.add("js");
+
   var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
@@ -352,6 +356,26 @@
       });
     }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
     els.forEach(function (el) { io.observe(el); });
+
+    /* 首屏兜底：整页截图 / 后台标签 / IO 永不触发时，对已进入视口的元素强制补 is-visible，
+       不依赖 IO 也必然可见；视口外元素仍保留滚动触发 */
+    function forceInViewportVisible() {
+      var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      els.forEach(function (el) {
+        if (el.classList.contains("is-visible")) return;
+        var r = el.getBoundingClientRect();
+        if (r.top <= vh && r.bottom >= -40) {
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    }
+    setTimeout(forceInViewportVisible, 450);
+    /* 后台 tab 定时器可能被冻结致 450ms 兜底未执行：切回前台可见时立即补一次，
+       避免整页截图 / 验收时首屏元素仍停留在隐藏态 */
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") forceInViewportVisible();
+    });
   }
 
   /* ============ 12b. 滚动策略：移除自定义 rAF 惯性缓动，恢复浏览器原生滚动 ============

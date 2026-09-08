@@ -957,6 +957,11 @@
 
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
+    if (useWebglBg() && typeof window.__starDbWebglBgPose === "function") {
+      /* WebGL 背景视差联动：把当前姿态喂给背景着色器，恢复拖拽旋转时背景跟随手感；
+         接口在 WebGL 未启用/失败时不定义，自然跳过，不影响 2D fallback */
+      window.__starDbWebglBgPose(rotationX, rotationY);
+    }
     if (!useWebglBg()) {
       /* 渐变夜空背景（视差） */
       var px = Math.sin(rotationY) * W * 0.03;

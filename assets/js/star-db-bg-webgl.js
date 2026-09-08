@@ -4,6 +4,8 @@
  * - 挂载方式：为 star-db.html 中新增的底层 canvas#stars-bg-canvas（垫底、不可见交互）提供背景。
  * - 成功初始化后置 window.__starDbWebGLBg = true；star-db.js 检测到该标志后跳过原 2D buildBg/drawBand/FX 背景链。
  * - 初始化失败（无 WebGL2 / 编译失败）则给画布加 .stars-bg-fallback 并隐藏自身，由 star-db.js 的 2D 背景链兜底。
+ * - 姿态视差联动：暴露 window.__starDbWebglBgPose(rotationX, rotationY)，由 star-db.js 每帧喂入球体姿态，
+ *   换算为 uv 小幅偏移 uniform(uPose)，恢复旧 2D「拖拽旋转时背景跟随」手感；与 fbm 星云 / 星光闪烁共存。
  */
 (function () {
   "use strict";
@@ -60,6 +62,7 @@
     "uniform vec2 uRes;",
     "uniform float uTime;",
     "uniform float uMotion;", /* 1.0 正常 / 0.0 reduced-motion 冻结时间 */
+    "uniform vec2 uPose;",    /* 视差偏移(uv 归一化)：随球体旋转轻微平移深空背景，无则保持 0 */
 
     "float hash21(vec2 p) {",
     "  p = fract(p * vec2(127.1, 311.7));",
@@ -108,12 +111,13 @@
     "}",
 
     "void main() {",
+    "  vec2 uv = vUv + uPose;", /* 视差：整片深空(渐变/星云/星光)随姿态轻微平移，幅度小而连续 */
     "  vec2 aspect = vec2(uRes.x / uRes.y, 1.0);",
-    "  vec2 p = (vUv - 0.5) * aspect * 2.2;",
+    "  vec2 p = (uv - 0.5) * aspect * 2.2;",
     "  float t = uMotion * uTime * 0.018;",
 
     /* 基线：深空底 → 底部微亮的纵向渐变（很低） */
-    "  vec3 col = mix(vec3(0.003, 0.005, 0.020), vec3(0.012, 0.018, 0.050), smoothstep(0.0, 1.0, vUv.y));",
+    "  vec3 col = mix(vec3(0.003, 0.005, 0.020), vec3(0.012, 0.018, 0.050), smoothstep(0.0, 1.0, uv.y));",
 
     /* 多层缓慢流动的蓝紫/深靛星云 */
     "  float n1 = fbm(p * 0.55 + vec2(t * 0.42, -t * 0.31));",
@@ -133,8 +137,8 @@
     "  col += vec3(0.10, 0.13, 0.30) * glow * 0.22;",
 
     /* 数千颗远处星光点（两层不同疏密，避免大而圆的光斑） */
-    "  float s1 = starLayer(vUv, 9.0);",
-    "  float s2 = starLayer(vUv * 1.17 + vec2(331.0, 217.0), 15.0);",
+    "  float s1 = starLayer(uv, 9.0);",
+    "  float s2 = starLayer(uv * 1.17 + vec2(331.0, 217.0), 15.0);",
     "  col += vec3(0.80, 0.87, 1.0) * min(s1 * 2.4, 1.0) * 0.9;",
     "  col += vec3(0.78, 0.85, 1.0) * min(s2 * 2.4, 1.0) * 0.5;",
 
@@ -188,6 +192,11 @@
   var uRes = gl.getUniformLocation(prog, "uRes");
   var uTime = gl.getUniformLocation(prog, "uTime");
   var uMotion = gl.getUniformLocation(prog, "uMotion");
+  var uPose = gl.getUniformLocation(prog, "uPose");
+
+  /* ------- 视差姿态：star-db.js 每帧喂入球体 rotation(弧度)，换算为小幅 uv 偏移并平滑跟随 ------- */
+  var poseTX = 0, poseTY = 0;   /* 目标：姿态 → uv 偏移（幅度参考旧 2D 视差 sin*0.03 / sin*0.02） */
+  var poseX = 0, poseY = 0;     /* 当前：逐帧平滑后的实际偏移 */
 
   /* ------- 渲染尺寸：按设备能力降内部分辨率（CSS 由 DPR 与比例因子共同决定） ------- */
   var isTouch = false;
@@ -219,9 +228,18 @@
     if (!sizeCanvas()) return;
     var t = reduced ? 0 : (ts || 0) * 0.001;
     gl.useProgram(prog);
+    if (reduced) {
+      /* reduced-motion：静态帧，姿态恒为 0 */
+      poseX = poseY = 0;
+    } else {
+      /* 姿态目标向当前值小幅平滑，形成连续跟手感（每次约 18% 收敛） */
+      poseX += (poseTX - poseX) * 0.18;
+      poseY += (poseTY - poseY) * 0.18;
+    }
     gl.uniform2f(uRes, cv.width, cv.height);
     gl.uniform1f(uTime, t);
     gl.uniform1f(uMotion, reduced ? 0.0 : 1.0);
+    gl.uniform2f(uPose, poseX, poseY);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -272,5 +290,15 @@
   document.addEventListener("visibilitychange", onViewport);
 
   window.__starDbWebGLBg = true;
+
+  /* 姿态喂送接口：star-db.js 在主循环 renderFrame 每帧调用(存在才调)。
+     rotationX/rotationY 为球体姿态弧度；偏移量换算参考旧 2D 视差：
+     横向 sin(rotationY)*W*0.03、纵向 sin(rotationX)*H*0.02（像素），归一化到 uv 即 0.03/0.02，
+     只做小而连续的跟随，不做大幅平移。 */
+  window.__starDbWebglBgPose = function (rotationX, rotationY) {
+    poseTX = Math.sin(rotationY || 0) * 0.03;
+    poseTY = Math.sin(rotationX || 0) * 0.02;
+  };
+
   kick();
 })();
