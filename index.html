@@ -3,57 +3,82 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>nocau · 个人开发者作品集</title>
+  <title>NOCAU · 独立开发者作品集 — 用实践将想法变成现实</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <meta name="description" content="nocau 个人开发者作品集：微信小程序、Android 应用与 AI 平台开发项目。" />
+  <meta name="description" content="NOCAU（LINGAo）个人作品集：微信小程序、Android 应用与 AI 平台的实践落地；收录代码、想法与星空数据库。" />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- 公共样式：全站主题变量 / 字体栈 / 轨道图标体系（--hero-ink 双主题） -->
   <link rel="stylesheet" href="assets/css/style.css" />
-  <link rel="stylesheet" href="assets/css/home.css" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <!-- 首页专属样式：bento 布局与组件（公共文件不变） -->
+  <link rel="stylesheet" href="assets/css/home-new.css" />
+
+  <!-- Tailwind（布局工具类） -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: ['class', '[data-theme="dark"]'], theme: { extend: {} } };
+  </script>
+
+  <!-- GSAP 入场与滚动动效 -->
+  <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+  <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
 </head>
 <body>
 
-  <!-- 极淡点阵背景 -->
-  <div class="bg-fog" aria-hidden="true"></div>
+  <!-- 滚动进度条 -->
+  <div id="tk-progress" class="tk-progress" aria-hidden="true"></div>
 
   <!-- ==================== 顶部导航 ==================== -->
-  <header class="site-header">
-    <div class="container nav">
-      <a href="index.html" class="brand">
-        <img class="brand-logo" src="assets/img/logo.svg" alt="nocau" width="30" height="30" />
-        <span class="brand-name">NOCAU</span>
+  <nav class="tk-nav fixed inset-x-0 top-0 z-50 backdrop-blur-md">
+    <div class="tk-nav-inner">
+      <a class="tk-brand" href="index.html" aria-label="NOCAU home">
+        <img src="assets/img/logo.svg" alt="" width="22" height="22" />
+        <span>NOCAU</span>
       </a>
-      <div class="nav-actions">
-        <nav class="nav-links" id="nav-links">
-          <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
-          <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
-          <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
-          <a href="about.html" data-i18n="nav_about">关于</a>
-          <a href="contact.html" data-i18n="nav_contact">联系</a>
-        </nav>
-        <button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言" data-i18n-attr="aria-label=lang_aria">EN</button>
-        <button id="theme-toggle" class="theme-toggle" aria-label="切换深浅色模式" data-i18n-attr="aria-label=theme_aria">
-          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
-        </button>
-        <button class="nav-toggle" aria-label="切换导航菜单" data-i18n-attr="aria-label=nav_aria" aria-expanded="false" aria-controls="nav-links">
-          <span></span><span></span><span></span>
+
+      <div class="tk-nav-links" id="tk-nav-links">
+        <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
+        <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
+        <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
+        <a href="about.html" data-i18n="nav_about">关于</a>
+        <a href="services.html" data-i18n="home_quick_services">定制服务</a>
+        <a href="contact.html" data-i18n="nav_contact">联系</a>
+      </div>
+
+      <div class="tk-nav-actions">
+        <button type="button" class="tk-lang" data-lang-toggle aria-label="切换语言" data-i18n-attr="aria-label=lang_aria">EN</button>
+        <button id="theme-toggle" class="tk-theme" type="button" aria-label="切换深浅色模式" data-i18n-attr="aria-label=theme_aria">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M5.2 18.8l1.7-1.7M17.1 6.9l1.7-1.7"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8 8 0 0 1 9.8 4 8 8 0 1 0 20 14.2z"/></svg>
         </button>
       </div>
     </div>
-  </header>
+  </nav>
 
-  <main class="main">
+  <!-- ==================== Hero ==================== -->
+  <header class="tk-hero">
+    <div class="tk-orb-glow" aria-hidden="true"></div>
+    <div class="tk-shell tk-hero-grid">
+      <div class="tk-hero-main">
+        <p class="tk-eyebrow tk-anim">NOCAU · LINGAo — independent developer</p>
+        <h1 class="tk-hero-title tk-anim">NOCAU</h1>
+        <h2 class="tk-tagline tk-anim" data-i18n-html="hero_title_html">用实践将想法变成现实。</h2>
+        <p class="tk-hero-sub tk-anim" data-i18n="home_brief_desc">独立开发者，专注小程序、Android 应用与 AI 平台的实践落地；持续把想法沉淀为代码，把代码沉淀为作品。</p>
+        <div class="tk-hero-actions tk-anim">
+          <a class="tk-btn tk-btn-solid" href="star-db.html" data-i18n="btn_stars">星空数据库</a>
+          <a class="tk-btn tk-btn-ghost" href="fun/index.html" data-i18n="nav_fun">代码开发</a>
+        </div>
+      </div>
 
-    <!-- ============ 01 Hero ============ -->
-    <section class="section-panel hero" id="sec-hero">
-      <div class="hero-orb" aria-hidden="true"></div>
-      <div class="slant-accent" aria-hidden="true" style="top: 16%; right: 6%"></div>
-      <div class="container">
-        <div class="hero-identity reveal">
+      <div class="tk-hero-visual tk-anim">
+        <div class="tk-orb-panel">
+          <!-- 保留：太阳系轨道图标体系（斐波那契 34:21:13 / 细线轨道 / 呼吸动画 / --hero-ink 主题变量） -->
           <div class="hero-orbit-logo" aria-hidden="true">
             <span class="hero-orbit-ring"></span>
             <span class="hero-orbit-sun"></span>
@@ -64,137 +89,176 @@
               </span>
             </span>
           </div>
-          <h1 class="hero-nocau">NOCAU</h1>
-          <div class="hero-slogan">
-            <p class="hero-slogan-en" data-i18n="about_motto_en" data-i18n-hide="en">Simple, reliable tools that solve real problems.</p>
-          </div>
+          <p class="tk-orb-motto" data-i18n="about_motto">做简单可靠、能解决真实问题的工具。</p>
+          <p class="tk-orb-handle">github.com/nocau</p>
         </div>
-        <h2 class="reveal display-title" data-i18n-html="hero_title_html">用实践将想法变成现实。</h2>
-        <div class="hero-actions reveal">
-          <a href="star-db.html" class="btn btn-primary btn-lg" data-i18n="btn_stars">星空数据库</a>
-          <a href="fun/index.html" class="btn btn-outline btn-lg" data-i18n="nav_fun">代码开发</a>
-        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ==================== 数据条 ==================== -->
+    <section class="tk-stats" aria-label="站点数据">
+      <div class="tk-shell tk-stats-grid tk-anim-scroll">
+        <div class="tk-stat"><b>88</b><span data-i18n="home_stat_code">代码项目</span></div>
+        <div class="tk-stat"><b>56</b><span data-i18n="home_stat_idea">想法方案</span></div>
+        <div class="tk-stat"><b>144</b><span data-i18n="home_stat_star">收录条目</span></div>
       </div>
     </section>
 
-    <!-- ============ 02 开发者简介 ============ -->
-    <section class="section section-home" id="sec-brief">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="section-tag">Profile</span>
-          <div class="section-divider"></div>
-          <h2 class="section-title" data-i18n-html="home_brief_title">开发者<span class="gradient-text">简介</span></h2>
-          <p class="section-desc" data-i18n="home_brief_desc">独立开发者，专注小程序、Android 应用与 AI 平台的实践落地；持续把想法沉淀为代码，把代码沉淀为作品。</p>
+    <!-- ==================== 快捷入口 Bento ==================== -->
+    <section id="explore" class="tk-section">
+      <div class="tk-shell">
+        <div class="tk-head tk-anim-scroll">
+          <p class="tk-eyebrow">EXPLORE</p>
+          <h2 class="tk-h2" data-i18n-html="home_quick_title">快捷<span class="gradient-text">入口</span></h2>
+          <p class="tk-desc" data-i18n="home_quick_desc">直达代码、想法、星空与定制服务。</p>
         </div>
-        <div class="stats-grid home-stats">
-          <div class="stat reveal"><b>88</b><span data-i18n="home_stat_code">代码项目</span></div>
-          <div class="stat reveal"><b>56</b><span data-i18n="home_stat_idea">想法方案</span></div>
-          <div class="stat reveal"><b>144</b><span data-i18n="home_stat_star">收录条目</span></div>
-        </div>
-      </div>
-    </section>
 
-    <!-- ============ 04 技能方向 ============ -->
-    <section class="section section-home" id="sec-skills">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="section-tag">Skill Directions</span>
-          <div class="section-divider"></div>
-          <h2 class="section-title" data-i18n-html="home_skill_title">技能<span class="gradient-text">方向</span></h2>
-          <p class="section-desc" data-i18n="home_skill_desc">代码开发板块按类型分三类，编号前缀一目了然。</p>
-        </div>
-        <div class="home-skills-grid">
-          <div class="home-skill-card reveal">
-            <div class="home-skill-head">
-              <span class="home-skill-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="m6 6 2.1 2.1"/><path d="m15.9 15.9 2.1 2.1"/><path d="m17.9 6-2.1 2.1"/><path d="M8.1 15.9 6 18"/></svg></span>
-              <h3 data-i18n="home_skill_ent">娱乐代码</h3>
+        <div class="tk-bento">
+          <a class="tk-card tk-card-lg tk-bento-fun tk-anim-scroll" href="fun/index.html">
+            <span class="tk-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m13.5 4-3 16"/></svg></span>
+            <div class="tk-card-body">
+              <h3 data-i18n="home_quick_fun">代码开发</h3>
+              <p data-i18n="home_quick_fun_desc">娱乐 / 功能 / 实用三类代码，88 个页面持续更新。</p>
+              <div class="tk-chips"><span>E 系列</span><span>F 系列</span><span>P 系列</span></div>
             </div>
+            <span class="tk-go" data-i18n="home_quick_go">前往 →</span>
+          </a>
+
+          <a class="tk-card tk-bento-star tk-anim-scroll" href="star-db.html">
+            <span class="tk-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.5 6.3.9-4.5 4.4 1.1 6.2L12 17l-5.6 3 1.1-6.2L3 9.4l6.3-.9L12 3z"/></svg></span>
+            <div class="tk-card-body">
+              <h3 data-i18n="home_quick_stars">星空数据库</h3>
+              <p data-i18n="home_quick_stars_desc">集中收录代码与想法条目，支持搜索、筛选与探索。</p>
+            </div>
+            <span class="tk-go" data-i18n="home_quick_go">前往 →</span>
+          </a>
+
+          <a class="tk-card tk-bento-ideas tk-anim-scroll" href="ideas.html">
+            <span class="tk-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6.5 6.5 0 0 0-3.7 11.8c.8.6 1.2 1.2 1.2 2.2h5c0-1 .4-1.6 1.2-2.2A6.5 6.5 0 0 0 12 3z"/></svg></span>
+            <div class="tk-card-body">
+              <h3 data-i18n="home_quick_ideas">想法项目</h3>
+              <p data-i18n="home_quick_ideas_desc">56 个想法方案，按分区沉淀、筛选与推进。</p>
+            </div>
+            <span class="tk-go" data-i18n="home_quick_go">前往 →</span>
+          </a>
+
+          <a class="tk-card tk-bento-projects tk-anim-scroll" href="projects.html">
+            <span class="tk-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></span>
+            <div class="tk-card-body">
+              <h3 data-i18n="home_quick_projects">作品集</h3>
+              <p data-i18n="home_quick_projects_desc">微信小程序、Android 应用与 AI 平台代表作。</p>
+            </div>
+            <span class="tk-go" data-i18n="home_quick_go">前往 →</span>
+          </a>
+
+          <a class="tk-card tk-bento-services tk-anim-scroll" href="services.html">
+            <span class="tk-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+            <div class="tk-card-body">
+              <h3 data-i18n="home_quick_services">定制服务</h3>
+              <p data-i18n="home_quick_services_desc">根据实际需求，打造专属工具包。</p>
+            </div>
+            <span class="tk-go" data-i18n="home_quick_go">前往 →</span>
+          </a>
+
+          <a class="tk-card tk-bento-about tk-anim-scroll" href="about.html">
+            <span class="tk-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>
+            <div class="tk-card-body">
+              <h3 data-i18n="nav_about">关于</h3>
+              <p class="tk-static-line">Independent developer, hands-on builder.</p>
+            </div>
+            <span class="tk-go" data-i18n="home_quick_go">前往 →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 技能方向 ==================== -->
+    <section id="skills" class="tk-section tk-section-alt">
+      <div class="tk-shell">
+        <div class="tk-head tk-anim-scroll">
+          <p class="tk-eyebrow">SKILL DIRECTIONS</p>
+          <h2 class="tk-h2" data-i18n-html="home_skill_title">技能<span class="gradient-text">方向</span></h2>
+          <p class="tk-desc" data-i18n="home_skill_desc">代码开发板块按类型分三类，编号前缀一目了然。</p>
+        </div>
+        <div class="tk-three tk-anim-scroll">
+          <div class="tk-skill">
+            <h3><span class="tk-dot"></span><span data-i18n="home_skill_ent">娱乐代码</span></h3>
             <p data-i18n="home_skill_ent_desc">E 系列 · 游戏、动画与趣味交互，把创意玩起来。</p>
-            <div><span class="skill-tag">E000001–E000027</span></div>
           </div>
-          <div class="home-skill-card reveal">
-            <div class="home-skill-head">
-              <span class="home-skill-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2.4"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
-              <h3 data-i18n="home_skill_func">功能代码</h3>
-            </div>
+          <div class="tk-skill">
+            <h3><span class="tk-dot"></span><span data-i18n="home_skill_func">功能代码</span></h3>
             <p data-i18n="home_skill_func_desc">F 系列 · 效率工具、自动化与可复用功能组件。</p>
-            <div><span class="skill-tag">F000001–F000014</span></div>
           </div>
-          <div class="home-skill-card reveal">
-            <div class="home-skill-head">
-              <span class="home-skill-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.3.9-4.5 4.4 1.1 6.2L12 17l-5.6 3 1.1-6.2L3 9.4l6.3-.9L12 3z"/></svg></span>
-              <h3 data-i18n="home_skill_dev">实用代码</h3>
-            </div>
+          <div class="tk-skill">
+            <h3><span class="tk-dot"></span><span data-i18n="home_skill_dev">实用代码</span></h3>
             <p data-i18n="home_skill_dev_desc">P 系列 · 日常实用脚本、工具集与即开即用的解决方案。</p>
-            <div><span class="skill-tag">P000001–P000026</span></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ 04 快捷入口 ============ -->
-    <section class="section section-home" id="sec-quick">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="section-tag">Quick Access</span>
-          <div class="section-divider"></div>
-          <h2 class="section-title" data-i18n-html="home_quick_title">快捷<span class="gradient-text">入口</span></h2>
-          <p class="section-desc" data-i18n="home_quick_desc">直达代码、想法、星空与定制服务。</p>
+    <!-- ==================== 关于 ==================== -->
+    <section id="about" class="tk-section">
+      <div class="tk-shell tk-about-grid">
+        <div class="tk-anim-scroll">
+          <p class="tk-eyebrow">ABOUT</p>
+          <h2 class="tk-h2" data-i18n-html="home_brief_title">开发者<span class="gradient-text">简介</span></h2>
+          <p class="tk-about-lead" data-i18n="home_brief_desc">独立开发者，专注小程序、Android 应用与 AI 平台的实践落地；持续把想法沉淀为代码，把代码沉淀为作品。</p>
+          <p class="tk-about-note" data-i18n="footer_slogan">做简单可靠、能解决真实问题的工具。</p>
         </div>
-        <div class="home-quick-grid">
-          <a class="home-quick-card reveal" href="fun/index.html">
-            <span class="home-quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m13.5 4-3 16"/></svg></span>
-            <h3 data-i18n="home_quick_fun">代码开发</h3>
-            <p data-i18n="home_quick_fun_desc">娱乐 / 功能 / 实用三类代码，88 个页面持续更新。</p>
-            <span class="home-quick-arrow" data-i18n="home_quick_go">前往 →</span>
-          </a>
-          <a class="home-quick-card reveal" href="ideas.html">
-            <span class="home-quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6.5 6.5 0 0 0-3.7 11.8c.8.6 1.2 1.2 1.2 2.2h5c0-1 .4-1.6 1.2-2.2A6.5 6.5 0 0 0 12 3z"/></svg></span>
-            <h3 data-i18n="home_quick_ideas">想法项目</h3>
-            <p data-i18n="home_quick_ideas_desc">56 个想法方案，按分区沉淀、筛选与推进。</p>
-            <span class="home-quick-arrow" data-i18n="home_quick_go">前往 →</span>
-          </a>
-          <a class="home-quick-card reveal" href="star-db.html">
-            <span class="home-quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.3.9-4.5 4.4 1.1 6.2L12 17l-5.6 3 1.1-6.2L3 9.4l6.3-.9L12 3z"/></svg></span>
-            <h3 data-i18n="home_quick_stars">星空数据库</h3>
-            <p data-i18n="home_quick_stars_desc">集中收录代码与想法条目，支持搜索、筛选与探索。</p>
-            <span class="home-quick-arrow" data-i18n="home_quick_go">前往 →</span>
-          </a>
-          <a class="home-quick-card reveal" href="contact.html#custom-services">
-            <span class="home-quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span>
-            <h3 data-i18n="home_quick_services">定制服务</h3>
-            <p data-i18n="home_quick_services_desc">根据实际需求，打造专属工具包。</p>
-            <span class="home-quick-arrow" data-i18n="home_quick_go">前往 →</span>
-          </a>
+        <div class="tk-about-card tk-anim-scroll">
+          <div class="tk-about-row"><span class="tk-about-k">Handle</span><span>github.com/nocau</span></div>
+          <div class="tk-about-row"><span class="tk-about-k">Domain</span><span>www.nocau.com</span></div>
+          <div class="tk-about-row"><span class="tk-about-k">Focus</span><span data-i18n="about_motto">做简单可靠、能解决真实问题的工具。</span></div>
+          <div class="tk-about-actions">
+            <a class="tk-btn tk-btn-solid tk-btn-sm" href="about.html" data-i18n="nav_about">关于</a>
+            <a class="tk-btn tk-btn-ghost tk-btn-sm" href="contact.html" data-i18n="nav_contact">联系</a>
+          </div>
         </div>
       </div>
     </section>
 
+    <!-- ==================== 联系 CTA ==================== -->
+    <section id="contact" class="tk-section tk-cta tk-anim-scroll">
+      <div class="tk-shell">
+        <p class="tk-eyebrow">CONTACT</p>
+        <h2 class="tk-cta-title" data-i18n="nav_contact">联系</h2>
+        <p class="tk-cta-sub">Open to code practice, custom tools and collaborations.</p>
+        <div class="tk-cta-actions">
+          <a class="tk-btn tk-btn-solid" href="contact.html" data-i18n="nav_contact">联系</a>
+          <a class="tk-btn tk-btn-ghost" href="https://github.com/nocau" target="_blank" rel="noreferrer">GitHub ↗</a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- ==================== 页脚 ==================== -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <span class="footer-brand">
-        <img class="mini-logo" src="assets/img/logo.svg" alt="nocau" width="16" height="16" />
-        © <span id="year">2026</span> nocau.com
-        <span class="footer-slogan" data-i18n="footer_slogan">做简单可靠、能解决真实问题的工具。</span>
-      </span>
-      <nav class="footer-links">
+  <footer class="tk-footer">
+    <div class="tk-shell tk-footer-grid">
+      <div class="tk-footer-brand">
+        <span class="tk-footer-name">NOCAU</span>
+        <p data-i18n="footer_slogan">做简单可靠、能解决真实问题的工具。</p>
+      </div>
+      <nav class="tk-footer-links">
+        <a href="index.html" data-i18n="nav_home">首页</a>
         <a href="fun/index.html" data-i18n="nav_fun">代码开发</a>
         <a href="ideas.html" data-i18n="nav_ideas">想法项目</a>
         <a href="star-db.html" data-i18n="nav_stars">星空数据库</a>
+        <a href="projects.html" data-i18n="home_quick_projects">作品集</a>
+        <a href="services.html" data-i18n="home_quick_services">定制服务</a>
         <a href="about.html" data-i18n="nav_about">关于</a>
         <a href="contact.html" data-i18n="nav_contact">联系</a>
-
       </nav>
+      <p class="tk-footer-copy">© <span id="tk-year">2026</span> nocau.com</p>
     </div>
   </footer>
 
-  <!-- 回到顶部 -->
-  <button id="back-to-top" class="back-to-top" aria-label="回到顶部" data-i18n-attr="aria-label=back_aria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
-
+  <!-- 全站中英双语文案（只读复用，公共文件不变） -->
   <script src="assets/js/i18n.js"></script>
-  <script src="assets/js/main.js"></script>
+  <!-- 首页交互：主题切换 / 入场 / 滚动动效 / 进度条 -->
+  <script src="assets/js/home-new.js"></script>
 </body>
 </html>
