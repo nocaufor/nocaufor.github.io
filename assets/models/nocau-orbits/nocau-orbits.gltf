@@ -1,0 +1,571 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "NOCAU orbits builder v4 (procedural self-made geometry + sun spin, no grid lines)",
+    "copyright": "Copyright NOCAU (www.nocau.com). Geometry generated in-house; no third-party assets."
+  },
+  "extensionsUsed": [
+    "KHR_materials_clearcoat",
+    "KHR_materials_ior",
+    "KHR_materials_specular"
+  ],
+  "extensionsRequired": [
+    "KHR_materials_ior"
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "NOCAUOrbits",
+      "nodes": [
+        0,
+        6
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "SunPivot",
+      "children": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "name": "SunBody",
+      "mesh": 0,
+      "scale": [
+        0.34,
+        0.34,
+        0.34
+      ]
+    },
+    {
+      "mesh": 0,
+      "scale": [
+        0.052,
+        0.052,
+        0.052
+      ],
+      "translation": [
+        0.24633873707809475,
+        0.09771117362135838,
+        0.17248824065514168
+      ],
+      "name": "SunBumpA"
+    },
+    {
+      "mesh": 0,
+      "scale": [
+        0.044,
+        0.044,
+        0.044
+      ],
+      "translation": [
+        -0.08926359882271945,
+        -0.12861012654056805,
+        0.2747251085657001
+      ],
+      "name": "SunBumpB"
+    },
+    {
+      "mesh": 0,
+      "scale": [
+        0.038,
+        0.038,
+        0.038
+      ],
+      "translation": [
+        -0.3119312366872439,
+        0.027558645856809515,
+        0.04383907637377445
+      ],
+      "name": "SunBumpC"
+    },
+    {
+      "mesh": 0,
+      "scale": [
+        0.048,
+        0.048,
+        0.048
+      ],
+      "translation": [
+        -0.08036871201194062,
+        -0.211579097730671,
+        -0.22081122148345847
+      ],
+      "name": "SunBumpD"
+    },
+    {
+      "name": "EarthOrbitTilt",
+      "rotation": [
+        0.10452846326765347,
+        0.0,
+        0.0,
+        0.9945218953682733
+      ],
+      "children": [
+        7,
+        8
+      ]
+    },
+    {
+      "name": "EarthTrack",
+      "mesh": 1
+    },
+    {
+      "name": "EarthSystem",
+      "translation": [
+        1.532088886237956,
+        0.0,
+        -1.2855752193730785
+      ],
+      "children": [
+        9,
+        10
+      ]
+    },
+    {
+      "name": "Earth",
+      "mesh": 3,
+      "scale": [
+        0.21,
+        0.21,
+        0.21
+      ]
+    },
+    {
+      "name": "MoonOrbit",
+      "rotation": [
+        0.25881904510252074,
+        0.0,
+        0.0,
+        0.9659258262890683
+      ],
+      "children": [
+        11,
+        12
+      ]
+    },
+    {
+      "name": "MoonTrack",
+      "mesh": 2
+    },
+    {
+      "name": "Moon",
+      "mesh": 4,
+      "scale": [
+        0.13,
+        0.13,
+        0.13
+      ],
+      "translation": [
+        -0.25357095704441956,
+        0.0,
+        -0.54378467222199
+      ]
+    }
+  ],
+  "meshes": [
+    {
+      "name": "SunSphere",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "mode": 4,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "EarthTrack",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 3,
+            "NORMAL": 4
+          },
+          "indices": 5,
+          "mode": 4,
+          "material": 3
+        }
+      ]
+    },
+    {
+      "name": "MoonTrack",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 6,
+            "NORMAL": 7
+          },
+          "indices": 8,
+          "mode": 4,
+          "material": 3
+        }
+      ]
+    },
+    {
+      "name": "EarthSphere",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "mode": 4,
+          "material": 1
+        }
+      ]
+    },
+    {
+      "name": "MoonSphere",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "mode": 4,
+          "material": 2
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "SatinMetal",
+      "doubleSided": false,
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.855,
+          0.875,
+          0.905,
+          1.0
+        ],
+        "metallicFactor": 0.62,
+        "roughnessFactor": 0.26
+      },
+      "extensions": {
+        "KHR_materials_clearcoat": {
+          "clearcoatFactor": 0.7,
+          "clearcoatRoughnessFactor": 0.2
+        },
+        "KHR_materials_ior": {
+          "ior": 1.5
+        },
+        "KHR_materials_specular": {
+          "specularFactor": 1.0,
+          "specularColorFactor": [
+            1.0,
+            0.995,
+            0.985
+          ]
+        }
+      }
+    },
+    {
+      "name": "EarthMetal",
+      "doubleSided": false,
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.83,
+          0.87,
+          0.93,
+          1.0
+        ],
+        "metallicFactor": 0.7,
+        "roughnessFactor": 0.22
+      },
+      "extensions": {
+        "KHR_materials_clearcoat": {
+          "clearcoatFactor": 0.62,
+          "clearcoatRoughnessFactor": 0.18
+        },
+        "KHR_materials_ior": {
+          "ior": 1.5
+        },
+        "KHR_materials_specular": {
+          "specularFactor": 1.0,
+          "specularColorFactor": [
+            0.99,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    },
+    {
+      "name": "MoonMetal",
+      "doubleSided": false,
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.9,
+          0.885,
+          0.86,
+          1.0
+        ],
+        "metallicFactor": 0.55,
+        "roughnessFactor": 0.34
+      },
+      "extensions": {
+        "KHR_materials_clearcoat": {
+          "clearcoatFactor": 0.4,
+          "clearcoatRoughnessFactor": 0.3
+        },
+        "KHR_materials_ior": {
+          "ior": 1.45
+        }
+      }
+    },
+    {
+      "name": "TrackLine",
+      "doubleSided": false,
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.45,
+          0.47,
+          0.5,
+          1.0
+        ],
+        "metallicFactor": 0.35,
+        "roughnessFactor": 0.42
+      }
+    }
+  ],
+  "animations": [
+    {
+      "name": "SunSpin",
+      "samplers": [
+        {
+          "input": 9,
+          "output": 10,
+          "interpolation": "LINEAR"
+        }
+      ],
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 0,
+            "path": "rotation"
+          }
+        }
+      ]
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 2925,
+      "type": "VEC3",
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 2925,
+      "type": "VEC3",
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5123,
+      "count": 16896,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 2093,
+      "type": "VEC3",
+      "min": [
+        -2.013000011444092,
+        -0.013000000268220901,
+        -2.013000011444092
+      ],
+      "max": [
+        2.013000011444092,
+        0.013000000268220901,
+        2.013000011444092
+      ]
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 2093,
+      "type": "VEC3",
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5123,
+      "count": 11520,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 1243,
+      "type": "VEC3",
+      "min": [
+        -0.6079999804496765,
+        -0.007608452346175909,
+        -0.6079999804496765
+      ],
+      "max": [
+        0.6079999804496765,
+        0.007608452346175909,
+        0.6079999804496765
+      ]
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5126,
+      "count": 1243,
+      "type": "VEC3",
+      "min": [
+        -1.0,
+        -0.9510565400123596,
+        -1.0
+      ],
+      "max": [
+        1.0,
+        0.9510565400123596,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 8,
+      "componentType": 5123,
+      "count": 6720,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 9,
+      "componentType": 5126,
+      "count": 5,
+      "type": "SCALAR",
+      "min": [
+        0.0
+      ],
+      "max": [
+        8.0
+      ]
+    },
+    {
+      "bufferView": 10,
+      "componentType": 5126,
+      "count": 5,
+      "type": "VEC4"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 35100,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 35100,
+      "byteLength": 35100,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 70200,
+      "byteLength": 33792,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 103992,
+      "byteLength": 25116,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 129108,
+      "byteLength": 25116,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 154224,
+      "byteLength": 23040,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 177264,
+      "byteLength": 14916,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 192180,
+      "byteLength": 14916,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 207096,
+      "byteLength": 13440,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 220536,
+      "byteLength": 20
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 220556,
+      "byteLength": 80
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 220636,
+      "uri": "nocau-orbits.bin"
+    }
+  ]
+}

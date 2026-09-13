@@ -1,3 +1,16 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 6e300d47393ccbbdb5ddea648378e4bb_b425bd6faf4611f18039525400461939
+    ReservedCode1: E41lKt3n8KxOwrxC2i0PYxw7OM/diCFsIzvLOGq4aMH2hl7PteQSwFCki9Nopg+tlXiRftexGOUX/x6lU43C6TG6+U828nA9ODzdCAIwO44eKOaCApZ78JiK1UyBsbiM4BQ3XHSTKBgNjaubXwb9h6h8XnS6C0DFXxEqPj6mykovmrX8A/qu2YtGFiI=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 6e300d47393ccbbdb5ddea648378e4bb_b425bd6faf4611f18039525400461939
+    ReservedCode2: E41lKt3n8KxOwrxC2i0PYxw7OM/diCFsIzvLOGq4aMH2hl7PteQSwFCki9Nopg+tlXiRftexGOUX/x6lU43C6TG6+U828nA9ODzdCAIwO44eKOaCApZ78JiK1UyBsbiM4BQ3XHSTKBgNjaubXwb9h6h8XnS6C0DFXxEqPj6mykovmrX8A/qu2YtGFiI=
+---
+
+
+
 # nocau.com — 个人开发者作品集
 
 开发者 LINGAo 的个人作品集站点，托管于 GitHub Pages，绑定自定义域名 www.nocau.com。
@@ -21,6 +34,13 @@
 ## 功能特性
 
 - 视觉风格：极简未来风，黑白灰为主、低饱和青色点缀，深浅双主题一键切换
+- 首页 3D 主视觉：本地化的 `model-viewer` 组件 + 站点自有 glTF 轨道几何（太阳 / 地球 / 月球 + 两条细线轨道），
+  缎面金属材质 + 本地 CC0 摄影棚 HDRI 环境柔光；太阳球体表面为纯净缎面金属，无经纬网格线，
+  表面保留 4 处非对称凸起作为自转地标，以 45°/s 自转（8s 一周），自转在任意主题下清晰可辨；
+  球体与轨道线的颜色随深浅主题在运行时改写（`pbrMetallicRoughness.baseColorFactor`）；
+  组件同时自动环绕，轨道面相互倾斜形成前后遮挡；接触阴影与相机视角按主题联动。
+  首屏下方文本旁不再放置任何 3D / CSS 图标，全页仅保留主视觉一处 3D。
+  WebGL 不可用或低端设备时自动降级为 CSS 静态雕塑首帧，零控制台报错
 - 中英双语：全站文案通过 `assets/js/i18n.js` 统一管理，一键切换语言
 - 3D 星空可视化：Canvas 3D 呈现项目与想法的全量关系，支持筛选、搜索、排序
 - 想法方案库：分区布局 + 分类筛选 + 详情面板，方案均标注实现难度与关键难点
@@ -45,7 +65,9 @@ portfolio-site/
 ├── assets/
 │   ├── css/               # style / home / ideas / star-db / stars3d / services 等分页样式
 │   ├── js/                # i18n / ideas / star-db / stars3d / gesture / contact 等逻辑
-│   └── img/               # Logo / favicon 等静态资源
+│   ├── img/               # Logo / favicon 等静态资源
+│   ├── models/            # 首页 3D 主视觉资产：程序化生成的 glTF 轨道几何 + 本地 CC0 摄影棚 HDRI 环境
+│   └── vendor/            # 本地化的第三方运行时（model-viewer），首屏 3D 无 CDN 依赖
 ├── pages/                 # 预留：未来子页面 / 扩展页面目录
 ├── server/                # 可选后端（Express + SQLite）：静态托管 + 联系表单接口
 ├── SECURITY-CHECKLIST.md  # 部署安全检查清单
@@ -91,3 +113,5 @@ npm start
 - 代码开发合集：在 `fun/` 新增独立页面，并同步登记到 `fun/index.html` 对应分组；
 - 星空数据库数据：维护 `assets/js/star-data.js`，新增项目或想法后同步更新。
 
+*（内容由AI生成，仅供参考）*
+*（内容由AI生成，仅供参考）*

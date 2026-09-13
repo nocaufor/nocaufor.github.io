@@ -5,55 +5,106 @@
    说明：仅提炼参考站的视觉语言，未引用其图片素材与文案。
    - 命名空间 tk-*，不与公共样式 / 子页样式冲突
    - 材质色均由 style.css 主题变量（--bg / --bg-card / --text / --brand）派生，双主题自动跟随
-   - hero 轨道图标体系（.hero-orbit-* / --hero-ink 斐波那契 34:21:13）由 style.css 提供，此处仅调整容器
+   - 首屏主视觉为真 3D（model-viewer + 站点自有 glTF + 本地 CC0 摄影棚 HDRI）；
+     首屏下方文本旁的徽章位图标及其容器已整体移除，本节不再出现 .hero-orbit-* 相关规则
    ============================================================ */
 
 /* ---------- 首页局部材质变量（由公共主题变量派生） ---------- */
 html[data-theme="light"] {
-  --tk-bg-a: color-mix(in srgb, var(--bg) 95%, var(--text) 5%);
-  --tk-bg-b: color-mix(in srgb, var(--bg) 86%, var(--text) 14%);
-  --tk-surface-raised: linear-gradient(145deg,
-      color-mix(in srgb, var(--bg-card) 97%, var(--text) 3%) 0%,
-      color-mix(in srgb, var(--bg-card) 88%, var(--text) 9%) 100%);
-  --tk-surface-sunken: linear-gradient(145deg,
-      color-mix(in srgb, var(--bg-card) 88%, var(--text) 9%) 0%,
-      color-mix(in srgb, var(--bg-card) 99%, var(--text) 1%) 100%);
-  --tk-shadow-out: 9px 9px 24px rgba(24, 28, 34, 0.13), -9px -9px 24px rgba(255, 255, 255, 0.96);
-  --tk-shadow-out-lg: 16px 16px 40px rgba(24, 28, 34, 0.16), -16px -16px 40px rgba(255, 255, 255, 1);
-  --tk-shadow-in: inset 5px 5px 12px rgba(24, 28, 34, 0.09), inset -5px -5px 12px rgba(255, 255, 255, 0.92);
-  --tk-shadow-in-sm: inset 3px 3px 7px rgba(24, 28, 34, 0.08), inset -3px -3px 7px rgba(255, 255, 255, 0.88);
-  --tk-edge: color-mix(in srgb, var(--bg-card) 72%, transparent);
-  --tk-sheen: color-mix(in srgb, var(--bg-card) 62%, transparent);
-  --tk-floor: rgba(24, 28, 34, 0.08);
+  /* high-key 白场：明度更高、明暗落差更小 */
+  --tk-bg-a: color-mix(in srgb, var(--bg) 99%, var(--text) 1%);
+  --tk-bg-b: color-mix(in srgb, var(--bg) 95%, var(--text) 4%);
+  /* 哑光凸面 / 哑光凹面 */
+  --tk-surface-raised: linear-gradient(160deg,
+      var(--bg-card) 0%,
+      color-mix(in srgb, var(--bg-card) 95%, var(--text) 3%) 100%);
+  --tk-surface-sunken: linear-gradient(160deg,
+      color-mix(in srgb, var(--bg-card) 93%, var(--text) 5%) 0%,
+      color-mix(in srgb, var(--bg-card) 100%, var(--text) 0%) 100%);
+  /* 方向性柔光：唯一光源于左上，阴影单向逐层衰减（多层叠加＝细腻过渡） */
+  --tk-shadow-out:
+    0 1px 1px rgba(24, 28, 34, 0.04),
+    0 6px 14px rgba(24, 28, 34, 0.05),
+    0 18px 38px rgba(24, 28, 34, 0.06),
+    0 40px 84px rgba(24, 28, 34, 0.05);
+  --tk-shadow-out-lg:
+    0 1px 1px rgba(24, 28, 34, 0.04),
+    0 8px 18px rgba(24, 28, 34, 0.06),
+    0 26px 52px rgba(24, 28, 34, 0.08),
+    0 56px 110px rgba(24, 28, 34, 0.07);
+  /* 凹陷：上缘遮蔽 + 下缘反光 */
+  --tk-shadow-in:
+    inset 0 2px 4px color-mix(in srgb, var(--text) 7%, transparent),
+    inset 0 14px 30px color-mix(in srgb, var(--text) 5%, transparent),
+    inset 0 -1px 1px color-mix(in srgb, var(--bg-card) 92%, transparent);
+  --tk-shadow-in-sm:
+    inset 0 1px 3px color-mix(in srgb, var(--text) 7%, transparent),
+    inset 0 -1px 1px color-mix(in srgb, var(--bg-card) 88%, transparent);
+  /* 哑光雕塑体四段明暗（左上受光 → 右下入影） */
+  --tk-ball-a: var(--bg-card);
+  --tk-ball-b: color-mix(in srgb, var(--bg-card) 93%, var(--text) 6%);
+  --tk-ball-c: color-mix(in srgb, var(--bg-card) 83%, var(--text) 16%);
+  --tk-ball-d: color-mix(in srgb, var(--bg-card) 69%, var(--text) 30%);
+  --tk-hi: color-mix(in srgb, var(--bg-card) 100%, transparent);
+  --tk-rim: color-mix(in srgb, var(--bg-card) 92%, transparent);
+  --tk-edge: color-mix(in srgb, var(--bg-card) 78%, transparent);
+  --tk-sheen: color-mix(in srgb, var(--bg-card) 70%, transparent);
+  --tk-floor: rgba(24, 28, 34, 0.09);
+  --tk-contact: rgba(24, 28, 34, 0.20);
 }
 
 html[data-theme="dark"] {
-  --tk-bg-a: color-mix(in srgb, var(--bg) 76%, var(--text) 13%);
-  --tk-bg-b: color-mix(in srgb, var(--bg) 90%, var(--text) 5%);
-  --tk-surface-raised: linear-gradient(145deg,
-      color-mix(in srgb, var(--bg-card) 88%, var(--text) 7%) 0%,
-      color-mix(in srgb, var(--bg-card) 97%, var(--text) 1%) 100%);
-  --tk-surface-sunken: linear-gradient(145deg,
-      color-mix(in srgb, var(--bg-card) 97%, var(--text) 1%) 0%,
-      color-mix(in srgb, var(--bg-card) 86%, var(--text) 8%) 100%);
-  --tk-shadow-out: 9px 9px 24px rgba(0, 0, 0, 0.58), -9px -9px 24px rgba(255, 255, 255, 0.07);
-  --tk-shadow-out-lg: 16px 16px 40px rgba(0, 0, 0, 0.66), -16px -16px 40px rgba(255, 255, 255, 0.09);
-  --tk-shadow-in: inset 5px 5px 12px rgba(0, 0, 0, 0.50), inset -5px -5px 12px rgba(255, 255, 255, 0.035);
-  --tk-shadow-in-sm: inset 3px 3px 7px rgba(0, 0, 0, 0.45), inset -3px -3px 7px rgba(255, 255, 255, 0.03);
-  --tk-edge: color-mix(in srgb, var(--text) 8%, transparent);
-  --tk-sheen: color-mix(in srgb, var(--text) 7%, transparent);
-  --tk-floor: rgba(0, 0, 0, 0.45);
+  --tk-bg-a: color-mix(in srgb, var(--bg) 78%, var(--text) 12%);
+  --tk-bg-b: color-mix(in srgb, var(--bg) 92%, var(--text) 4%);
+  --tk-surface-raised: linear-gradient(160deg,
+      color-mix(in srgb, var(--bg-card) 84%, var(--text) 12%) 0%,
+      color-mix(in srgb, var(--bg-card) 97%, var(--text) 2%) 100%);
+  --tk-surface-sunken: linear-gradient(160deg,
+      color-mix(in srgb, var(--bg-card) 98%, var(--text) 1%) 0%,
+      color-mix(in srgb, var(--bg-card) 86%, var(--text) 10%) 100%);
+  --tk-shadow-out:
+    0 1px 1px rgba(0, 0, 0, 0.35),
+    0 6px 14px rgba(0, 0, 0, 0.30),
+    0 18px 38px rgba(0, 0, 0, 0.28),
+    0 40px 84px rgba(0, 0, 0, 0.24);
+  --tk-shadow-out-lg:
+    0 1px 1px rgba(0, 0, 0, 0.38),
+    0 8px 18px rgba(0, 0, 0, 0.34),
+    0 26px 52px rgba(0, 0, 0, 0.32),
+    0 56px 110px rgba(0, 0, 0, 0.28);
+  --tk-shadow-in:
+    inset 0 2px 4px rgba(0, 0, 0, 0.45),
+    inset 0 14px 30px rgba(0, 0, 0, 0.35),
+    inset 0 -1px 1px color-mix(in srgb, var(--text) 7%, transparent);
+  --tk-shadow-in-sm:
+    inset 0 1px 3px rgba(0, 0, 0, 0.42),
+    inset 0 -1px 1px color-mix(in srgb, var(--text) 6%, transparent);
+  --tk-ball-a: color-mix(in srgb, var(--bg-card) 70%, var(--text) 30%);
+  --tk-ball-b: color-mix(in srgb, var(--bg-card) 82%, var(--text) 18%);
+  --tk-ball-c: color-mix(in srgb, var(--bg-card) 93%, var(--text) 7%);
+  --tk-ball-d: var(--bg-card);
+  --tk-hi: color-mix(in srgb, var(--text) 15%, transparent);
+  --tk-rim: color-mix(in srgb, var(--text) 18%, transparent);
+  --tk-edge: color-mix(in srgb, var(--text) 9%, transparent);
+  --tk-sheen: color-mix(in srgb, var(--text) 8%, transparent);
+  --tk-floor: rgba(0, 0, 0, 0.5);
+  --tk-contact: rgba(0, 0, 0, 0.6);
 }
 
 /* ---------- 基础 ---------- */
 body {
+  /* high-key 白场：顶部弥散光 + 极淡环境冷灰 + 底部地面感，整体无杂色 */
   background:
-    radial-gradient(1100px 620px at 78% -8%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 68%),
-    radial-gradient(900px 620px at 2% 4%, color-mix(in srgb, var(--text) 5%, transparent), transparent 70%),
-    linear-gradient(165deg, var(--tk-bg-a) 0%, var(--tk-bg-b) 100%);
+    radial-gradient(1400px 820px at 72% -18%, var(--tk-hi), transparent 76%),
+    radial-gradient(1100px 680px at 6% 0%, color-mix(in srgb, var(--text) 2%, transparent), transparent 82%),
+    radial-gradient(1100px 600px at 50% 118%, color-mix(in srgb, var(--text) 3.5%, transparent), transparent 84%),
+    linear-gradient(170deg, var(--tk-bg-a) 0%, var(--tk-bg-b) 100%);
   background-attachment: fixed;
   color: var(--text);
   letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .gradient-text {
@@ -216,7 +267,7 @@ body {
   min-height: 88vh;
   display: flex;
   align-items: center;
-  padding: 140px 0 88px;
+  padding: 120px 0 72px;
 }
 
 /* 柔光层：跟随指针做极小位移，营造 3D 光感氛围 */
@@ -226,9 +277,9 @@ body {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(680px 460px at 80% 10%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 68%),
-    radial-gradient(560px 420px at 92% 62%, color-mix(in srgb, var(--brand) 7%, transparent), transparent 70%),
-    radial-gradient(760px 520px at 6% 92%, color-mix(in srgb, var(--text) 5%, transparent), transparent 72%);
+    radial-gradient(780px 540px at 78% 6%, var(--tk-hi), transparent 78%),
+    radial-gradient(600px 460px at 94% 58%, color-mix(in srgb, var(--brand) 3%, transparent), transparent 72%),
+    radial-gradient(820px 560px at 4% 96%, color-mix(in srgb, var(--text) 4%, transparent), transparent 74%);
   transition: transform 0.6s var(--ease);
   will-change: transform;
 }
@@ -294,10 +345,15 @@ body {
 .tk-btn-sm { padding: 9px 18px; font-size: 0.84rem; }
 
 .tk-btn-solid {
-  background: var(--text);
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--text) 92%, var(--bg-card)) 0%,
+      var(--text) 100%);
   color: var(--tk-bg-a);
-  box-shadow: 0 14px 30px color-mix(in srgb, var(--text) 20%, transparent),
-              inset 1px 1px 2px color-mix(in srgb, var(--bg-card) 45%, transparent);
+  box-shadow:
+    0 1px 1px color-mix(in srgb, var(--text) 18%, transparent),
+    0 10px 22px color-mix(in srgb, var(--text) 18%, transparent),
+    0 22px 44px color-mix(in srgb, var(--text) 14%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--bg-card) 55%, transparent);
 }
 
 .tk-btn-solid:hover { opacity: 0.92; box-shadow: 0 18px 38px color-mix(in srgb, var(--text) 26%, transparent); }
@@ -311,36 +367,108 @@ body {
 .tk-btn-ghost:hover { box-shadow: var(--tk-shadow-out-lg); }
 
 /* ---------- Hero 视觉托盘（轨道图标体系由 style.css 提供） ---------- */
-.tk-hero-visual { display: flex; justify-content: center; }
+.tk-hero-visual {
+  display: flex;
+  justify-content: center;
+  perspective: 1100px;
+}
+
+/* ---------- 方案 A：真 3D 雕塑主视觉（本地 model-viewer + 本地 CC0 GLB + 本地 HDR 环境柔光） ----------
+   全部资源本地化（assets/vendor/model-viewer、assets/models），无外链 CDN；
+   WebGL 不可用或低端设备时由 home-new.js 降级为 CSS 静态雕塑首帧（.tk-no-3d）。 */
+.tk-orb-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+/* 3D 展台：占据托盘主体，handle 铭牌退居底部 */
+.tk-orb-stage {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  z-index: 1;
+}
+
+.tk-model {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  /* model-viewer 内置变量：进度条与海报底色随主题走 */
+  --progress-bar-color: color-mix(in srgb, var(--text) 42%, transparent);
+  --progress-mask: transparent;
+  --poster-color: transparent;
+  outline: none;
+}
+
+/* 首屏下方文本旁的图标（原 .tk-orb-badge 徽章位 CSS 线稿及其容器）已移除：
+   容器与图标一并删除，仅保留 .tk-orb-motto 文本，Stack 内不产生空白占位 */
 
 .tk-orb-panel {
   position: relative;
-  width: min(420px, 100%);
-  aspect-ratio: 1 / 1.06;
+  /* 视口自适应：宽度同时受「列宽 / 上限 400px / 视口高度」三重约束，
+     窗口变矮时展台等比收缩，首屏内容始终落在视口内（无固定像素错位、无横向溢出） */
+  width: min(400px, 100%, max(240px, calc((100vh - 470px) * 1.064)));
+  aspect-ratio: 1 / 0.94;
+  padding: 22px 20px 16px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
+  gap: 10px;
   border-radius: 34px;
   border: 1px solid var(--tk-edge);
-  background: var(--tk-surface-sunken);
-  box-shadow: var(--tk-shadow-in), 0 28px 60px var(--tk-floor);
+  background: var(--tk-surface-raised);
+  box-shadow:
+    var(--tk-shadow-out-lg),
+    inset 0 1px 0 color-mix(in srgb, var(--bg-card) 85%, transparent);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tk-rx, 0deg)) rotateY(var(--tk-ry, 0deg));
+  transition: transform 0.5s var(--ease), box-shadow 0.4s var(--ease);
 }
 
-/* 托盘内的柔光球感，营造 3D 质感 */
+/* 静态雕塑首帧：默认显示（.tk-no-3d 为初始态，JS 确认 WebGL 可用且 3D 首帧就绪后才移除），
+   既作 3D 加载期间的占位，也是无 WebGL / 低端设备时的最终降级视觉
+   （四段明暗 + 游走柔光 + 边缘反光 + 接触阴影） */
 .tk-orb-panel::before {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  z-index: 0;
+  left: 50%;
+  top: 47%;
+  width: 84%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
   pointer-events: none;
   background:
-    radial-gradient(300px 240px at 50% 22%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 72%),
-    radial-gradient(240px 200px at 50% 96%, color-mix(in srgb, var(--text) 6%, transparent), transparent 76%);
+    radial-gradient(circle at 33% 24%, var(--tk-hi) 0%, transparent 38%),
+    radial-gradient(circle at calc(50% + var(--tk-lx, 0px)) calc(50% + var(--tk-ly, 0px)),
+        var(--tk-hi) 0%, transparent 50%),
+    radial-gradient(circle at 32% 26%,
+        var(--tk-ball-a) 0%,
+        var(--tk-ball-b) 34%,
+        var(--tk-ball-c) 66%,
+        var(--tk-ball-d) 100%);
+  box-shadow:
+    inset 0 2px 2px color-mix(in srgb, var(--bg-card) 96%, transparent),
+    inset 0 -30px 56px color-mix(in srgb, var(--text) 18%, transparent),
+    0 3px 5px var(--tk-contact),
+    0 10px 20px color-mix(in srgb, var(--text) 14%, transparent),
+    0 26px 50px color-mix(in srgb, var(--text) 13%, transparent),
+    0 66px 112px color-mix(in srgb, var(--text) 12%, transparent);
+  filter: saturate(0.97);
+  opacity: 1;
+  transition: opacity 0.6s var(--ease);
 }
 
-.tk-orb-panel .hero-orbit-logo { transform: scale(1.3); }
+/* 3D 首帧就绪后静态雕塑淡出，由真 3D 接管 */
+.tk-orb-panel:not(.tk-no-3d)::before { opacity: 0; }
 
 .tk-orb-motto {
   position: relative;
@@ -353,7 +481,7 @@ body {
 
 .tk-orb-handle {
   position: relative;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   letter-spacing: 0.1em;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
@@ -363,7 +491,30 @@ body {
   .tk-hero { min-height: auto; padding: 120px 0 64px; }
   .tk-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 44px; }
   .tk-hero-visual { order: -1; }
-  .tk-orb-panel { width: min(360px, 100%); aspect-ratio: 1 / 0.92; }
+  .tk-orb-panel {
+    width: min(320px, 100%, max(228px, calc((100vh - 430px) * 1.064)));
+    aspect-ratio: 1 / 0.94;
+    padding: 18px 16px 12px;
+  }
+  .tk-orb-stack { gap: 18px; }
+}
+
+/* ---------- 视口高度自适应：矮窗口整体等比收敛（首屏不溢出、排版不挤压） ---------- */
+@media (max-height: 860px) {
+  .tk-hero { min-height: auto; padding: clamp(96px, 13vh, 120px) 0 clamp(40px, 6vh, 64px); }
+  .tk-hero-title { font-size: clamp(2.5rem, 7.2vw, 5.4rem); }
+  .tk-tagline { font-size: clamp(1.04rem, 1.9vw, 1.36rem); margin-top: 14px; }
+  .tk-hero-sub { font-size: 0.93rem; line-height: 1.76; margin-top: 14px; }
+  .tk-hero-actions { margin-top: 22px; }
+  .tk-orb-stack { gap: 14px; }
+  .tk-orb-panel { padding: 16px 14px 10px; }
+  .tk-orb-motto { font-size: 0.84rem; line-height: 1.6; }
+}
+
+@media (max-height: 720px) {
+  .tk-hero-title { font-size: clamp(2.2rem, 6.2vw, 4rem); }
+  .tk-hero-sub { font-size: 0.88rem; line-height: 1.7; }
+  .tk-tagline { margin-top: 10px; }
 }
 
 /* ---------- 统计条（凹槽） ---------- */
@@ -424,9 +575,12 @@ body {
   border-radius: 24px;
   border: 1px solid var(--tk-edge);
   background:
-    linear-gradient(180deg, var(--tk-sheen) 0%, transparent 42%),
+    radial-gradient(120% 80% at 14% 0%, var(--tk-sheen) 0%, transparent 58%),
+    linear-gradient(180deg, var(--tk-sheen) 0%, transparent 30%),
     var(--tk-surface-raised);
-  box-shadow: var(--tk-shadow-out);
+  box-shadow:
+    var(--tk-shadow-out),
+    inset 0 1px 0 color-mix(in srgb, var(--bg-card) 85%, transparent);
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
   overflow: hidden;
 }
@@ -544,9 +698,12 @@ body {
   border-radius: 24px;
   border: 1px solid var(--tk-edge);
   background:
-    linear-gradient(180deg, var(--tk-sheen) 0%, transparent 44%),
+    radial-gradient(120% 80% at 12% 0%, var(--tk-sheen) 0%, transparent 60%),
+    linear-gradient(180deg, var(--tk-sheen) 0%, transparent 30%),
     var(--tk-surface-raised);
-  box-shadow: var(--tk-shadow-out);
+  box-shadow:
+    var(--tk-shadow-out),
+    inset 0 1px 0 color-mix(in srgb, var(--bg-card) 80%, transparent);
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
 
@@ -602,9 +759,12 @@ body {
   padding: 28px;
   border: 1px solid var(--tk-edge);
   background:
-    linear-gradient(180deg, var(--tk-sheen) 0%, transparent 40%),
+    radial-gradient(120% 80% at 12% 0%, var(--tk-sheen) 0%, transparent 58%),
+    linear-gradient(180deg, var(--tk-sheen) 0%, transparent 28%),
     var(--tk-surface-raised);
-  box-shadow: var(--tk-shadow-out);
+  box-shadow:
+    var(--tk-shadow-out),
+    inset 0 1px 0 color-mix(in srgb, var(--bg-card) 80%, transparent);
 }
 
 .tk-about-row {
@@ -641,9 +801,12 @@ body {
   border-radius: 34px;
   border: 1px solid var(--tk-edge);
   background:
-    radial-gradient(560px 320px at 50% 0%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 72%),
+    radial-gradient(620px 340px at 50% -6%, var(--tk-hi) 0%, transparent 66%),
+    radial-gradient(520px 300px at 50% 104%, color-mix(in srgb, var(--text) 5%, transparent), transparent 72%),
     var(--tk-surface-raised);
-  box-shadow: var(--tk-shadow-out);
+  box-shadow:
+    var(--tk-shadow-out-lg),
+    inset 0 1px 0 color-mix(in srgb, var(--bg-card) 85%, transparent);
 }
 
 .tk-cta-title { font-size: clamp(1.9rem, 4.4vw, 3rem); font-weight: 660; letter-spacing: -0.035em; color: var(--text); }
@@ -704,7 +867,8 @@ body {
 
 /* ---------- 无障碍：减弱动效 ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .tk-card, .tk-skill, .tk-btn, .tk-hero-visual .hero-orbit-logo { transform: none !important; }
+  .tk-card, .tk-skill, .tk-btn { transform: none !important; }
+  .tk-orb-panel { transform: none !important; }
   .tk-orb-glow { transition: none !important; }
   .tk-card::before { display: none; }
 }

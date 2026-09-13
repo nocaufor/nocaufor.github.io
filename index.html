@@ -17,6 +17,8 @@
   <!-- Tailwind（布局工具类） -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    /* CDN 抖动兜底：脚本未就绪时先占位，避免 ReferenceError 影响后续初始化 */
+    window.tailwind = window.tailwind || {};
     tailwind.config = { darkMode: ['class', '[data-theme="dark"]'], theme: { extend: {} } };
   </script>
 
@@ -24,7 +26,7 @@
   <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
   <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
 
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data:; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
@@ -77,20 +79,35 @@
       </div>
 
       <div class="tk-hero-visual tk-anim">
-        <div class="tk-orb-panel">
-          <!-- 保留：太阳系轨道图标体系（斐波那契 34:21:13 / 细线轨道 / 呼吸动画 / --hero-ink 主题变量） -->
-          <div class="hero-orbit-logo" aria-hidden="true">
-            <span class="hero-orbit-ring"></span>
-            <span class="hero-orbit-sun"></span>
-            <span class="hero-orbit-track-earth">
-              <span class="hero-orbit-earth">
-                <span class="hero-orbit-moon-path"></span>
-                <span class="hero-orbit-track-moon"><span class="hero-orbit-moon"></span></span>
-              </span>
-            </span>
+        <div class="tk-orb-stack">
+          <div class="tk-orb-panel tk-no-3d">
+            <!-- 首屏主视觉：全页唯一 3D 轨道图标（本地 model-viewer 组件 + 站点自有 glTF 几何 + 本地 CC0 摄影棚 HDRI 环境柔光，
+                 缎面金属材质：釉面高光与环境反射层次）；无外链、无第三方模型素材。tk-no-3d 为初始态（CSS 静态占位）；
+                 home-new.js 确认 WebGL 可用且 3D 首帧就绪后移除该类 -->
+            <div class="tk-orb-stage">
+              <!-- 3D 组件以模板声明：WebGL 不可用时不实例化，避免组件内部初始化报错 -->
+              <template id="tk-model-tpl">
+              <model-viewer id="tk-model" class="tk-model"
+                src="assets/models/nocau-orbits/nocau-orbits.gltf"
+                alt="NOCAU 轨道几何 3D 主视觉：太阳、地球与月球在细线轨道上，缎面金属光感与柔光环境"
+                environment-image="assets/models/env/studio_small_03_1k.hdr"
+                camera-controls disable-zoom disable-pan
+                touch-action="pan-y"
+                interaction-policy="allow-when-visible"
+                auto-rotate auto-rotate-delay="1400" rotation-per-second="12deg"
+                shadow-intensity="1.15" shadow-softness="0.85"
+                exposure="1.02" tone-mapping="neutral"
+                camera-orbit="-27deg 69deg 100%" field-of-view="30deg"
+                min-field-of-view="20deg" max-field-of-view="42deg"
+                loading="eager" reveal="auto"></model-viewer>
+              </template>
+            </div>
+            <p class="tk-orb-handle">github.com/nocau</p>
           </div>
+
+          <!-- 首屏下方文本旁的图标（原 .tk-orb-badge 徽章位 CSS 线稿图标及其容器）已整体移除，
+               不留容器、不留空白占位，星轨几何只保留上方 3D 主视觉一处 -->
           <p class="tk-orb-motto" data-i18n="about_motto">做简单可靠、能解决真实问题的工具。</p>
-          <p class="tk-orb-handle">github.com/nocau</p>
         </div>
       </div>
     </div>
@@ -258,7 +275,10 @@
 
   <!-- 全站中英双语文案（只读复用，公共文件不变） -->
   <script src="assets/js/i18n.js"></script>
-  <!-- 首页交互：主题切换 / 入场 / 滚动动效 / 进度条 -->
+  <!-- 3D 首屏组件（本地化：@google/model-viewer 4.3.1，BSD-3-Clause，内嵌 three.js MIT）
+       几何素材为站点自有：assets/models/nocau-orbits/nocau-orbits.gltf（程序化生成，无第三方模型素材） -->
+  <script type="module" src="assets/vendor/model-viewer/model-viewer.min.js"></script>
+  <!-- 首页交互：主题切换 / 入场 / 滚动动效 / 进度条 / 3D 降级 -->
   <script src="assets/js/home-new.js"></script>
 </body>
 </html>
