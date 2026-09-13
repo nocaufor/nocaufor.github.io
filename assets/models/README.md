@@ -48,10 +48,10 @@ AIGC:
 | 项 | 说明 |
 | --- | --- |
 | 来源 | 本站自有生成，非第三方素材 |
-| 生成脚本 | `build_orbits_v2.py`（程序化构建，无外部依赖；v1 `build_orbits_gltf.py` 为原哑光陶瓷版） |
+| 生成脚本 | `build_orbits_v5.py`（程序化构建，无外部依赖；版本演进：v1 `build_orbits_gltf.py` 哑光陶瓷 → v2 缎面金属 → v3 加表面网格 → v4 去网格线 → v5 去凸起并加入地月公转） |
 | 授权 | 归 NOCAU 站点所有，无第三方权利负担 |
 | 本地文件 | `nocau-orbits/nocau-orbits.gltf`、`nocau-orbits/nocau-orbits.bin` |
-| 几何构成 | sun / earth / moon 三球体，半径比 34 : 21 : 13（斐波那契比例），另含 2 条细线 torus 轨道 |
+| 几何构成 | sun / earth / moon 三球体，半径比 34 : 21 : 13（斐波那契比例），另含 2 条细线 torus 轨道；太阳表面为纯净缎面金属（无经纬网格线、无凸起装饰），运动由单条 glTF 动画承载：太阳 8s/360° 自转，地球 24s、月球 9s 沿各自轨道线持续公转（轨道线自身静止不摆动） |
 | 顶点规模 | 球体约 2925 顶点，双轨道约 2093 + 1243 顶点；`.bin` 约 220 KB |
 | 材质 | 缎面金属：`metallic = 0.6`、`roughness = 0.3`、baseColor ≈ rgb(0.855, 0.875, 0.905)，并带 `KHR_materials_clearcoat`（釉面层）/ `KHR_materials_ior` / `KHR_materials_specular` 扩展，在本地摄影棚 HDRI 下形成高光与环境反射层次，褪去哑光塑料感 |
 

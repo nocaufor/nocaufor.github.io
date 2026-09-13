@@ -1,7 +1,7 @@
 {
   "asset": {
     "version": "2.0",
-    "generator": "NOCAU orbits builder v4 (procedural self-made geometry + sun spin, no grid lines)",
+    "generator": "NOCAU orbits builder v5 (procedural self-made geometry + sun spin + earth/moon revolution)",
     "copyright": "Copyright NOCAU (www.nocau.com). Geometry generated in-house; no third-party assets."
   },
   "extensionsUsed": [
@@ -18,7 +18,7 @@
       "name": "NOCAUOrbits",
       "nodes": [
         0,
-        6
+        2
       ]
     }
   ],
@@ -26,11 +26,7 @@
     {
       "name": "SunPivot",
       "children": [
-        1,
-        2,
-        3,
-        4,
-        5
+        1
       ]
     },
     {
@@ -43,62 +39,6 @@
       ]
     },
     {
-      "mesh": 0,
-      "scale": [
-        0.052,
-        0.052,
-        0.052
-      ],
-      "translation": [
-        0.24633873707809475,
-        0.09771117362135838,
-        0.17248824065514168
-      ],
-      "name": "SunBumpA"
-    },
-    {
-      "mesh": 0,
-      "scale": [
-        0.044,
-        0.044,
-        0.044
-      ],
-      "translation": [
-        -0.08926359882271945,
-        -0.12861012654056805,
-        0.2747251085657001
-      ],
-      "name": "SunBumpB"
-    },
-    {
-      "mesh": 0,
-      "scale": [
-        0.038,
-        0.038,
-        0.038
-      ],
-      "translation": [
-        -0.3119312366872439,
-        0.027558645856809515,
-        0.04383907637377445
-      ],
-      "name": "SunBumpC"
-    },
-    {
-      "mesh": 0,
-      "scale": [
-        0.048,
-        0.048,
-        0.048
-      ],
-      "translation": [
-        -0.08036871201194062,
-        -0.211579097730671,
-        -0.22081122148345847
-      ],
-      "name": "SunBumpD"
-    },
-    {
       "name": "EarthOrbitTilt",
       "rotation": [
         0.10452846326765347,
@@ -107,13 +47,19 @@
         0.9945218953682733
       ],
       "children": [
-        7,
-        8
+        3,
+        4
       ]
     },
     {
       "name": "EarthTrack",
       "mesh": 1
+    },
+    {
+      "name": "EarthOrbitSpin",
+      "children": [
+        5
+      ]
     },
     {
       "name": "EarthSystem",
@@ -123,8 +69,8 @@
         -1.2855752193730785
       ],
       "children": [
-        9,
-        10
+        6,
+        7
       ]
     },
     {
@@ -145,13 +91,19 @@
         0.9659258262890683
       ],
       "children": [
-        11,
-        12
+        8,
+        9
       ]
     },
     {
       "name": "MoonTrack",
       "mesh": 2
+    },
+    {
+      "name": "MoonOrbitSpin",
+      "children": [
+        10
+      ]
     },
     {
       "name": "Moon",
@@ -343,11 +295,21 @@
   ],
   "animations": [
     {
-      "name": "SunSpin",
+      "name": "NOCAUMotion",
       "samplers": [
         {
           "input": 9,
           "output": 10,
+          "interpolation": "LINEAR"
+        },
+        {
+          "input": 11,
+          "output": 12,
+          "interpolation": "LINEAR"
+        },
+        {
+          "input": 13,
+          "output": 14,
           "interpolation": "LINEAR"
         }
       ],
@@ -356,6 +318,20 @@
           "sampler": 0,
           "target": {
             "node": 0,
+            "path": "rotation"
+          }
+        },
+        {
+          "sampler": 1,
+          "target": {
+            "node": 4,
+            "path": "rotation"
+          }
+        },
+        {
+          "sampler": 2,
+          "target": {
+            "node": 9,
             "path": "rotation"
           }
         }
@@ -494,6 +470,42 @@
       "componentType": 5126,
       "count": 5,
       "type": "VEC4"
+    },
+    {
+      "bufferView": 11,
+      "componentType": 5126,
+      "count": 5,
+      "type": "SCALAR",
+      "min": [
+        0.0
+      ],
+      "max": [
+        24.0
+      ]
+    },
+    {
+      "bufferView": 12,
+      "componentType": 5126,
+      "count": 5,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 13,
+      "componentType": 5126,
+      "count": 5,
+      "type": "SCALAR",
+      "min": [
+        0.0
+      ],
+      "max": [
+        9.0
+      ]
+    },
+    {
+      "bufferView": 14,
+      "componentType": 5126,
+      "count": 5,
+      "type": "VEC4"
     }
   ],
   "bufferViews": [
@@ -560,11 +572,31 @@
       "buffer": 0,
       "byteOffset": 220556,
       "byteLength": 80
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 220636,
+      "byteLength": 20
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 220656,
+      "byteLength": 80
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 220736,
+      "byteLength": 20
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 220756,
+      "byteLength": 80
     }
   ],
   "buffers": [
     {
-      "byteLength": 220636,
+      "byteLength": 220836,
       "uri": "nocau-orbits.bin"
     }
   ]
