@@ -180,6 +180,78 @@
     mv.setAttribute("exposure", "1");
   }
 
+  /* ---------- 首屏相机装配：视角动画「平视 ⇄ 俯视」往复 ----------
+     - 相机由本装配逐帧统一驱动：theta 方位环绕（12deg/s，等效原 auto-rotate）+ phi 俯仰往复（余弦周期曲线）
+     - phi 每帧向曲线目标指数收敛：起点无论落在曲线哪一段（含用户拖拽后的残留姿态），都连续逼近，永不跳变
+     - 用户在 3D 主视觉上拖拽时暂停自动驱动并跟随其姿态，松手 2s 后自动续接
+     - prefers-reduced-motion：不启动驱动，移除自动环绕并锁定平视静态视角
+     - 每帧写一次 camera-orbit（interpolation-decay=0 即时到位），帧间即为连续平滑过渡 */
+  var CAM_PHI_LEVEL = 78;      /* 平视：视线接近水平（保留 12° 俯角） */
+  var CAM_PHI_TOP = 26;        /* 俯视：自上方俯瞰轨道面 */
+  var CAM_CYCLE_MS = 14000;    /* 平视 → 俯视 → 平视 一次完整往复 */
+  var CAM_SPIN_DEG_S = 12;     /* 方位环绕速度，与原 rotation-per-second 一致 */
+  var CAM_RESUME_MS = 2000;    /* 拖拽结束后恢复自动视角的等待 */
+  var CAM_FOLLOW = 3.5;        /* phi 向周期曲线收敛速率（1/s），越小越柔 */
+  var CAM_RADIUS = "100%";
+
+  function initCameraRig(mv) {
+    /* 相机改由本装配驱动，移除声明式自动环绕，避免两套驱动互相覆盖 */
+    mv.removeAttribute("auto-rotate");
+
+    if (reduce) {
+      /* 动效减弱：静态平视视角，不做任何自动视角变化 */
+      mv.setAttribute("camera-orbit", "-27deg " + CAM_PHI_LEVEL + "deg " + CAM_RADIUS);
+      return;
+    }
+
+    var mid = (CAM_PHI_LEVEL + CAM_PHI_TOP) / 2;
+    var amp = (CAM_PHI_LEVEL - CAM_PHI_TOP) / 2;
+    var theta = -27;
+    var phi = CAM_PHI_LEVEL;
+    var t0 = performance.now();
+    var last = 0;
+    var idleUntil = 0;
+    var intent = false;   /* 用户是否正按住拖拽 */
+
+    function readOrbit() {
+      if (typeof mv.getCameraOrbit !== "function") return null;
+      try {
+        var o = mv.getCameraOrbit();
+        if (!o) return null;
+        return { theta: o.theta * 180 / Math.PI, phi: o.phi * 180 / Math.PI };
+      } catch (e) { return null; }
+    }
+
+    function frame(ts) {
+      window.requestAnimationFrame(frame);
+      var dt = last ? Math.min(0.06, (ts - last) / 1000) : 0;
+      last = ts;
+
+      if (intent || ts < idleUntil) {
+        /* 拖拽中 / 刚松手：跟随用户留下的姿态，保证续接处连续无跳变 */
+        var cur = readOrbit();
+        if (cur) { theta = cur.theta; phi = cur.phi; }
+        return;
+      }
+
+      theta += CAM_SPIN_DEG_S * dt;
+      var goal = mid + amp * Math.cos((ts - t0) / CAM_CYCLE_MS * Math.PI * 2);
+      phi += (goal - phi) * Math.min(1, dt * CAM_FOLLOW);
+      mv.setAttribute("camera-orbit", theta.toFixed(2) + "deg " + phi.toFixed(2) + "deg " + CAM_RADIUS);
+    }
+
+    mv.addEventListener("pointerdown", function () { intent = true; }, { passive: true });
+    function release() {
+      if (!intent) return;
+      intent = false;
+      idleUntil = performance.now() + CAM_RESUME_MS;
+    }
+    window.addEventListener("pointerup", release, { passive: true });
+    window.addEventListener("pointercancel", release, { passive: true });
+
+    window.requestAnimationFrame(frame);
+  }
+
   function initModel() {
     var panel = document.querySelector(".tk-orb-panel");
     var stage = document.querySelector(".tk-orb-stage");
@@ -205,6 +277,8 @@
       mv.setAttribute("data-load-ms", String(Math.round(performance.now() - t0)));
       panel.classList.remove("tk-no-3d");
       paintTrackLine(mv, root.getAttribute("data-theme"));
+      /* 模型就绪后接管相机：启动「平视 ⇄ 俯视」往复视角动画（模板初始姿态即平视，衔接处零跳变） */
+      initCameraRig(mv);
     });
 
     /* 主题联动：环境为本地摄影棚 HDRI（缎面金属：釉面高光 + 环境反射层次）。
