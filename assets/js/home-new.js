@@ -180,18 +180,20 @@
     mv.setAttribute("exposure", "1");
   }
 
-  /* ---------- 首屏相机装配：视角动画「平视 ⇄ 俯视」往复 ----------
-     - 相机由本装配逐帧统一驱动：theta 方位环绕（12deg/s，等效原 auto-rotate）+ phi 俯仰往复（余弦周期曲线）
-     - phi 每帧向曲线目标指数收敛：起点无论落在曲线哪一段（含用户拖拽后的残留姿态），都连续逼近，永不跳变
-     - 用户在 3D 主视觉上拖拽时暂停自动驱动并跟随其姿态，松手 2s 后自动续接
-     - prefers-reduced-motion：不启动驱动，移除自动环绕并锁定平视静态视角
-     - 每帧写一次 camera-orbit（interpolation-decay=0 即时到位），帧间即为连续平滑过渡 */
-  var CAM_PHI_LEVEL = 78;      /* 平视：视线接近水平（保留 12° 俯角） */
-  var CAM_PHI_TOP = 26;        /* 俯视：自上方俯瞰轨道面 */
-  var CAM_CYCLE_MS = 14000;    /* 平视 → 俯视 → 平视 一次完整往复 */
-  var CAM_SPIN_DEG_S = 12;     /* 方位环绕速度，与原 rotation-per-second 一致 */
+  /* ---------- 首屏相机装配：视角动画「平视 → 俯视 · 加速后匀速环绕」 ----------
+     - 加载后 phi 从平视 78° 一次性丝滑过渡到俯视 26°（指数收敛 ~4s 到位），到位后恒定保持俯视
+     - theta 方位环绕沿 ease-out 加速曲线由慢到快再匀速（时间常数 1.2s），匀速速度提升到 24deg/s
+     - glTF 自转/公转同步提速：time-scale 沿同一条加速曲线从 0 平滑升到 2 倍，进入匀速后恒为 2 倍
+     - 用户在 3D 主视觉上拖拽时暂停自动驱动并跟随其姿态，松手 2s 后速度从 0 重新缓升续接
+     - prefers-reduced-motion：不启动驱动，锁定平视静态视角
+     - 每帧写一次 camera-orbit（interpolation-decay=0 即时到位）与 time-scale，帧间连续无跳变 */
+  var CAM_PHI_LEVEL = 78;      /* 平视：视线接近水平（保留 12° 俯角），reduced-motion 静态位 */
+  var CAM_PHI_TOP = 26;        /* 俯视：自上方俯瞰轨道面，动画到位后的常驻视角 */
+  var CAM_PHI_TAU = 1.2;       /* 平视 → 俯视 收敛时间常数（秒），越大越柔 */
+  var CAM_SPIN_MAX = 24;       /* 环绕匀速速度 deg/s（原 12 → 24，整体加快） */
+  var CAM_ACCEL_TAU = 1.2;     /* 加速曲线时间常数（秒）：由慢到快进入匀速的缓升节奏 */
+  var CAM_GLTF_SCALE = 2;      /* glTF 动画（太阳自转 + 地月公转）目标倍速 */
   var CAM_RESUME_MS = 2000;    /* 拖拽结束后恢复自动视角的等待 */
-  var CAM_FOLLOW = 3.5;        /* phi 向周期曲线收敛速率（1/s），越小越柔 */
   var CAM_RADIUS = "100%";
 
   function initCameraRig(mv) {
@@ -204,13 +206,12 @@
       return;
     }
 
-    var mid = (CAM_PHI_LEVEL + CAM_PHI_TOP) / 2;
-    var amp = (CAM_PHI_LEVEL - CAM_PHI_TOP) / 2;
     var theta = -27;
     var phi = CAM_PHI_LEVEL;
     var t0 = performance.now();
     var last = 0;
     var idleUntil = 0;
+    var resumeAt = t0;    /* 速度曲线爬升起点（首启即 t0；续接时置为 idleUntil） */
     var intent = false;   /* 用户是否正按住拖拽 */
 
     function readOrbit() {
@@ -228,15 +229,29 @@
       last = ts;
 
       if (intent || ts < idleUntil) {
-        /* 拖拽中 / 刚松手：跟随用户留下的姿态，保证续接处连续无跳变 */
+        /* 拖拽中 / 刚松手：跟随用户留下的姿态并冻结 glTF 动画，保证续接处位置连续无跳变 */
         var cur = readOrbit();
         if (cur) { theta = cur.theta; phi = cur.phi; }
+        try { mv.timeScale = 0; } catch (e) {}
         return;
       }
 
-      theta += CAM_SPIN_DEG_S * dt;
-      var goal = mid + amp * Math.cos((ts - t0) / CAM_CYCLE_MS * Math.PI * 2);
-      phi += (goal - phi) * Math.min(1, dt * CAM_FOLLOW);
+      /* 加速曲线：速度倍率 0 → 1 指数缓升（ease-out 进入匀速），任意起点连续 */
+      var t = (ts - resumeAt) / 1000;
+      var ramp = t <= 0 ? 0 : 1 - Math.exp(-t / CAM_ACCEL_TAU);
+
+      theta += CAM_SPIN_MAX * ramp * dt;
+
+      /* 平视 → 俯视一次性过渡（指数收敛），到位后恒定俯视 */
+      if (phi > CAM_PHI_TOP + 0.05) {
+        phi += (CAM_PHI_TOP - phi) * Math.min(1, dt / CAM_PHI_TAU);
+      } else {
+        phi = CAM_PHI_TOP;
+      }
+
+      /* glTF 动画倍速同曲线：0 → 2 倍 */
+      try { mv.timeScale = CAM_GLTF_SCALE * ramp; } catch (e) {}
+
       mv.setAttribute("camera-orbit", theta.toFixed(2) + "deg " + phi.toFixed(2) + "deg " + CAM_RADIUS);
     }
 
@@ -245,6 +260,7 @@
       if (!intent) return;
       intent = false;
       idleUntil = performance.now() + CAM_RESUME_MS;
+      resumeAt = idleUntil;   /* 续接后速度从 0 重新缓升，杜绝速率突跳 */
     }
     window.addEventListener("pointerup", release, { passive: true });
     window.addEventListener("pointercancel", release, { passive: true });

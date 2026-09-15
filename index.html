@@ -84,7 +84,7 @@
             <!-- 首屏主视觉：全页唯一 3D 轨道图标（本地 model-viewer 组件 + 站点自有 glTF 几何 + 本地 CC0 摄影棚 HDRI 环境柔光，
                  缎面金属材质：釉面高光与环境反射层次）；无外链、无第三方模型素材。tk-no-3d 为初始态（CSS 静态占位）；
                  动作：单条 glTF 动画 NOCAUMotion（太阳 8s 自转 + 地球 24s、月球 9s 沿轨道公转），由 autoplay 常驻循环播放；
-                 视角：由 home-new.js 相机装配逐帧驱动「平视 ⇄ 俯视」往复切换（含方位环绕），故此处不声明 auto-rotate；
+                 视角：由 home-new.js 相机装配逐帧驱动「加载后平视 → 俯视 · 加速后匀速环绕」（含 glTF 动画 2 倍提速），故此处不声明 auto-rotate；
                  home-new.js 确认 WebGL 可用且 3D 首帧就绪后移除该类 -->
             <div class="tk-orb-stage">
               <!-- 3D 组件以模板声明：WebGL 不可用时不实例化，避免组件内部初始化报错 -->
