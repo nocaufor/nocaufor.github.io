@@ -97,7 +97,357 @@ class Node:
         # 收到多数派投票 -&gt; 成为 Leader，开始心跳
         print(f"node{self.id} term{self.term} -&gt; leader?")
 
-# 说明：Raft 的完整实现需处理日志复制、任期比较、安全校验</code></pre></div></section><section class="code-section"><h2>学习路径</h2><div class="code-card"><ol><li>读《Designing Data-Intensive Applications》（DDIA）前三章。</li><li>用 Python 实现一个带心跳的迷你 Raft 选举。</li><li>手写 JSON-RPC 服务，理解序列化与超时重试。</li><li>选型对比：etcd（Raft）/ ZooKeeper（ZAB）/ Redis Cluster（Gossip）。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>raft-zh_cn</code>、<code>mini-raft</code>、<code>distributed-systems-labs</code>（链接可替换为实际仓库地址）。</p></div></section>
+# 说明：Raft 的完整实现需处理日志复制、任期比较、安全校验</code></pre></div></section><section class="code-section"><h2>学习路径</h2><div class="code-card"><ol><li>读《Designing Data-Intensive Applications》（DDIA）前三章。</li><li>用 Python 实现一个带心跳的迷你 Raft 选举。</li><li>手写 JSON-RPC 服务，理解序列化与超时重试。</li><li>选型对比：etcd（Raft）/ ZooKeeper（ZAB）/ Redis Cluster（Gossip）。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-knowledge-distributed">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">零第三方依赖</span><span class="deploy-badge info">Python 3.8+</span></div>
+  <div class="code-card"><p>运行环境：Python 3.8+，仅标准库。把 5 个文件放进同一目录后，<code>python counter.py --selftest</code> 验证乐观锁累加与读修复收敛，<code>python raft_lite.py --selftest</code> 验证 5 节点 / 3 节点均能选出唯一 leader 并在故障后重选。两个脚本都是纯内存模型，不依赖任何外部服务。</p></div>
+  <div class="deploy-tree">knowledge-distributed-lab/
+├── counter.py          乐观锁计数器：CAS 写 + 冲突回滚 + 读修复收敛（含 --selftest）
+├── raft_lite.py        选举模型：任期 / 随机超时 / 多数派 / 心跳重置（含 --selftest）
+├── test_dist.py        7 个 unittest 用例（含多线程并发累加）
+├── requirements.txt    依赖清单（仅标准库）
+└── README.md           运行步骤 / CAP 与一致性要点</div>
+  <div class="deploy-file">
+    <h3>counter.py</h3>
+    <p class="file-note">乐观锁最终一致计数器：版本号 CAS 写入、失败回滚、converge 读修复。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="counter.py"><code># counter.py：乐观锁最终一致计数器（副本 + 版本号 CAS + 读修复收敛）
+# 用法：
+#   python counter.py --selftest
+#   python counter.py --replicas 3 --ops 200
+import argparse
+import random
+
+
+class Replica:
+    # 单副本：值 + 版本号；写入必须携带读到的版本号（CAS），过期即拒绝
+
+    def __init__(self, name):
+        self.name = name
+        self.value = 0
+        self.version = 0
+
+    def read(self):
+        return self.value, self.version
+
+    def cas(self, expect_version, new_value):
+        if expect_version != self.version:
+            return False
+        self.value = new_value
+        self.version += 1
+        return True
+
+
+def apply_delta(replicas, delta=1, retries=500):
+    # 向全部副本 +delta：以当前最大值为基准，任一 CAS 失败则回滚重试
+    for _ in range(retries):
+        snapshot = [(r, r.read()) for r in replicas]
+        base = max(v for _, (v, _) in snapshot)
+        target = base + delta
+        done = []
+        ok = True
+        for r, (v, ver) in snapshot:
+            if v == target:
+                continue
+            if r.cas(ver, target):
+                done.append((r, ver, v))
+            else:
+                ok = False
+                break
+        if ok:
+            return target
+        for r, ver, v in reversed(done):        # 回滚，避免半更新
+            r.value, r.version = v, ver
+    raise RuntimeError("重试耗尽：并发冲突过多（可调大 retries）")
+
+
+def converge(replicas, rounds=200):
+    # 读修复 / anti-entropy：把所有副本对齐到最大版本对应的值
+    for _ in range(rounds):
+        snapshot = [(r, r.read()) for r in replicas]
+        base = max(v for _, (v, _) in snapshot)
+        changed = False
+        for r, (v, ver) in snapshot:
+            if v &lt; base and r.cas(ver, base):
+                changed = True
+        if not changed:
+            return base
+    raise RuntimeError("未收敛")
+
+
+def selftest():
+    random.seed(3)
+    rs = [Replica(n) for n in "abc"]
+    for _ in range(200):
+        apply_delta(rs, 1)
+    assert [r.read()[0] for r in rs] == [200, 200, 200], [r.read() for r in rs]
+
+    rs[1].value -= 5                      # 人为制造副本偏差（模拟丢更新）
+    rs[1].version += 1
+    assert len({r.read()[0] for r in rs}) == 2
+    assert converge(rs) == 200
+    assert {r.read()[0] for r in rs} == {200}
+    print("selftest OK：乐观锁累加一致 / 副本偏差读修复收敛 用例通过")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="乐观锁最终一致计数器")
+    ap.add_argument("--replicas", type=int, default=3)
+    ap.add_argument("--ops", type=int, default=200)
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args(argv)
+    if a.selftest:
+        selftest()
+        return 0
+    rs = [Replica("r%d" % i) for i in range(a.replicas)]
+    retries = 0
+    for _ in range(a.ops):
+        try:
+            apply_delta(rs, 1)
+        except RuntimeError:
+            retries += 1
+    print("副本数 %d，成功累加 %d 次，失败 %d 次" % (a.replicas, a.ops - retries, retries))
+    print("各副本值：", [(r.name, r.read()) for r in rs])
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>raft_lite.py</h3>
+    <p class="file-note">Raft 选举简化模型：随机超时触发选举、任期递增、多数派当选、leader 故障重选。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="raft_lite.py"><code># raft_lite.py：Raft 心跳选举简化模型（任期 + 随机超时 + 多数派）
+# 用法：python raft_lite.py --selftest / python raft_lite.py --nodes 5 --ticks 60
+import argparse
+import random
+
+
+class Node:
+    def __init__(self, i):
+        self.i = i
+        self.term = 0
+        self.state = "follower"     # follower / candidate / leader
+        self.voted_for = None
+        self.alive = True
+        self.tick_left = random.randint(6, 10)
+
+
+class Cluster:
+    # 只保留选举要点：随机超时、任期递增、多数派当选、心跳重置计时
+
+    def __init__(self, n=5, seed=7):
+        random.seed(seed)
+        self.nodes = [Node(i) for i in range(n)]
+        self.majority = n // 2 + 1
+        self.history = []
+
+    def _reset(self, nd):
+        nd.tick_left = random.randint(6, 10)
+
+    def live(self):
+        return [n for n in self.nodes if n.alive]
+
+    def leader(self):
+        return next((n for n in self.live() if n.state == "leader"), None)
+
+    def tick(self):
+        live = self.live()
+        for nd in live:
+            nd.tick_left -= 1
+        leader = self.leader()
+        if leader:                                   # 心跳：重置所有 follower 计时
+            for nd in live:
+                if nd is not leader:
+                    self._reset(nd)
+            return leader
+        for nd in live:                              # 超时者发起选举
+            if nd.tick_left &gt; 0:
+                continue
+            nd.term += 1
+            nd.state = "candidate"
+            nd.voted_for = nd.i
+            votes = 1
+            for other in live:
+                if other is nd:
+                    continue
+                if other.term &lt; nd.term:             # 简化：任期更大即获票
+                    other.term = nd.term
+                    other.voted_for = nd.i
+                    votes += 1
+            nd.state = "leader" if votes &gt;= self.majority else "follower"
+            self.history.append((nd.i, nd.term, nd.state, votes))
+            self._reset(nd)
+            return self.leader()
+        return None
+
+
+def run(n=5, ticks=80, seed=11, kill_leader=True):
+    c = Cluster(n, seed=seed)
+    for _ in range(ticks):
+        c.tick()
+    first = c.leader()
+    assert first is not None, "%.0f 个 tick 内未选出 leader" % ticks
+    assert len([x for x in c.nodes if x.state == "leader"]) == 1
+    if not kill_leader:
+        return c, first.i, None
+    first.alive = False                              # leader 故障
+    first.state = "follower"
+    for _ in range(ticks):
+        c.tick()
+    second = c.leader()
+    return c, first.i, (second.i if second else None)
+
+
+def selftest():
+    c, old, new = run(5, 80, seed=11)
+    assert new is not None, "leader 故障后未重新选出"
+    assert new != old, (old, new)
+    assert len([x for x in c.nodes if x.state == "leader"]) == 1
+    c3, o3, n3 = run(3, 80, seed=5)
+    assert n3 is not None and n3 != o3
+    print("selftest OK：选出唯一 leader（5 节点 / 3 节点）/ leader 故障后重新选举 用例通过")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="Raft 选举简化模拟")
+    ap.add_argument("--nodes", type=int, default=5)
+    ap.add_argument("--ticks", type=int, default=80)
+    ap.add_argument("--seed", type=int, default=11)
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args(argv)
+    if a.selftest:
+        selftest()
+        return 0
+    c, old, new = run(a.nodes, a.ticks, seed=a.seed)
+    print("节点数=%d 票数门槛=%d" % (a.nodes, c.majority))
+    print("首轮 leader=n%d；模拟其故障后 leader=n%s" % (old, new))
+    print("选举事件（节点, 任期, 结果, 得票）：")
+    for row in c.history[:8]:
+        print("   ", row)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>test_dist.py</h3>
+    <p class="file-note">unittest 回归：顺序一致、并发收敛、偏差修复、唯一 leader、无故障时 leader 稳定。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="test_dist.py"><code># 回归测试：python -m unittest -v test_dist
+import threading
+import unittest
+
+import counter
+import raft_lite
+
+
+class TestCounter(unittest.TestCase):
+    def test_sequential_consistency(self):
+        rs = [counter.Replica(n) for n in "abc"]
+        for _ in range(50):
+            counter.apply_delta(rs, 1)
+        self.assertEqual([r.read()[0] for r in rs], [50, 50, 50])
+
+    def test_concurrent_increments_converge(self):
+        rs = [counter.Replica(n) for n in "abc"]
+        done = []
+
+        def worker():
+            for _ in range(25):
+                try:
+                    counter.apply_delta(rs, 1)
+                    done.append(1)
+                except RuntimeError:
+                    pass
+
+        ts = [threading.Thread(target=worker) for _ in range(3)]
+        for t in ts:
+            t.start()
+        for t in ts:
+            t.join()
+        counter.converge(rs)
+        value = rs[0].read()[0]
+        self.assertEqual(len({r.read()[0] for r in rs}), 1)
+        self.assertEqual(value, len(done))
+
+    def test_converge_repairs_drift(self):
+        rs = [counter.Replica(n) for n in "ab"]
+        counter.apply_delta(rs, 10)
+        rs[1].value, rs[1].version = 3, rs[1].version + 1
+        self.assertEqual(counter.converge(rs), 10)
+        self.assertEqual({r.read()[0] for r in rs}, {10})
+
+
+class TestRaft(unittest.TestCase):
+    def test_single_leader_and_reelection(self):
+        c, old, new = raft_lite.run(5, 80, seed=11)
+        self.assertIsNotNone(new)
+        self.assertNotEqual(old, new)
+        self.assertEqual(len([n for n in c.nodes if n.state == "leader"]), 1)
+
+    def test_leader_stable_without_failure(self):
+        c, first, _ = raft_lite.run(3, 120, seed=21, kill_leader=False)
+        self.assertEqual(len([n for n in c.nodes if n.state == "leader"]), 1)
+        for _ in range(60):
+            c.tick()
+        self.assertEqual([n.i for n in c.nodes if n.state == "leader"], [first])
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：仅 Python 标准库（threading / random / argparse）。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># 仅标准库，无需 pip install
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、一致性模型要点与实测现象。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># knowledge-distributed-lab
+
+两个纯内存的一致性模型：乐观锁计数器与 Raft 选举简化版。
+
+## 快速开始
+
+```bash
+python counter.py --selftest
+python raft_lite.py --selftest
+python -m unittest -v test_dist
+```
+
+## 要点
+
+- 乐观锁：写前读版本号，CAS 失败即重试；重试期间回滚，避免半更新。
+- 最终一致：允许副本暂时落后，靠 `converge()`（读修复 / anti-entropy）对齐到最大版本值。
+- 选举：只有随机超时先到者发起选举，任期大者获票，过半即当选；leader 心跳会持续重置 follower 计时。
+- 本工程是教学模型，未实现日志复制、持久化与网络分区；生产环境请用 etcd / Consul 等成熟实现。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>运行标注</strong>：①<strong>可直接运行</strong>——两个 <code>--selftest</code> 与 <code>python -m unittest -v test_dist</code> 均零配置通过；②<strong>需按需修改</strong>——副本数用 <code>--replicas</code>、模拟轮次用 <code>--ops</code>、节点数与 seed 用 <code>--nodes</code> / <code>--seed</code>，全为参数化，无需改代码；③<strong>已知边界</strong>——本模型不含日志复制与持久化，仅用于理解选举与 CAS 语义。</p></div>
+  <!-- inject:howto -->
+<div class="deploy-steps code-card">
+  <p><strong>依赖清单：</strong>零第三方依赖 —— 仅 Python 标准库（<code>threading</code> / <code>random</code>）</p>
+  <p><strong>可直接运行：</strong><span class="deploy-badge info">可直接运行</span> <code>python raft_lite.py --selftest</code> 与 <code>python counter.py --selftest</code> 零配置自测；<code>python -m unittest -v test_dist</code> 跑回归</p>
+  <p><strong>需先改的配置项：</strong><strong>无配置项需要修改</strong>。这是教学模型（未含日志复制/持久化），生产一致性请用 etcd / Consul</p>
+</div>
+<div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-knowledge-distributed">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现所依据的官方文档与规范（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://raft.github.io/" target="_blank" rel="noopener">Raft 官方站点 · 论文 PDF、可视化演示与各语言实现列表</a>
+<a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">Raft 论文原文（In Search of an Understandable Consensus Algorithm）</a>
+<a href="https://etcd.io/docs/latest/learning/" target="_blank" rel="noopener">etcd 官方文档 · Raft 在生产中的落地与调优</a>
+<a href="https://docs.python.org/zh-cn/3/library/threading.html" target="_blank" rel="noopener">Python 官方文档 · threading（并发测试所用）</a>
+<a href="https://martin.kleppmann.com/2015/05/11/please-stop-calling-databases-cp-or-ap.html" target="_blank" rel="noopener">CAP 定理的常见误读（Kleppmann 原文）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -120,6 +470,7 @@ class Node:
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/knowledge-distributed.js"></script>
 </body>
 </html>

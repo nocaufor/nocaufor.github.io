@@ -15,18 +15,18 @@
   <link rel="stylesheet" href="assets/css/home-new.css" />
 
   <!-- Tailwind（布局工具类） -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/vendor/tailwind.min.js"></script>
   <script>
-    /* CDN 抖动兜底：脚本未就绪时先占位，避免 ReferenceError 影响后续初始化 */
+    /* 本地脚本兜底：脚本未就绪时先占位，避免 ReferenceError 影响后续初始化 */
     window.tailwind = window.tailwind || {};
     tailwind.config = { darkMode: ['class', '[data-theme="dark"]'], theme: { extend: {} } };
   </script>
 
   <!-- GSAP 入场与滚动动效 -->
-  <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
-  <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+  <script src="assets/vendor/gsap.min.js"></script>
+  <script src="assets/vendor/ScrollTrigger.min.js"></script>
 
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data:; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data:; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
@@ -246,7 +246,7 @@
       <div class="tk-shell">
         <p class="tk-eyebrow">CONTACT</p>
         <h2 class="tk-cta-title" data-i18n="nav_contact">联系</h2>
-        <p class="tk-cta-sub">Open to code practice, custom tools and collaborations.</p>
+        <p class="tk-cta-sub" data-i18n="home_cta_sub">Open to code practice, custom tools and collaborations.</p>
         <div class="tk-cta-actions">
           <a class="tk-btn tk-btn-solid" href="contact.html" data-i18n="nav_contact">联系</a>
           <a class="tk-btn tk-btn-ghost" href="https://github.com/nocau" target="_blank" rel="noreferrer">GitHub ↗</a>

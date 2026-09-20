@@ -51,7 +51,7 @@
         <div class="meta-line">
           <span class="tag">场景：分享裂变</span>
           <span class="tag">技术栈：微信小程序 Canvas 2D</span>
-          <span class="tag">来源：GitHub 参考</span>
+          <span class="tag">来源：微信官方文档 + Canvas 2D 规范</span>
         </div>
       </div>
       
@@ -118,7 +118,480 @@ module.exports = { drawPoster };
 <li>网络图片先 <code>wx.downloadFile</code> 到本地再绘制，避免 canvas 跨域污染。</li>
 <li><code>canvasToTempFilePath</code> 导出临时图，<code>wx.saveImageToPhotosAlbum</code> 保存相册。</li>
 <li>授权失败时引导用户打开设置页手动授权。</li>
-</ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>miniprogram-poster</code>、<code>wxapp-share-poster</code>、<code>canvas-poster</code>。</p></div></section>
+</ol></div></section><section class="code-section"><h2>代码示例：布局计算与文本换行（可单测的纯逻辑）</h2>
+<div class="code-block"><span class="code-lang-badge">js</span><pre><code>/* poster-core.js —— 不依赖 wx，可在电脑上直接测 */
+function canvasSize(design, dpr) {
+  var d = Number(dpr) || 0;
+  if (d &lt;= 0) d = 1;                                  // 非法 DPR 兜底
+  return { width: Math.round(design.width * d), height: Math.round(design.height * d), dpr: d };
+}
+
+function layout(design) {
+  var W = design.width, H = design.height, pad = design.padding == null ? 48 : design.padding;
+  var avatarR = (design.avatarSize == null ? 120 : design.avatarSize) / 2;
+  var qrSize = design.qrSize == null ? 220 : design.qrSize;
+  return {
+    avatar: { x: W / 2, y: pad + avatarR, r: avatarR },          // 水平居中
+    name:   { x: W / 2, y: pad + avatarR * 2 + 56, size: 36 },
+    qr:     { x: (W - qrSize) / 2, y: H - pad - qrSize - 36, size: qrSize }, // 距底留白
+    tip:    { x: W / 2, y: H - pad, size: 22 }
+  };
+}
+
+function wrapText(text, maxWidth, measure) {          // measure 由调用方注入，方便测试
+  var s = String(text == null ? "" : text);
+  if (!s) return [""];
+  var lines = [], cur = "";
+  for (var i = 0; i &lt; s.length; i++) {
+    var next = cur + s[i];
+    if (cur &amp;&amp; measure(next) &gt; maxWidth) { lines.push(cur); cur = s[i]; }
+    else cur = next;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}</code></pre></div>
+</section>
+<section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-miniapp-poster">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行（Node 自测）</span><span class="deploy-badge info">真机绘制需小程序环境</span><span class="deploy-badge warn">零第三方依赖</span></div>
+  <div class="code-card"><p>运行环境：Node.js ≥ 12（自测）；真机绘制需微信基础库 2.9.0+ 的 Canvas 2D。<br>先在电脑上跑通：<code>cd miniapp-poster &amp;&amp; node tools/selftest.js</code>，预期输出 <code>ALL CHECKS PASSED</code>（覆盖 DPR 尺寸换算、头像/二维码居中与底部留白、文本换行边界、圆角与圆形路径闭合、相册文件名唯一性）。<br>真机使用需改：<code>poster.js</code> 的 <code>DESIGN</code> 与配色、WXML 里的 <code>&lt;canvas type="2d" id="poster"&gt;</code>，并在小程序后台配置 <code>downloadFile</code> 合法域名。</p></div>
+  <div class="deploy-tree">miniapp-poster/
+├── README.md                    运行步骤 / 配置项 / 依赖清单 / 常见坑
+├── package.json                 自测入口（npm test），零依赖
+├── miniprogram/utils/
+│   ├── poster-core.js           布局 / 换行 / 路径纯逻辑（UMD，可单测）
+│   ├── poster.js                真机绘制 + 导出 + 保存相册 + 授权兜底
+│   └── load-image.js            图片下载与缓存（网络图先落地再画）
+└── tools/selftest.js            Node 最小用例：DPR / 布局 / 换行 / 路径 / 文件名</div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、需先改的配置项、依赖清单与真机常见坑（DPR、跨域、授权）。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># miniapp-poster · 小程序分享海报生成（可运行工程）
+
+朋友圈 / 群分享海报的完整生成工具：**渐变背景 + 圆形头像 + 昵称 + 二维码 + 文案换行 + 导出保存**。
+
+工程把「布局计算」与「Canvas 绘制」拆开：
+
+- `poster-core.js`：纯逻辑（画布 DPR 尺寸、元素布局、文本换行、圆角/圆形路径、文件名生成）—— 不依赖 `wx`，可在电脑上直接测试；
+- `poster.js`：真机绘制（Canvas 2D + `canvasToTempFilePath` + 保存相册 + 授权兜底）；
+- `load-image.js`：网络图片下载与内存缓存（避免 canvas 跨域污染）。
+
+## 目录结构
+
+```
+miniapp-poster/
+├── README.md                        本文件：运行步骤 / 配置项 / 依赖清单
+├── package.json                     自测入口（npm test），dependencies 为空
+├── miniprogram/utils/
+│   ├── poster-core.js               布局与换行纯逻辑（UMD，Node 可直接 require）
+│   ├── poster.js                    真机绘制：drawPoster / generate / saveToAlbum
+│   └── load-image.js                图片下载与缓存（网络图先落地再画）
+└── tools/selftest.js                Node 最小用例：布局 / 换行 / 路径 / 文件名
+```
+
+## 可直接运行（无需真机）
+
+```bash
+cd miniapp-poster
+node tools/selftest.js     # 或 npm test
+```
+
+预期输出最后一行 `ALL CHECKS PASSED`，覆盖：
+
+1. DPR 换算：600×900 设计稿在 `pixelRatio=2` 下画布为 1200×1800（真机不糊的关键）；
+2. 布局居中：头像 / 昵称 / 二维码均水平居中，二维码距底边留出说明文字空间；
+3. 文本换行：等宽样例下按行宽切分，空文本返回单空行，超长文案行数正确；
+4. 圆角矩形与圆形裁剪路径调用完整闭合（mock ctx 校验调用序列）；
+5. 文件名生成：同一时间生成结果稳定，不会因重名覆盖相册旧图。
+
+## 需先改的配置项
+
+| 位置 | 配置项 | 说明 |
+|---|---|---|
+| `poster.js` | `DESIGN` | 海报设计稿尺寸（宽/高/头像直径/二维码边长/边距），改这里即可换版式 |
+| `poster.js` | 渐变色 `#1b2f63 → #0e1730` | 与小程序主题色保持一致 |
+| `poster.js` | `BG_IMAGE`（可选） | 想用底图而非纯渐变时，填入背景图地址 |
+| `poster.js` | 昵称/文案来源 | 默认取用户资料与页面参数，接入时改为你的接口字段 |
+| `load-image.js` | `CACHE_LIMIT` | 图片缓存条目上限，按分享量调整 |
+| 小程序后台 | `downloadFile` 合法域名 | 头像 / 二维码若为网络图，域名必须提前配置 |
+
+## 依赖清单
+
+- 小程序端：微信基础库 **2.9.0+**（Canvas 2D 接口），**无第三方依赖**；
+- 电脑端自测：Node.js ≥ 12，**零 npm 依赖**（`dependencies` 为空）；
+- 真机用到的 API：`wx.createSelectorQuery().fields({node:true,size:true})`、
+  `wx.canvasToTempFilePath`、`wx.saveImageToPhotosAlbum`、`wx.getImageInfo`、`wx.getWindowInfo`。
+
+## 常见坑
+
+- **必须**用 `type="2d"` 的新版 canvas，旧版 `wx.createCanvasContext` 已废弃且不支持 `ctx.font` 度量；
+- 网络图片必须先 `wx.downloadFile` / `wx.getImageInfo` 转成临时路径再 `drawImage`，否则真机白图；
+- 画布尺寸要乘 `pixelRatio` 并 `ctx.scale(dpr, dpr)`，否则导出图模糊；
+- `saveImageToPhotosAlbum` 被拒后不要再弹授权框，应引导用户到 `wx.openSetting` 手动开启；
+- 海报上的二维码建议由后端生成（带场景值），避免小程序端打包体积膨胀。
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>miniprogram/utils/poster-core.js</h3>
+    <p class="file-note">纯逻辑层（UMD）：画布 DPR 尺寸、元素布局、文本换行、圆角/圆形路径、文件名。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="miniprogram/utils/poster-core.js"><code>/* poster-core.js —— 海报布局纯逻辑（UMD：小程序 require / 电脑端 Node 直接测试） */
+(function (root, factory) {
+  if (typeof module === "object" &amp;&amp; module.exports) module.exports = factory();
+  else root.PosterCore = factory();
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  /* 设计稿尺寸 → 画布物理尺寸：乘 DPR，避免真机导出模糊 */
+  function canvasSize(design, dpr) {
+    var d = Number(dpr) || 0;
+    if (d &lt;= 0) d = 1;
+    return { width: Math.round(design.width * d), height: Math.round(design.height * d), dpr: d };
+  }
+
+  function scale(v, dpr) {
+    var d = Number(dpr) || 0;
+    if (d &lt;= 0) d = 1;
+    return Math.round(v * d);
+  }
+
+  /* 海报元素布局：全部返回"设计稿坐标系"，绘制前统一乘 dpr */
+  function layout(design) {
+    var W = design.width, H = design.height;
+    var pad = design.padding == null ? 48 : design.padding;
+    var avatarD = design.avatarSize == null ? 120 : design.avatarSize;
+    var qrSize = design.qrSize == null ? 220 : design.qrSize;
+    var avatarR = avatarD / 2;
+    var avatarCy = pad + avatarR;
+    return {
+      avatar: { x: W / 2, y: avatarCy, r: avatarR, d: avatarD },
+      name: { x: W / 2, y: avatarCy + avatarR + 56, size: 36 },
+      slogan: { x: W / 2, y: avatarCy + avatarR + 108, size: 26, maxWidth: W - pad * 2 },
+      qr: { x: (W - qrSize) / 2, y: H - pad - qrSize - 36, size: qrSize },
+      tip: { x: W / 2, y: H - pad, size: 22 }
+    };
+  }
+
+  /* 文本换行：measure(text) 由调用方注入（真机 ctx.measureText，测试用等宽近似） */
+  function wrapText(text, maxWidth, measure) {
+    var s = String(text == null ? "" : text);
+    if (!s) return [""];
+    var lines = [], cur = "";
+    for (var i = 0; i &lt; s.length; i++) {
+      var next = cur + s[i];
+      if (cur &amp;&amp; measure(next) &gt; maxWidth) { lines.push(cur); cur = s[i]; }
+      else cur = next;
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  /* 圆角矩形路径：Canvas 2D 未内置 roundRect 时使用 */
+  function roundRectPath(ctx, x, y, w, h, r) {
+    var rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.lineTo(x + w - rr, y);
+    ctx.arcTo(x + w, y, x + w, y + rr, rr);
+    ctx.lineTo(x + w, y + h - rr);
+    ctx.arcTo(x + w, y + h, x + w - rr, y + h, rr);
+    ctx.lineTo(x + rr, y + h);
+    ctx.arcTo(x, y + h, x, y + h - rr, rr);
+    ctx.lineTo(x, y + rr);
+    ctx.arcTo(x, y, x + rr, y, rr);
+    ctx.closePath();
+    return ctx;
+  }
+
+  /* 圆形裁剪路径（头像 / 二维码圆角底） */
+  function circlePath(ctx, x, y, r) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.closePath();
+    return ctx;
+  }
+
+  /* 相册文件名：带日期时间，避免同名覆盖旧海报 */
+  function posterFileName(date, prefix) {
+    var d = date || new Date();
+    function p(n) { return ("0" + n).slice(-2); }
+    return (prefix || "poster") + "_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate())
+      + "_" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + ".png";
+  }
+
+  return {
+    canvasSize: canvasSize, scale: scale, layout: layout, wrapText: wrapText,
+    roundRectPath: roundRectPath, circlePath: circlePath, posterFileName: posterFileName
+  };
+});
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>miniprogram/utils/poster.js</h3>
+    <p class="file-note">真机绘制：渐变背景、圆形头像、昵称与文案换行、二维码白底、导出与保存相册。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="miniprogram/utils/poster.js"><code>/* poster.js —— 真机绘制：Canvas 2D 画海报 + 导出 + 保存相册（依赖 poster-core.js） */
+"use strict";
+const core = require("./poster-core.js");
+const { loadImage } = require("./load-image.js");
+
+/* 需先改：海报设计稿尺寸与配色 */
+const DESIGN = {
+  width: 600,
+  height: 900,
+  avatarSize: 120,
+  qrSize: 220,
+  padding: 48
+};
+const BG_FROM = "#1b2f63";
+const BG_TO = "#0e1730";
+
+/* 拿到离屏 canvas 节点（WXML 需写 &lt;canvas type="2d" id="poster" /&gt;） */
+function getCanvasNode(selector) {
+  return new Promise((resolve, reject) =&gt; {
+    wx.createSelectorQuery()
+      .select(selector || "#poster")
+      .fields({ node: true, size: true })
+      .exec((res) =&gt; {
+        const node = res &amp;&amp; res[0] &amp;&amp; res[0].node;
+        node ? resolve(node) : reject(new Error("未找到 canvas 节点，请检查 type=\"2d\" 与 id"));
+      });
+  });
+}
+
+/* 绘制海报（返回 Promise，全部异步资源加载完成后再导出） */
+async function drawPoster(opt) {
+  const node = opt.canvas || (await getCanvasNode(opt.selector));
+  const dpr = (wx.getWindowInfo &amp;&amp; wx.getWindowInfo().pixelRatio) || 2;
+  const size = core.canvasSize(DESIGN, dpr);
+  const L = core.layout(DESIGN);
+  const ctx = node.getContext("2d");
+
+  node.width = size.width;
+  node.height = size.height;
+  ctx.scale(dpr, dpr);
+
+  /* 1) 渐变背景 */
+  const bg = ctx.createLinearGradient(0, 0, 0, DESIGN.height);
+  bg.addColorStop(0, BG_FROM);
+  bg.addColorStop(1, BG_TO);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, DESIGN.width, DESIGN.height);
+
+  /* 2) 圆形头像（网络图先落地成本地路径，避免跨域污染） */
+  if (opt.avatarPath) {
+    const avatar = await loadImage(opt.avatarPath);
+    ctx.save();
+    core.circlePath(ctx, L.avatar.x, L.avatar.y, L.avatar.r);
+    ctx.clip();
+    ctx.drawImage(avatar, L.avatar.x - L.avatar.r, L.avatar.y - L.avatar.r, L.avatar.d, L.avatar.d);
+    ctx.restore();
+  }
+
+  /* 3) 昵称（居中，过长自动换行） */
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = "bold " + L.name.size + "px sans-serif";
+  const nameLines = core.wrapText(opt.name || "", L.slogan.maxWidth, (t) =&gt; ctx.measureText(t).width);
+  nameLines.forEach((line, i) =&gt; {
+    ctx.fillText(line, L.name.x, L.name.y + i * (L.name.size + 8));
+  });
+
+  /* 4) 说明文案 */
+  ctx.font = L.slogan.size + "px sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,0.82)";
+  const tipLines = core.wrapText(opt.slogan || "长按识别二维码，一起来玩", L.slogan.maxWidth, (t) =&gt; ctx.measureText(t).width);
+  tipLines.forEach((line, i) =&gt; {
+    ctx.fillText(line, L.slogan.x, L.slogan.y + i * (L.slogan.size + 8));
+  });
+
+  /* 5) 二维码（白色圆角底 + 二维码本体） */
+  if (opt.qrPath) {
+    const qr = await loadImage(opt.qrPath);
+    ctx.fillStyle = "#ffffff";
+    core.roundRectPath(ctx, L.qr.x - 12, L.qr.y - 12, L.qr.size + 24, L.qr.size + 24, 16);
+    ctx.fill();
+    ctx.drawImage(qr, L.qr.x, L.qr.y, L.qr.size, L.qr.size);
+  }
+
+  /* 6) 底部提示 */
+  ctx.font = L.tip.size + "px sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  ctx.fillText("nocau · 小程序分享海报", L.tip.x, L.tip.y);
+
+  return node;
+}
+
+/* 导出临时图 → 保存到相册（授权被拒时引导手动开启） */
+async function saveToAlbum(opt) {
+  const node = await drawPoster(opt);
+  const tempFilePath = await new Promise((resolve, reject) =&gt; {
+    wx.canvasToTempFilePath({
+      canvas: node,
+      fileType: "png",
+      success: (res) =&gt; resolve(res.tempFilePath),
+      fail: (err) =&gt; reject(new Error("导出失败：" + (err.errMsg || "")))
+    });
+  });
+
+  return new Promise((resolve, reject) =&gt; {
+    wx.saveImageToPhotosAlbum({
+      filePath: tempFilePath,
+      success: () =&gt; resolve({ ok: true, filePath: tempFilePath, fileName: core.posterFileName(new Date()) }),
+      fail: (err) =&gt; {
+        if (/auth deny|authorize/.test(err.errMsg || "")) {
+          wx.showModal({
+            title: "需要相册权限",
+            content: "请在设置中允许保存到相册后重试",
+            confirmText: "去设置",
+            success: (r) =&gt; { if (r.confirm) wx.openSetting(); }
+          });
+        }
+        reject(new Error(err.errMsg || "保存失败"));
+      }
+    });
+  });
+}
+
+module.exports = { DESIGN: DESIGN, getCanvasNode: getCanvasNode, drawPoster: drawPoster, saveToAlbum: saveToAlbum };
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>miniprogram/utils/load-image.js</h3>
+    <p class="file-note">网络图片下载转本地路径 + 内存缓存，避免 canvas 跨域污染。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="miniprogram/utils/load-image.js"><code>/* load-image.js —— 图片下载与缓存：网络图先落地成本地路径再交给 canvas 绘制 */
+"use strict";
+
+const CACHE_LIMIT = 30; // 需先改（可选）：缓存条目上限，按分享量调整
+const cache = {};       // { src: { path, at } }
+let keys = [];
+
+function remember(src, path) {
+  if (!cache[src]) keys.push(src);
+  cache[src] = { path: path, at: Date.now() };
+  while (keys.length &gt; CACHE_LIMIT) delete cache[keys.shift()];
+}
+
+/* 网络图 → 本地临时路径（画布 drawImage 只接受本地路径） */
+function toLocalPath(src) {
+  if (!/^https?:\/\//.test(src)) return Promise.resolve(src); // 已是本地路径
+  const hit = cache[src];
+  if (hit) return Promise.resolve(hit.path);
+  return new Promise((resolve, reject) =&gt; {
+    wx.getImageInfo({
+      src: src,
+      success: (res) =&gt; { remember(src, res.path); resolve(res.path); },
+      fail: (err) =&gt; reject(new Error("图片下载失败：" + (err.errMsg || src)))
+    });
+  });
+}
+
+/* 加载可被 canvas 使用的图片对象 */
+function loadImage(src) {
+  return toLocalPath(src).then((path) =&gt; new Promise((resolve, reject) =&gt; {
+    const img = wx.createImage();
+    img.onload = () =&gt; resolve(img);
+    img.onerror = () =&gt; reject(new Error("图片解码失败：" + path));
+    img.src = path;
+  }));
+}
+
+function clearCache() { keys.forEach((k) =&gt; delete cache[k]); keys = []; }
+
+module.exports = { loadImage: loadImage, toLocalPath: toLocalPath, clearCache: clearCache, CACHE_LIMIT: CACHE_LIMIT };
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>tools/selftest.js</h3>
+    <p class="file-note">电脑端最小用例：5 组断言，全部离线执行。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="tools/selftest.js"><code>/* tools/selftest.js —— 零依赖最小用例：node tools/selftest.js */
+"use strict";
+const assert = require("assert");
+const path = require("path");
+const core = require(path.join(__dirname, "..", "miniprogram", "utils", "poster-core.js"));
+
+const DESIGN = { width: 600, height: 900, avatarSize: 120, qrSize: 220, padding: 48 };
+
+/* 1) DPR 换算：真机不糊的关键 */
+assert.deepStrictEqual(core.canvasSize(DESIGN, 2), { width: 1200, height: 1800, dpr: 2 });
+assert.deepStrictEqual(core.canvasSize(DESIGN, 3), { width: 1800, height: 2700, dpr: 3 });
+assert.strictEqual(core.canvasSize(DESIGN, undefined).width, 600, "缺省 DPR 按 1 处理");
+assert.strictEqual(core.canvasSize(DESIGN, 0).dpr, 1, "非法 DPR 兜底 1");
+assert.strictEqual(core.scale(33, 2), 66);
+
+/* 2) 布局：水平居中 + 二维码底部留白 */
+const L = core.layout(DESIGN);
+assert.strictEqual(L.avatar.x, 300, "头像水平居中");
+assert.strictEqual(L.avatar.y, 108, "头像圆心 = 边距 + 半径");
+assert.strictEqual(L.name.x + L.slogan.x + L.tip.x, 900, "文字元素均居中");
+assert.strictEqual(L.qr.x + L.qr.size / 2, 300, "二维码水平居中");
+assert.strictEqual(L.qr.y + L.qr.size + 36, 900 - 48, "二维码下方留出底部提示空间");
+
+/* 3) 文本换行：等宽近似 measure（每字 20px） */
+const measure = (t) =&gt; t.length * 20;
+assert.deepStrictEqual(core.wrapText("一二三四五六七八九十十一", 100, measure),
+  ["一二三四五", "六七八九十", "十一"]);
+assert.deepStrictEqual(core.wrapText("", 100, measure), [""], "空文案返回单空行");
+assert.deepStrictEqual(core.wrapText(null, 100, measure), [""]);
+assert.deepStrictEqual(core.wrapText("短", 100, measure), ["短"]);
+assert.strictEqual(core.wrapText("昵称昵称昵称昵称", 40, measure).length, 4, "每行 2 字，8 字共 4 行");
+
+/* 4) 路径：mock ctx 校验调用序列完整闭合 */
+const calls = [];
+const mock = {
+  beginPath: () =&gt; calls.push("beginPath"),
+  moveTo: () =&gt; calls.push("moveTo"),
+  lineTo: () =&gt; calls.push("lineTo"),
+  arcTo: () =&gt; calls.push("arcTo"),
+  arc: () =&gt; calls.push("arc"),
+  closePath: () =&gt; calls.push("closePath")
+};
+core.roundRectPath(mock, 10, 10, 200, 120, 16);
+assert.strictEqual(calls[0], "beginPath");
+assert.strictEqual(calls[calls.length - 1], "closePath");
+assert.strictEqual(calls.filter((c) =&gt; c === "arcTo").length, 4, "四角圆角");
+calls.length = 0;
+core.circlePath(mock, 300, 108, 60);
+assert.deepStrictEqual(calls, ["beginPath", "arc", "closePath"]);
+
+/* 5) 文件名：可预期且不重名 */
+const fn = core.posterFileName(new Date(2026, 8, 19, 9, 5, 7));
+assert.strictEqual(fn, "poster_20260919_090507.png");
+assert.strictEqual(core.posterFileName(new Date(2026, 8, 19, 9, 5, 8)), "poster_20260919_090508.png");
+assert.strictEqual(core.posterFileName(new Date(2026, 8, 19, 9, 5, 7), "share"), "share_20260919_090507.png");
+
+console.log("ALL CHECKS PASSED");
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>package.json</h3>
+    <p class="file-note">依赖清单（dependencies 为空）与 npm test 入口。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="package.json"><code>{
+  "name": "miniapp-poster",
+  "version": "1.0.0",
+  "private": true,
+  "description": "小程序分享海报生成：布局逻辑可单测，真机绘制与保存相册完整",
+  "scripts": {
+    "test": "node tools/selftest.js"
+  },
+  "dependencies": {}
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p>最小用例实跑输出：<code>$ node tools/selftest.js</code> → <code>ALL CHECKS PASSED</code>；<strong>真机绘制与保存相册需在小程序内运行</strong>（本页布局与换行逻辑已离线验证）。</p></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-miniapp-poster">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://developers.weixin.qq.com/miniprogram/dev/component/canvas.html" target="_blank" rel="noopener">微信官方文档 · canvas 组件（type="2d" 新版接口）</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/api/canvas/wx.canvasToTempFilePath.html" target="_blank" rel="noopener">微信官方文档 · wx.canvasToTempFilePath（导出海报）</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/api/media/image/wx.saveImageToPhotosAlbum.html" target="_blank" rel="noopener">微信官方文档 · wx.saveImageToPhotosAlbum（保存相册与授权处理）</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/api/network/download/wx.downloadFile.html" target="_blank" rel="noopener">微信官方文档 · wx.downloadFile（网络图先落地再绘制）</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getWindowInfo.html" target="_blank" rel="noopener">微信官方文档 · wx.getWindowInfo（取 pixelRatio 做 DPR 适配）</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D" target="_blank" rel="noopener">MDN · CanvasRenderingContext2D（坐标系、渐变、路径与文本度量）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -141,6 +614,7 @@ module.exports = { drawPoster };
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/miniapp-poster.js"></script>
 </body>
 </html>

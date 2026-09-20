@@ -127,7 +127,7 @@
       render();
       winLine.forEach(function (i) {
         var cell = boardEl.children[i];
-        if (cell) cell.style.background = "var(--color-accent,#7aa2f7)";
+        if (cell) cell.style.background = "var(--color-accent)";
       });
       return;
     }

@@ -99,7 +99,206 @@ function fire(text) {
   })(last);
 }</code></pre></div></section>
     </div>
-    <div class="fun-footer">
+<section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-danmaku">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">纯前端 · 零依赖</span><span class="deploy-badge info">双击 index.html 即用</span></div>
+  <div class="code-card"><p>把演示区的「弹幕留言墙」抽成独立工程：样式随机（颜色 / 速度 / 高度）+ requestAnimationFrame 推进 + 出画回收，另附接直播间的改造点。</p></div>
+  <div class="deploy-tree">danmaku-wall/
+├─ index.html      输入区 + 弹幕舞台
+├─ app.js          样式随机 + 推进回收
+├─ styles.css      样式（跟随系统深浅色）
+└─ README.md       运行方式与扩展点
+</div>
+  <div class="deploy-file">
+    <h3>index.html</h3>
+    <p class="file-note">输入框 / 速度选择 / 弹幕舞台</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="index.html"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;弹幕留言墙 · 独立工程版&lt;/title&gt;
+  &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;main class="wrap"&gt;
+    &lt;h1&gt;弹幕留言墙&lt;/h1&gt;
+    &lt;p class="sub"&gt;输入文字即可发射彩色弹幕，随机速度 / 颜色 / 高度。&lt;/p&gt;
+    &lt;section class="panel"&gt;
+      &lt;div class="row"&gt;
+        &lt;input id="text" type="text" maxlength="40" placeholder="说点什么…" style="flex:1;min-width:180px"&gt;
+        &lt;select id="speed"&gt;
+          &lt;option value="normal"&gt;速度：随机&lt;/option&gt;
+          &lt;option value="slow"&gt;速度：慢&lt;/option&gt;
+          &lt;option value="fast"&gt;速度：快&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;button id="send" type="button" class="btn"&gt;发射&lt;/button&gt;
+        &lt;button id="clear" type="button" class="btn ghost"&gt;清空&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;p class="msg" id="status"&gt;已发射 0 条。&lt;/p&gt;
+    &lt;/section&gt;
+    &lt;h2&gt;弹幕舞台&lt;/h2&gt;
+    &lt;div class="panel" style="position:relative;overflow:hidden;height:260px" id="stage"&gt;&lt;/div&gt;
+  &lt;/main&gt;
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.js</h3>
+    <p class="file-note">样式随机（pickStyle 可测）+ 推进与回收</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="app.js"><code>/* app.js —— 弹幕留言墙：样式随机 + 舞台推进（node 中可 require 做逻辑自测） */
+var COLORS = ["#6fb3a8", "#7aa2f7", "#e0af68", "#f7768e", "#9ece6a", "#bb9af7"];
+
+/* pickStyle：纯函数（rand 可注入，便于测试），返回一条弹幕的随机外观 */
+function pickStyle(rand, speedMode) {
+  rand = rand || Math.random;
+  var base = speedMode === "slow" ? 40 : speedMode === "fast" ? 220 : 60 + rand() * 140;
+  return {
+    color: COLORS[Math.floor(rand() * COLORS.length) % COLORS.length],
+    speed: Math.round(base),
+    top: Math.floor(rand() * 80) + 8
+  };
+}
+
+function makeDanmaku(text, style, stageWidth) {
+  return { text: text, color: style.color, speed: style.speed, top: style.top, x: stageWidth };
+}
+
+if (typeof module !== "undefined" &amp;&amp; module.exports) {
+  module.exports = { COLORS: COLORS, pickStyle: pickStyle, makeDanmaku: makeDanmaku };
+}
+
+/* ---- 浏览器交互层 ---- */
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    var stage = document.getElementById("stage"), input = document.getElementById("text"),
+        sendBtn = document.getElementById("send"), clearBtn = document.getElementById("clear"),
+        speedSel = document.getElementById("speed"), status = document.getElementById("status");
+    var items = [], sent = 0, raf = 0, last = 0;
+
+    function spawn(text) {
+      var style = pickStyle(Math.random, speedSel.value);
+      var d = makeDanmaku(text || "弹幕 " + (sent + 1), style, stage.clientWidth);
+      var el = document.createElement("span");
+      el.textContent = d.text;
+      el.style.cssText = "position:absolute;white-space:nowrap;font-size:15px;font-weight:600;" +
+        "color:" + d.color + ";top:" + d.top + "%;left:" + d.x + "px;text-shadow:0 1px 2px rgba(0,0,0,.35)";
+      stage.appendChild(el);
+      items.push({ d: d, el: el });
+      sent++;
+      status.textContent = "已发射 " + sent + " 条。";
+    }
+
+    function step(now) {
+      var dt = last ? (now - last) / 1000 : 0;
+      last = now;
+      for (var i = items.length - 1; i &gt;= 0; i--) {
+        var it = items[i];
+        it.d.x -= it.d.speed * dt;
+        it.el.style.left = it.d.x + "px";
+        if (it.d.x &lt; -it.el.offsetWidth) {
+          it.el.remove();
+          items.splice(i, 1);
+        }
+      }
+      raf = requestAnimationFrame(step);
+    }
+
+    sendBtn.addEventListener("click", function () {
+      var v = input.value.trim();
+      if (!v) { input.focus(); return; }
+      spawn(v);
+      input.value = "";
+      input.focus();
+    });
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") sendBtn.click(); });
+    clearBtn.addEventListener("click", function () {
+      items.forEach(function (it) { it.el.remove(); });
+      items = [];
+      status.textContent = "已清空（累计发射 " + sent + " 条）。";
+    });
+    raf = requestAnimationFrame(step);
+  });
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>styles.css</h3>
+    <p class="file-note">样式：跟随系统深浅色</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="styles.css"><code>:root {
+  --bg: #0e1014; --panel: #171a20; --ink: #e8ecf1; --muted: #9aa4b2; --line: #262b33; --brand: #6fb3a8;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f6f7f8; --panel: #ffffff; --ink: #1a1d21; --muted: #5b636e; --line: #e3e6ea; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 6px; }
+h2 { font-size: 1.05rem; margin: 22px 0 10px; }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.panel, .log-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.q { font-size: 1.06rem; margin: 0 0 12px; }
+.btns, .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--brand);
+  background: var(--brand); color: #0b0f12; cursor: pointer; font-size: .92rem;
+}
+.btn.ghost { background: transparent; color: var(--brand); }
+.msg { color: var(--muted); margin: 12px 0 0; font-size: .92rem; }
+.log { max-height: 200px; overflow: auto; font-size: .88rem; color: var(--muted); }
+.log div { padding: 3px 0; border-bottom: 1px dashed var(--line); }
+input, select {
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); font: inherit;
+}
+canvas { width: 100%; display: block; border-radius: 10px; }
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行方式与接入 WebSocket 的改造点</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 弹幕留言墙（独立可运行工程）
+
+作品站 fun 区「弹幕留言墙」演示的独立工程版：纯前端、零依赖。
+
+## 文件
+- `index.html`：输入框 + 速度选择 + 舞台
+- `app.js`：样式随机（颜色 / 速度 / 高度）、弹幕推进与回收
+- `styles.css`：样式
+
+## 运行
+1. 双击 `index.html`（或 `python -m http.server 8000`）
+2. 逻辑自测：`node -e "console.log(require('./app.js').pickStyle(() =&gt; 0.5, 'normal'))"`
+   → 期望 `{ color: ..., speed: 130, top: 48 }`
+
+## 扩展点
+- 接入直播间：把 `spawn()` 换成 WebSocket 消息回调即可（服务端推送 `{ text }`）
+- 长弹幕防重叠：按 `top` 分轨道，记录每条弹幕的"尾部到达时间"再分配轨道
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行方式</h3><ol><li>新建一个目录，把上面全部文件按文件名分别保存（用「一键复制整份工程」可一次拿全）。</li><li>前端部分：直接双击 <code>index.html</code> 即可运行；若浏览器限制本地文件读取，执行 <code>python -m http.server 8000</code> 后访问 <code>http://localhost:8000/</code>。</li><li>逻辑自测：各文件 <code>README.md</code> 中给出了对应的 Node / Python 自测命令（均为真实可跑的最小用例）。</li></ol><p class="file-note">标注：可直接运行、无需构建；要改造只需动 <code>app.js</code> 顶部的常量与 <code>styles.css</code> 里的变量。</p></div>
+  <!-- inject:howto -->
+<div class="deploy-steps code-card">
+  <p><strong>依赖清单：</strong>无第三方依赖 —— 纯前端（Canvas + DOM），无需安装任何包</p>
+  <p><strong>可直接运行：</strong><span class="deploy-badge info">可直接运行</span> 双击 <code>index.html</code> 即可发弹幕；命令行自测 <code>node -e "console.log(require('./app.js').pickStyle(() => 0.5, 'normal'))"</code></p>
+  <p><strong>需先改的配置项：</strong><strong>无配置项需要修改</strong>。要接直播间时把 <code>spawn()</code> 换成 WebSocket 消息回调</p>
+</div>
+<div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-danmaku">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现涉及的官方文档（可直接访问）：</p>
+<div class="src-links">
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/window/requestAnimationFrame" target="_blank" rel="noopener">MDN · requestAnimationFrame</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/WebSocket" target="_blank" rel="noopener">MDN · WebSocket（接直播间用）</a>
+</div></div></section>    <div class="fun-footer">
       <a href="index.html" class="btn btn-outline">← 返回代码开发合集</a>
     </div>
   </main>
@@ -117,6 +316,7 @@ function fire(text) {
     </div>
   </footer>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/danmaku-wall.js"></script>
 </body>
 </html>

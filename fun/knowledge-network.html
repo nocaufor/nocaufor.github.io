@@ -89,7 +89,367 @@ def http_get(host: str, path: str = "/") -&gt; str:
     s.close()
     return buf.decode("utf-8", "ignore")
 
-# print(http_get("example.com")[:500])</code></pre></div></section><section class="code-section"><h2>学习路径</h2><div class="code-card"><ol><li>用 Wireshark 抓本地 HTTP 包，对照三次握手与四次挥手过程。</li><li>写一个 Python 原始 HTTP 请求（见上），理解报文结构。</li><li>读《计算机网络：自顶向下方法》TCP 与 HTTP 章节。</li><li>动手配一次 DNS：nslookup 查询并观察 TTL 缓存。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>tcp-ip-notes</code>、<code>wireshark-labs</code>、<code>mini-http-server</code>（链接可替换为实际仓库地址）。</p></div></section>
+# print(http_get("example.com")[:500])</code></pre></div></section><section class="code-section"><h2>学习路径</h2><div class="code-card"><ol><li>用 Wireshark 抓本地 HTTP 包，对照三次握手与四次挥手过程。</li><li>写一个 Python 原始 HTTP 请求（见上），理解报文结构。</li><li>读《计算机网络：自顶向下方法》TCP 与 HTTP 章节。</li><li>动手配一次 DNS：nslookup 查询并观察 TTL 缓存。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-knowledge-network">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">零第三方依赖</span><span class="deploy-badge info">Python 3.8+</span></div>
+  <div class="code-card"><p>运行环境：Python 3.8+，仅标准库。把 5 个文件放进同一目录后，<code>python tcp_handshake.py --selftest</code> 会按 SYN → SYN+ACK → ACK → FIN → ACK → FIN → ACK 的序列断言报文流转；<code>python http_min.py --selftest</code> 则在本地真实起一个 socket 服务端，用 <code>http.client</code> 完成 200 / 404 / 405 三类请求。也可直接 <code>python http_min.py --port 8080</code> 后用浏览器访问。</p></div>
+  <div class="deploy-tree">knowledge-network-lab/
+├── tcp_handshake.py    三次握手 / 四次挥手状态机 + 报文序列断言（含 --selftest）
+├── http_min.py         HTTP/1.1 最小服务端 + 本地回环自测（含 --selftest）
+├── test_net.py         6 个 unittest 用例
+├── requirements.txt    依赖清单（仅标准库）
+└── README.md           运行步骤 / 协议要点 / 与正文对照表</div>
+  <div class="deploy-file">
+    <h3>tcp_handshake.py</h3>
+    <p class="file-note">用内存队列传递 TCP 报文，完整走完三次握手与四次挥手，并断言序列号与状态迁移。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="tcp_handshake.py"><code># tcp_handshake.py：三次握手 / 四次挥手状态机（报文在内存队列中流转）
+# 用法：python tcp_handshake.py --selftest / python tcp_handshake.py
+import argparse
+import queue
+
+
+class Peer:
+    def __init__(self, name, isn):
+        self.name = name
+        self.seq = isn
+        self.ack = 0
+        self.state = "CLOSED"
+        self.trace = []
+
+    def send(self, q, flags, ack=False):
+        seg = {"flags": flags, "seq": self.seq, "ack": self.seq + 1 if ack else self.ack}
+        self.trace.append("SEND %-7s seq=%d ack=%d" % (flags, seg["seq"], seg["ack"]))
+        q.put((self.name, seg))
+        self.seq += 1
+        return seg
+
+    def recv(self, q, timeout=2.0):
+        who, seg = q.get(timeout=timeout)
+        self.ack = seg["seq"] + 1
+        self.trace.append("RECV %-7s from %-6s" % (seg["flags"], who))
+        return seg
+
+    def expect(self, q, flags):
+        seg = self.recv(q)
+        if seg["flags"] != flags:
+            raise AssertionError("%s 期望 %s，实收 %s" % (self.name, flags, seg["flags"]))
+        return seg
+
+
+def handshake(client, server, c2s, s2c):
+    client.state = "SYN_SENT"
+    client.send(c2s, "SYN")
+    server.expect(c2s, "SYN")
+    server.state = "SYN_RCVD"
+    server.send(s2c, "SYN+ACK", ack=True)
+    client.expect(s2c, "SYN+ACK")
+    client.state = "ESTABLISHED"
+    client.send(c2s, "ACK", ack=True)
+    server.expect(c2s, "ACK")
+    server.state = "ESTABLISHED"
+
+
+def teardown(client, server, c2s, s2c):
+    client.state = "FIN_WAIT_1"
+    client.send(c2s, "FIN")
+    server.expect(c2s, "FIN")
+    server.state = "CLOSE_WAIT"
+    server.send(s2c, "ACK", ack=True)
+    client.expect(s2c, "ACK")
+    client.state = "FIN_WAIT_2"
+    server.send(s2c, "FIN")
+    server.state = "LAST_ACK"
+    client.expect(s2c, "FIN")
+    client.state = "TIME_WAIT"
+    client.send(c2s, "ACK", ack=True)
+    server.expect(c2s, "ACK")
+    server.state = "CLOSED"
+    client.state = "CLOSED"
+
+
+def selftest():
+    c2s, s2c = queue.Queue(), queue.Queue()
+    client, server = Peer("client", 1000), Peer("server", 5000)
+    handshake(client, server, c2s, s2c)
+    assert (client.state, server.state) == ("ESTABLISHED", "ESTABLISHED")
+    teardown(client, server, c2s, s2c)
+    assert (client.state, server.state) == ("CLOSED", "CLOSED")
+    flags = [ln.split()[1] for ln in client.trace]
+    assert flags == ["SYN", "SYN+ACK", "ACK", "FIN", "ACK", "FIN", "ACK"], flags
+    assert server.trace[0].startswith("RECV SYN"), server.trace[0]
+    print("selftest OK：三次握手建连 / 四次挥手释放 / 报文序列断言 用例通过")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="TCP 握手与挥手状态机演示")
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args(argv)
+    if a.selftest:
+        selftest()
+        return 0
+    c2s, s2c = queue.Queue(), queue.Queue()
+    client, server = Peer("client", 1000), Peer("server", 5000)
+    handshake(client, server, c2s, s2c)
+    teardown(client, server, c2s, s2c)
+    print("== 客户端 ==")
+    for ln in client.trace:
+        print("  ", ln)
+    print("客户端最终状态：", client.state, "| 服务端最终状态：", server.state)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>http_min.py</h3>
+    <p class="file-note">真实 socket 服务端：解析请求行与头部、返回带 Content-Length 的 JSON，附 http.client 自测。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="http_min.py"><code># http_min.py：HTTP/1.1 最小实现（请求行 + 头部解析，JSON 响应 + Content-Length）
+# 用法：
+#   python http_min.py --selftest          真实回环自测
+#   python http_min.py --port 8080         启动后在浏览器访问 http://127.0.0.1:8080/health
+import argparse
+import http.client
+import json
+import socket
+import threading
+
+
+def route(method, target):
+    if method != "GET":
+        return {"error": "method not allowed", "method": method}, "405 Method Not Allowed"
+    path, _, query = target.partition("?")
+    if path == "/health":
+        return {"status": "ok", "path": path}, "200 OK"
+    if path == "/echo":
+        params = dict(p.split("=", 1) for p in query.split("&amp;") if "=" in p)
+        return {"query_raw": query, "params": params}, "200 OK"
+    return {"error": "not found", "path": path}, "404 Not Found"
+
+
+def build_response(body, status):
+    payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
+    head = ("HTTP/1.1 %s\r\n"
+            "Content-Type: application/json; charset=utf-8\r\n"
+            "Content-Length: %d\r\n"
+            "Connection: close\r\n\r\n" % (status, len(payload)))
+    return head.encode("latin-1") + payload
+
+
+def handle(conn):
+    try:
+        raw = b""
+        while b"\r\n\r\n" not in raw:
+            chunk = conn.recv(4096)
+            if not chunk:
+                return
+            raw += chunk
+        head = raw.split(b"\r\n\r\n", 1)[0].decode("latin-1")
+        lines = head.split("\r\n")
+        method, target, version = lines[0].split(" ", 2)
+        headers = {}
+        for ln in lines[1:]:
+            if ":" in ln:
+                k, v = ln.split(":", 1)
+                headers[k.strip().lower()] = v.strip()
+        body, status = route(method, target)
+        body["http_version"] = version
+        conn.sendall(build_response(body, status))
+    finally:
+        conn.close()
+
+
+def serve(port=8080, host="127.0.0.1", ready=None):
+    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    srv.bind((host, port))
+    srv.listen(8)
+    if ready is not None:
+        ready.append(srv.getsockname()[1])
+    try:
+        while True:
+            conn, _ = srv.accept()
+            threading.Thread(target=handle, args=(conn,), daemon=True).start()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        srv.close()
+
+
+def agent():
+    ready = []
+    t = threading.Thread(target=serve, args=(0, "127.0.0.1", ready), daemon=True)
+    t.start()
+    while not ready:
+        pass
+    return ready[0]
+
+
+def selftest():
+    port = agent()
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
+    conn.request("GET", "/health")
+    r = conn.getresponse()
+    body = json.loads(r.read().decode("utf-8"))
+    assert r.status == 200 and body["status"] == "ok", (r.status, body)
+    assert r.getheader("Content-Length") is not None
+
+    conn.request("GET", "/echo?id=7&amp;name=nocau")
+    r = conn.getresponse()
+    body = json.loads(r.read().decode("utf-8"))
+    assert body["params"] == {"id": "7", "name": "nocau"}, body
+
+    conn.request("GET", "/missing")
+    r = conn.getresponse()
+    assert r.status == 404, r.status
+
+    conn.request("POST", "/health")
+    r = conn.getresponse()
+    assert r.status == 405, r.status
+    conn.close()
+    print("selftest OK：200 路由 / 查询串解析 / 404 / 405 / Content-Length 用例通过")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="HTTP/1.1 最小服务端")
+    ap.add_argument("--port", type=int, default=8080)
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args(argv)
+    if a.selftest:
+        selftest()
+        return 0
+    print("监听 http://127.0.0.1:%d  （Ctrl+C 退出）" % a.port)
+    print("可访问：/health  /echo?id=7&amp;name=nocau")
+    serve(a.port)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>test_net.py</h3>
+    <p class="file-note">unittest 回归：报文序列、序号递增、200/404/405 路由、查询串解析。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="test_net.py"><code># 回归测试：python -m unittest -v test_net
+import json
+import queue
+import unittest
+
+import http_min
+import tcp_handshake as hs
+
+
+class TestHandshake(unittest.TestCase):
+    def test_three_way_and_four_way(self):
+        c2s, s2c = queue.Queue(), queue.Queue()
+        client, server = hs.Peer("client", 1000), hs.Peer("server", 5000)
+        hs.handshake(client, server, c2s, s2c)
+        self.assertEqual((client.state, server.state), ("ESTABLISHED", "ESTABLISHED"))
+        hs.teardown(client, server, c2s, s2c)
+        self.assertEqual((client.state, server.state), ("CLOSED", "CLOSED"))
+
+    def test_segment_sequence(self):
+        c2s, s2c = queue.Queue(), queue.Queue()
+        client, server = hs.Peer("client", 7), hs.Peer("server", 9)
+        hs.handshake(client, server, c2s, s2c)
+        hs.teardown(client, server, c2s, s2c)
+        self.assertEqual([ln.split()[1] for ln in client.trace],
+                         ["SYN", "SYN+ACK", "ACK", "FIN", "ACK", "FIN", "ACK"])
+
+    def test_seq_increments(self):
+        c2s, s2c = queue.Queue(), queue.Queue()
+        client, server = hs.Peer("client", 7), hs.Peer("server", 9)
+        hs.handshake(client, server, c2s, s2c)
+        hs.teardown(client, server, c2s, s2c)
+        self.assertEqual(client.seq, 7 + 4)     # SYN / ACK / FIN / ACK 共 4 个报文段
+        self.assertEqual(server.ack, client.seq)
+
+
+class TestHttpMin(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.port = http_min.agent()
+
+    def test_health(self):
+        import http.client
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
+        conn.request("GET", "/health")
+        r = conn.getresponse()
+        self.assertEqual(r.status, 200)
+        self.assertEqual(json.loads(r.read().decode("utf-8"))["status"], "ok")
+
+    def test_echo_and_404(self):
+        import http.client
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
+        conn.request("GET", "/echo?a=1&amp;b=2")
+        r = conn.getresponse()
+        self.assertEqual(json.loads(r.read().decode("utf-8"))["params"], {"a": "1", "b": "2"})
+        conn.request("GET", "/nope")
+        self.assertEqual(conn.getresponse().status, 404)
+
+    def test_405(self):
+        import http.client
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
+        conn.request("DELETE", "/health")
+        self.assertEqual(conn.getresponse().status, 405)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：仅 Python 标准库（socket / http.client / threading / queue）。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># 仅标准库，无需 pip install
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、协议要点与页面正文的对应关系。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># knowledge-network-lab
+
+把 TCP 三次握手、四次挥手与 HTTP/1.1 报文解析做成可运行的最小工程。
+
+## 快速开始
+
+```bash
+python tcp_handshake.py --selftest
+python http_min.py --selftest
+python http_min.py --port 8080     # 浏览器访问 /health
+python -m unittest -v test_net
+```
+
+## 要点
+
+- 握手交换的是初始序号（ISN）与确认号；挥手比握手多一次，因为被动方要先处理完剩余数据。
+- `TIME_WAIT` 由主动关闭方承担，等待 2MSL 以确保最后的 ACK 可达并让旧报文自然消亡。
+- HTTP/1.1 用 `Content-Length` 界定消息体边界；响应头必须与实际字节数一致，否则客户端会挂起。
+- 本工程为教学实现，未处理分块传输、Keep-Alive 复用与超时重传。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>运行标注</strong>：①<strong>可直接运行</strong>——两个 <code>--selftest</code> 与 <code>python -m unittest -v test_net</code> 均零配置通过；②<strong>需按需修改</strong>——端口用 <code>--port</code> 传参（默认 8080），监听地址固定 127.0.0.1 仅本机可访问；③<strong>已知边界</strong>——不含 HTTPS、分块编码与长连接复用，仅覆盖正文提到的报文结构与状态迁移。</p></div>
+  <!-- inject:howto -->
+<div class="deploy-steps code-card">
+  <p><strong>依赖清单：</strong>零第三方依赖 —— 仅 Python 标准库（<code>socket</code> / <code>struct</code>）</p>
+  <p><strong>可直接运行：</strong><span class="deploy-badge info">可直接运行</span> <code>python -m unittest -v test_net</code> 零配置跑通握手/挥手/报文解析；<code>python http_min.py --port 8080</code> 起一个最小 HTTP 服务，浏览器访问 <code>/health</code></p>
+  <p><strong>需先改的配置项：</strong><strong>无配置项需要修改</strong>；换监听端口用 <code>--port</code>。本工程为教学实现，未含分块传输与 Keep-Alive</p>
+</div>
+<div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-knowledge-network">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现所依据的官方文档与规范（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://datatracker.ietf.org/doc/html/rfc9293" target="_blank" rel="noopener">RFC9293 · TCP 协议规范（三次握手与四次挥手状态机）</a>
+<a href="https://datatracker.ietf.org/doc/html/rfc9112" target="_blank" rel="noopener">RFC9112 · HTTP/1.1 报文语法与消息体长度规则</a>
+<a href="https://docs.python.org/zh-cn/3/library/socket.html" target="_blank" rel="noopener">Python 官方文档 · socket</a>
+<a href="https://docs.python.org/zh-cn/3/library/http.client.html" target="_blank" rel="noopener">Python 官方文档 · http.client（自测所用）</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Messages" target="_blank" rel="noopener">MDN · HTTP 消息结构</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -112,6 +472,7 @@ def http_get(host: str, path: str = "/") -&gt; str:
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/knowledge-network.js"></script>
 </body>
 </html>

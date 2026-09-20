@@ -47,15 +47,15 @@
       <style>
         .pl-wrap{display:flex;flex-direction:column;gap:14px;align-items:center;width:100%;max-width:880px;padding:18px}
         .pl-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-        .pl-stage{position:relative;width:100%;max-width:720px;overflow:hidden;border:1px solid var(--color-border,#28303c);border-radius:12px;cursor:crosshair}
+        .pl-stage{position:relative;width:100%;max-width:720px;overflow:hidden;border:1px solid var(--color-border);border-radius:12px;cursor:crosshair}
         #pl-canvas{display:block;width:100%;height:auto;background:#0d1117}
-        .pl-tip{position:absolute;display:none;pointer-events:none;font-size:0.78rem;background:rgba(8,10,16,.92);border:1px solid var(--color-border,#28303c);border-radius:8px;padding:4px 8px;color:var(--color-text,#e8eefb)}
+        .pl-tip{position:absolute;display:none;pointer-events:none;font-size:0.78rem;background:rgba(8,10,16,.92);border:1px solid var(--color-border);border-radius:8px;padding:4px 8px;color:var(--color-text)}
         .pl-swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;width:100%;max-width:720px}
-        .pl-swatch{border-radius:10px;overflow:hidden;border:1px solid var(--color-border,#28303c);min-height:64px;cursor:pointer;transition:transform .12s}
+        .pl-swatch{border-radius:10px;overflow:hidden;border:1px solid var(--color-border);min-height:64px;cursor:pointer;transition:transform .12s}
         .pl-swatch:hover{transform:translateY(-2px)}
         .pl-swatch .fill{height:44px}
-        .pl-swatch .meta{padding:4px 8px;font-size:0.76rem;color:var(--color-muted,#9aa3b2);background:#0d1117;word-break:break-all}
-        .pl-pick{font-size:0.84rem;min-height:1.6em;color:var(--color-muted,#9aa3b2)}
+        .pl-swatch .meta{padding:4px 8px;font-size:0.76rem;color:var(--color-muted);background:#0d1117;word-break:break-all}
+        .pl-pick{font-size:0.84rem;min-height:1.6em;color:var(--color-muted)}
       </style>
       <div class="pl-wrap">
         <div class="pl-bar">
@@ -70,7 +70,7 @@
         </div>
         <div class="pl-swatches" id="pl-swatches"></div>
         <p class="pl-pick" id="pl-pick">点击画面取色；点击色块复制该颜色。</p>
-        <p id="pl-status" style="font-size:0.8rem;color:var(--color-muted,#9aa3b2)">算法为 K 均值聚类 + 透明底合成，全部本地运行。</p>
+        <p id="pl-status" style="font-size:0.8rem;color:var(--color-muted)">算法为 K 均值聚类 + 透明底合成，全部本地运行。</p>
       </div>
     </div>
     <div class="fun-footer">

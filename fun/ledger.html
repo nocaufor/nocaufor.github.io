@@ -49,18 +49,18 @@
         .l-wrap{display:flex;flex-direction:column;gap:12px;width:100%;max-width:980px}
         .l-panel{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;justify-content:center}
         .l-field{display:flex;flex-direction:column;gap:4px;text-align:left;font-size:0.8rem}
-        .l-field input,.l-field select{background:var(--color-card,#1e1e24);color:var(--color-text,#e8e8ea);border:1px solid var(--color-border,#333);border-radius:8px;padding:7px 10px;font-size:0.85rem}
-        .l-field input:focus,.l-field select:focus{outline:none;border-color:var(--color-accent,#7aa2f7)}
+        .l-field input,.l-field select{background:var(--color-card);color:var(--color-text);border:1px solid var(--color-border);border-radius:8px;padding:7px 10px;font-size:0.85rem}
+        .l-field input:focus,.l-field select:focus{outline:none;border-color:var(--color-accent)}
         .l-summary{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-        .l-sum{flex:1 1 130px;background:var(--color-card,#1e1e24);border-radius:10px;padding:10px;text-align:center}
+        .l-sum{flex:1 1 130px;background:var(--color-card);border-radius:10px;padding:10px;text-align:center}
         .l-sum b{display:block;font-size:1.1rem;margin-top:4px}
-        .l-sum.income b{color:#98c379}.l-sum.expense b{color:#e06c75}.l-sum.balance b{color:#7aa2f7}
+        .l-sum.income b{color:var(--ok,#98c379)}.l-sum.expense b{color:var(--danger,#e06c75)}.l-sum.balance b{color:var(--info,#7aa2f7)}
         .l-table{width:100%;border-collapse:collapse;font-size:0.85rem}
-        .l-table th,.l-table td{border-bottom:1px solid var(--color-border,#333);padding:7px 8px;text-align:left}
+        .l-table th,.l-table td{border-bottom:1px solid var(--color-border);padding:7px 8px;text-align:left}
         .l-table th{opacity:.7;font-weight:600}
         .l-budget{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;font-size:0.85rem}
-        .l-bar{flex:1 1 220px;height:8px;background:var(--color-border,#333);border-radius:999px;overflow:hidden}
-        .l-bar i{display:block;height:100%;background:var(--color-accent,#7aa2f7);border-radius:999px}
+        .l-bar{flex:1 1 220px;height:8px;background:var(--color-border);border-radius:999px;overflow:hidden}
+        .l-bar i{display:block;height:100%;background:var(--color-accent);border-radius:999px}
         .l-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
       </style>
       <div class="l-wrap">
@@ -78,7 +78,7 @@
           <div class="l-sum balance">结余<b id="l-bal">0.00</b></div>
         </div>
         <div class="l-budget">
-          <label>月度预算 <input id="l-budget" type="number" value="3000" min="0" style="width:80px;background:var(--color-card,#1e1e24);color:inherit;border:1px solid var(--color-border,#333);border-radius:6px;padding:4px 8px" /> 元</label>
+          <label>月度预算 <input id="l-budget" type="number" value="3000" min="0" style="width:80px;background:var(--color-card);color:inherit;border:1px solid var(--color-border);border-radius:6px;padding:4px 8px" /> 元</label>
           <span class="l-bar"><i id="l-bar"></i></span>
           <span id="l-budget-txt"></span>
         </div>
@@ -92,7 +92,520 @@
         </div>
       </div>
     </div>
-    <div class="fun-footer">
+<section class="code-section"><h2>代码示例：月度聚合与预算进度</h2>
+<div class="code-block"><span class="code-lang-badge">js</span><pre><code>/* ledger-core.js —— 纯逻辑，脱离 DOM，可直接被 Node 引用与测试 */
+function summarize(records, month) {
+  var income = 0, expense = 0;
+  (records || []).forEach(function (r) {
+    if (String(r.date || "").slice(0, 7) !== month) return;   // 只看当月
+    if (r.type === "income") income += Number(r.amount) || 0;
+    else expense += Number(r.amount) || 0;
+  });
+  return { income: income, expense: expense, balance: income - expense };
+}
+
+function budgetProgress(expense, budget) {
+  var e = Number(expense) || 0, b = Number(budget) || 0;
+  if (b &lt;= 0) return { pct: 0, over: false, remain: 0, text: "未设置预算" };
+  var pct = Math.min(e / b * 100, 100);          // 进度条封顶 100%
+  return {
+    pct: Math.round(pct * 10) / 10,
+    over: e &gt; b,
+    remain: b - e,
+    text: e &gt; b ? "已超预算 " + (e - b).toFixed(2) + " 元"
+                : "预算剩余 " + (b - e).toFixed(2) + " 元"
+  };
+}</code></pre></div>
+<div class="code-block"><span class="code-lang-badge">js</span><pre><code>/* 分类聚合：只统计支出，按金额降序，用于"这个月钱花哪儿了" */
+function groupByCategory(records, month) {
+  var map = {};
+  (records || []).forEach(function (r) {
+    if (String(r.date || "").slice(0, 7) !== month || r.type !== "expense") return;
+    var k = r.cat || "其他";
+    map[k] = (map[k] || 0) + (Number(r.amount) || 0);
+  });
+  return Object.keys(map)
+    .map(function (k) { return { cat: k, amount: map[k] }; })
+    .sort(function (a, b) { return b.amount - a.amount; });
+}</code></pre></div>
+</section>
+<section class="code-section"><h2>代码示例：录入与本地存储</h2>
+<div class="code-block"><span class="code-lang-badge">js</span><pre><code>/* app.js —— 记一笔：校验 → 落盘 → 重渲染 */
+function add() {
+  var amount = parseFloat($amount.value);
+  if (!(amount &gt; 0)) { $amount.focus(); return; }      // 金额必须为正
+  records.push({
+    date: $date.value || today(),                       // 未选日期则取今天
+    type: $type.value,
+    cat: $cat.value,
+    amount: amount,
+    note: $note.value.trim()
+  });
+  save();                                               // 写入 localStorage
+  $amount.value = ""; $note.value = "";
+  render();                                             // 汇总卡 + 表格 + 预算条
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(records)); } catch (e) {}
+}</code></pre></div>
+</section>
+<section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-ledger">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">零第三方依赖</span><span class="deploy-badge warn">无需改配置</span></div>
+  <div class="code-card"><p>运行环境：任意现代浏览器（Chrome / Edge / Firefox / Safari）+ 可选 Node.js ≥ 12 跑自测。<br>① 浏览器：下载全部文件放到同一目录，双击 <code>index.html</code>，点「示例数据」即可看到汇总、预算进度与表格；② 电脑端：<code>node selftest.js</code>（或 <code>npm test</code>），预期输出 <code>ALL CHECKS PASSED</code>，覆盖月度聚合、预算剩余/超支/封顶、分类降序、日期倒序与金额格式化。</p></div>
+  <div class="deploy-tree">ledger/
+├── README.md         运行步骤、配置项与依赖清单
+├── index.html        打开即用的页面（结构 + 引入脚本）
+├── styles.css        样式（浅色 / 深色自动适配）
+├── ledger-core.js    核心逻辑：月度聚合 / 分类聚合 / 预算进度（UMD）
+├── app.js            页面交互：localStorage + 渲染
+├── package.json      自测脚本入口（npm test）
+└── selftest.js       Node 最小用例：聚合 / 预算 / 排序 / 格式化</div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、需先改的配置项与依赖清单（零依赖）。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># ledger · 个人记账与预算洞察（可运行工程）
+
+本地优先的记账小工具：收支分类录入、月度统计、预算进度、分类排行。
+数据只写入浏览器 `localStorage`（键名 `ncLedgerV1`），不联网、不上传。
+
+## 目录结构
+
+```
+ledger/
+├── index.html        打开即用的页面（结构 + 引入样式与脚本）
+├── styles.css        页面样式（浅色 / 深色自动适配）
+├── ledger-core.js    核心逻辑：月度聚合 / 分类聚合 / 预算进度（UMD，Node 可直接 require）
+├── app.js            页面交互：localStorage 读写 + 表格与汇总渲染
+├── selftest.js       电脑端最小用例（Node，零依赖）
+├── package.json      自测脚本入口（npm test）
+└── README.md         本文件
+```
+
+## 可直接运行
+
+**① 浏览器（看真实界面）**
+
+```bash
+# 直接把 index.html 双击打开，或用任意静态服务器
+python -m http.server 8000
+# 打开 http://localhost:8000/index.html
+```
+
+点击「示例数据」→ 修改「月度预算」→ 观察汇总卡与进度条变化；记录刷新后仍在（localStorage）。
+
+**② 电脑端最小用例（先验证逻辑，再动界面）**
+
+```bash
+node selftest.js     # 或 npm test
+```
+
+预期输出最后一行 `ALL CHECKS PASSED`，覆盖：月度聚合只看当月、预算剩余 / 超支 / 进度封顶 /
+未设置预算、分类聚合（仅支出 + 金额降序）、日期倒序排序且不改动原数组、金额两位小数格式化。
+
+## 需先改的配置项
+
+| 位置 | 配置项 | 说明 |
+|---|---|---|
+| `app.js` | `KEY = "ncLedgerV1"` | 本地存储键名，改掉可当作全新账本 |
+| `ledger-core.js` | `CATS` | 收支分类字典，按自己的记账习惯增删 |
+| `index.html` | `id="budget" value="3000"` | 默认月度预算（也可在页面上直接改） |
+| `styles.css` | 颜色变量 | 演示用配色，接入自有设计体系时替换 |
+
+## 依赖清单
+
+- 浏览器端：**零依赖**（无 CDN、无第三方库，原生 DOM + localStorage）；
+- 电脑端自测：Node.js ≥ 12，**零 npm 依赖**（`package.json` 的 `dependencies` 为空）。
+
+## 扩展方向
+
+- 导出/导入 JSON 备份，或按月生成 CSV 报表；
+- 增加「周期账单」（房租/订阅）自动入账；
+- 用 `Intl.NumberFormat` 做千分位与货币符号本地化。
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>index.html</h3>
+    <p class="file-note">页面结构：录入表单 + 汇总卡 + 预算条 + 明细表，自包含无 CDN。</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="index.html"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8" /&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+  &lt;title&gt;个人记账与预算洞察&lt;/title&gt;
+  &lt;link rel="stylesheet" href="styles.css" /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class="wrap"&gt;
+    &lt;h1&gt;个人记账与预算洞察&lt;/h1&gt;
+    &lt;p class="sub"&gt;数据保存在浏览器 localStorage，不联网、不上传。&lt;/p&gt;
+
+    &lt;div class="panel"&gt;
+      &lt;label class="field"&gt;日期&lt;input type="date" id="date" /&gt;&lt;/label&gt;
+      &lt;label class="field"&gt;类型
+        &lt;select id="type"&gt;
+          &lt;option value="expense"&gt;支出&lt;/option&gt;
+          &lt;option value="income"&gt;收入&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/label&gt;
+      &lt;label class="field"&gt;分类&lt;select id="cat"&gt;&lt;/select&gt;&lt;/label&gt;
+      &lt;label class="field"&gt;金额&lt;input type="number" id="amount" min="0" step="0.01" placeholder="0.00" /&gt;&lt;/label&gt;
+      &lt;label class="field"&gt;备注&lt;input id="note" placeholder="可选" /&gt;&lt;/label&gt;
+      &lt;button class="primary" id="add"&gt;记一笔&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;div class="summary"&gt;
+      &lt;div class="sum income"&gt;本月收入&lt;b id="inc"&gt;0.00&lt;/b&gt;&lt;/div&gt;
+      &lt;div class="sum expense"&gt;本月支出&lt;b id="exp"&gt;0.00&lt;/b&gt;&lt;/div&gt;
+      &lt;div class="sum balance"&gt;结余&lt;b id="bal"&gt;0.00&lt;/b&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="budget"&gt;
+      &lt;label&gt;月度预算 &lt;input type="number" id="budget" value="3000" min="0" /&gt; 元&lt;/label&gt;
+      &lt;span class="bar"&gt;&lt;i id="bar"&gt;&lt;/i&gt;&lt;/span&gt;
+      &lt;span id="budgetTxt"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;table&gt;
+      &lt;thead&gt;&lt;tr&gt;&lt;th&gt;日期&lt;/th&gt;&lt;th&gt;类型&lt;/th&gt;&lt;th&gt;分类&lt;/th&gt;&lt;th&gt;金额&lt;/th&gt;&lt;th&gt;备注&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+      &lt;tbody id="body"&gt;&lt;/tbody&gt;
+    &lt;/table&gt;
+
+    &lt;div class="actions"&gt;
+      &lt;button id="sample"&gt;示例数据&lt;/button&gt;
+      &lt;button id="clear"&gt;清空记录&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;p class="hint" id="status"&gt;&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;script src="ledger-core.js"&gt;&lt;/script&gt;
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>styles.css</h3>
+    <p class="file-note">浅色 / 深色自适应样式，仅用系统字体与 CSS 变量。</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="styles.css"><code>/* styles.css —— 记账页样式，深浅两种配色自适应 */
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 28px 18px;
+  font-family: system-ui, "Segoe UI", "Microsoft YaHei", sans-serif;
+  background: #f6f7f8; color: #1a1d21;
+}
+.wrap { max-width: 900px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 6px; }
+.sub, .hint { color: #5b636e; font-size: 0.86rem; }
+.sub { margin: 0 0 20px; }
+.hint { min-height: 1.3em; }
+
+.panel { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: #5b636e; }
+input, select, button {
+  font: inherit; font-size: 0.88rem;
+  padding: 8px 11px; border: 1px solid #d6dae0; border-radius: 9px;
+  background: #fff; color: inherit;
+}
+input:focus, select:focus { outline: none; border-color: #1c6659; }
+button { cursor: pointer; }
+button.primary { background: #1c6659; border-color: #1c6659; color: #fff; }
+
+.summary { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0 14px; }
+.sum { flex: 1 1 130px; border: 1px solid #e2e5ea; border-radius: 12px; padding: 12px; text-align: center; background: #fff; font-size: 0.78rem; color: #5b636e; }
+.sum b { display: block; font-size: 1.25rem; margin-top: 4px; color: #1a1d21; }
+.sum.income b { color: #2b7038; }
+.sum.expense b { color: #b3352f; }
+.sum.balance b { color: #2f5fbf; }
+
+.budget { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 0.84rem; color: #5b636e; }
+.budget input { width: 90px; }
+.bar { flex: 1 1 200px; height: 8px; border-radius: 999px; background: #e2e5ea; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: #2f5fbf; transition: width 0.2s ease; }
+.bar i.over { background: #b3352f; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 0.86rem; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e2e5ea; }
+th { font-weight: 600; color: #5b636e; }
+td .del { cursor: pointer; opacity: 0.55; }
+td .del:hover { opacity: 1; }
+.actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+@media (prefers-color-scheme: dark) {
+  body { background: #14161a; color: #e6e9ee; }
+  .sub, .hint, th, .sum, .budget, .field { color: #9aa3b0; }
+  input, select, button, .sum { background: #1c1f25; color: #e6e9ee; border-color: #2a2f38; }
+  .sum b { color: #e6e9ee; }
+  .sum.income b { color: #6fb3a8; }
+  .sum.expense b { color: #e06c75; }
+  .sum.balance b { color: #7aa2f7; }
+  .bar { background: #2a2f38; }
+  .bar i { background: #7aa2f7; }
+  .bar i.over { background: #e06c75; }
+  th, td { border-color: #2a2f38; }
+  button.primary { background: #6fb3a8; border-color: #6fb3a8; color: #10130f; }
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>ledger-core.js</h3>
+    <p class="file-note">核心逻辑层（UMD）：既能被浏览器引用，也能被 Node 直接 require 测试。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="ledger-core.js"><code>/* ledger-core.js —— 记账核心逻辑（UMD：浏览器 window.LedgerCore / Node require） */
+(function (root, factory) {
+  if (typeof module === "object" &amp;&amp; module.exports) module.exports = factory();
+  else root.LedgerCore = factory();
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  var CATS = {
+    expense: ["餐饮", "交通", "居住", "购物", "娱乐", "医疗", "其他"],
+    income: ["工资", "奖金", "理财", "兼职", "其他"]
+  };
+
+  function fmt(n) { return (Number(n) || 0).toFixed(2); }
+
+  function monthKey(dateStr) { return String(dateStr || "").slice(0, 7); }
+
+  function sortByDateDesc(records) {
+    return records.slice().sort(function (a, b) {
+      if (a.date === b.date) return 0;
+      return a.date &lt; b.date ? 1 : -1;
+    });
+  }
+
+  /* 月度聚合：只统计当月收支 */
+  function summarize(records, month) {
+    var income = 0, expense = 0;
+    (records || []).forEach(function (r) {
+      if (monthKey(r.date) !== month) return;
+      if (r.type === "income") income += Number(r.amount) || 0;
+      else expense += Number(r.amount) || 0;
+    });
+    return { income: income, expense: expense, balance: income - expense };
+  }
+
+  /* 分类聚合（仅支出），按金额降序 */
+  function groupByCategory(records, month) {
+    var map = {};
+    (records || []).forEach(function (r) {
+      if (monthKey(r.date) !== month || r.type !== "expense") return;
+      var k = r.cat || "其他";
+      map[k] = (map[k] || 0) + (Number(r.amount) || 0);
+    });
+    return Object.keys(map).map(function (k) {
+      return { cat: k, amount: map[k] };
+    }).sort(function (a, b) { return b.amount - a.amount; });
+  }
+
+  /* 预算进度：进度条封顶 100%，超支单独提示 */
+  function budgetProgress(expense, budget) {
+    var e = Number(expense) || 0, b = Number(budget) || 0;
+    if (b &lt;= 0) return { pct: 0, over: false, remain: 0, text: "未设置预算" };
+    var pct = Math.min(e / b * 100, 100);
+    return {
+      pct: Math.round(pct * 10) / 10,
+      over: e &gt; b,
+      remain: b - e,
+      text: e &gt; b ? "已超预算 " + fmt(e - b) + " 元" : "预算剩余 " + fmt(b - e) + " 元"
+    };
+  }
+
+  return {
+    CATS: CATS, fmt: fmt, monthKey: monthKey, sortByDateDesc: sortByDateDesc,
+    summarize: summarize, groupByCategory: groupByCategory, budgetProgress: budgetProgress
+  };
+});
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.js</h3>
+    <p class="file-note">页面交互层：localStorage 读写、渲染表格与汇总、示例数据与清空。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="app.js"><code>/* app.js —— 页面交互：本地存储 + 渲染（依赖 ledger-core.js） */
+(function () {
+  "use strict";
+  var C = window.LedgerCore;
+  var KEY = "ncLedgerV1";
+  var $ = function (id) { return document.getElementById(id); };
+
+  var $date = $("date"), $type = $("type"), $cat = $("cat"), $amount = $("amount"),
+      $note = $("note"), $body = $("body"), $budget = $("budget"), $bar = $("bar"),
+      $status = $("status");
+
+  var records = [];
+  try { records = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { records = []; }
+
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  }
+
+  function dstr(offsetDays) {
+    var x = new Date(Date.now() - offsetDays * 86400000);
+    return x.getFullYear() + "-" + ("0" + (x.getMonth() + 1)).slice(-2) + "-" + ("0" + x.getDate()).slice(-2);
+  }
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(records)); } catch (e) {} }
+
+  function fillCats() {
+    $cat.innerHTML = "";
+    C.CATS[$type.value].forEach(function (c) {
+      var op = document.createElement("option");
+      op.value = op.textContent = c;
+      $cat.appendChild(op);
+    });
+  }
+
+  function render() {
+    var month = today().slice(0, 7);
+    var sum = C.summarize(records, month);
+    $("inc").textContent = C.fmt(sum.income);
+    $("exp").textContent = C.fmt(sum.expense);
+    $("bal").textContent = C.fmt(sum.balance);
+
+    var bp = C.budgetProgress(sum.expense, $budget.value);
+    $bar.style.width = bp.pct + "%";
+    $bar.className = bp.over ? "over" : "";
+    $("budgetTxt").textContent = bp.text;
+    $status.textContent = "共 " + records.length + " 笔记录；本月支出前三类："
+      + (C.groupByCategory(records, month).slice(0, 3).map(function (g) {
+          return g.cat + " " + C.fmt(g.amount);
+        }).join("、") || "暂无");
+
+    $body.innerHTML = "";
+    C.sortByDateDesc(records).forEach(function (r) {
+      var tr = document.createElement("tr");
+      ["date", "type", "cat", "amount", "note"].forEach(function (k) {
+        var td = document.createElement("td");
+        td.textContent = k === "type" ? (r.type === "income" ? "收入" : "支出")
+                       : k === "amount" ? C.fmt(r.amount) : (r[k] || "");
+        tr.appendChild(td);
+      });
+      var td = document.createElement("td");
+      var del = document.createElement("span");
+      del.className = "del";
+      del.textContent = "✕";
+      del.addEventListener("click", function () {
+        records.splice(records.indexOf(r), 1);
+        save(); render();
+      });
+      td.appendChild(del);
+      tr.appendChild(td);
+      $body.appendChild(tr);
+    });
+  }
+
+  function add() {
+    var amount = parseFloat($amount.value);
+    if (!(amount &gt; 0)) { $amount.focus(); $status.textContent = "请先填写大于 0 的金额"; return; }
+    records.push({
+      date: $date.value || today(), type: $type.value,
+      cat: $cat.value, amount: amount, note: $note.value.trim()
+    });
+    save();
+    $amount.value = ""; $note.value = "";
+    render();
+  }
+
+  $type.addEventListener("change", fillCats);
+  $budget.addEventListener("change", render);
+  $("add").addEventListener("click", add);
+  $("clear").addEventListener("click", function () {
+    if (records.length &amp;&amp; confirm("确认清空全部记账记录？")) { records = []; save(); render(); }
+  });
+  $("sample").addEventListener("click", function () {
+    records = [
+      { date: dstr(1), type: "income", cat: "工资", amount: 12000, note: "本月工资" },
+      { date: dstr(2), type: "expense", cat: "餐饮", amount: 46.5, note: "午餐" },
+      { date: dstr(3), type: "expense", cat: "交通", amount: 12, note: "地铁" },
+      { date: dstr(4), type: "expense", cat: "居住", amount: 2200, note: "房租" },
+      { date: dstr(5), type: "expense", cat: "餐饮", amount: 33.5, note: "晚餐" }
+    ];
+    save(); render();
+  });
+
+  $date.value = today();
+  fillCats();
+  render();
+  window.__ledgerReady = true;
+})();
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>selftest.js</h3>
+    <p class="file-note">电脑端最小用例：5 组断言，跑通即逻辑正确。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="selftest.js"><code>/* selftest.js —— 零依赖最小用例：node selftest.js */
+const assert = require("assert");
+const C = require("./ledger-core.js");
+
+const records = [
+  { date: "2026-09-01", type: "income", cat: "工资", amount: 12000, note: "本月工资" },
+  { date: "2026-09-02", type: "expense", cat: "餐饮", amount: 46.5, note: "午餐" },
+  { date: "2026-09-03", type: "expense", cat: "交通", amount: 12, note: "地铁" },
+  { date: "2026-09-04", type: "expense", cat: "餐饮", amount: 33.5, note: "晚餐" },
+  { date: "2026-08-30", type: "expense", cat: "居住", amount: 2200, note: "上月房租" }
+];
+
+/* 1) 月度聚合：只统计当月，跨月记录不计入 */
+const s = C.summarize(records, "2026-09");
+assert.strictEqual(s.income, 12000, "本月收入");
+assert.strictEqual(s.expense, 92, "本月支出");
+assert.strictEqual(s.balance, 11908, "结余 = 收入 - 支出");
+assert.strictEqual(C.summarize(records, "2026-07").expense, 0, "无记录月份为 0");
+
+/* 2) 预算进度：剩余 / 超支 / 封顶 / 未设置 */
+assert.deepStrictEqual(C.budgetProgress(92, 3000), { pct: 3.1, over: false, remain: 2908, text: "预算剩余 2908.00 元" });
+const over = C.budgetProgress(3200, 3000);
+assert.strictEqual(over.over, true);
+assert.strictEqual(over.pct, 100, "进度条封顶 100%");
+assert.strictEqual(over.text, "已超预算 200.00 元");
+assert.strictEqual(C.budgetProgress(100, 0).text, "未设置预算");
+
+/* 3) 分类聚合：仅支出，按金额降序 */
+assert.deepStrictEqual(C.groupByCategory(records, "2026-09"),
+  [{ cat: "餐饮", amount: 80 }, { cat: "交通", amount: 12 }]);
+
+/* 4) 排序：日期倒序，且不改动原数组 */
+const sorted = C.sortByDateDesc(records);
+assert.strictEqual(sorted[0].date, "2026-09-04");
+assert.strictEqual(sorted[sorted.length - 1].date, "2026-08-30");
+assert.strictEqual(records[0].date, "2026-09-01", "原数组未被修改");
+
+/* 5) 金额格式化：两位小数，异常值兜底 */
+assert.strictEqual(C.fmt(46.5), "46.50");
+assert.strictEqual(C.fmt(undefined), "0.00");
+
+console.log("ALL CHECKS PASSED");
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>package.json</h3>
+    <p class="file-note">依赖清单（dependencies 为空）与 npm test 入口。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="package.json"><code>{
+  "name": "ledger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "个人记账与预算洞察（本地优先，零依赖）",
+  "scripts": {
+    "test": "node selftest.js"
+  },
+  "dependencies": {}
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p>最小用例实跑输出：<code>$ node selftest.js</code> → <code>ALL CHECKS PASSED</code>（月度聚合 12 000 / 92 / 11908，预算超支与封顶，分类降序 餐饮 80 &gt; 交通 12）。</p></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-ledger">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Window/localStorage" target="_blank" rel="noopener">MDN · Window.localStorage（本地存储读写与配额）</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Date" target="_blank" rel="noopener">MDN · Date（日期计算与本月区间）</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/input/date" target="_blank" rel="noopener">MDN · input[type=date]（原生日期选择器）</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat" target="_blank" rel="noopener">MDN · Intl.NumberFormat（金额千分位与货币本地化）</a>
+</div></div></section>    <div class="fun-footer">
       <a href="index.html" class="btn btn-outline">← 返回代码开发合集</a>
     </div>
   </main>
@@ -110,6 +623,7 @@
     </div>
   </footer>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/ledger.js"></script>
 </body>
 </html>

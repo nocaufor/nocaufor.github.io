@@ -51,9 +51,48 @@
         <div class="meta-line">
           <span class="tag">场景：效率工具</span>
           <span class="tag">技术栈：HTML / JS</span>
-          <span class="tag">来源：GitHub 参考</span>
+          <span class="tag">来源：W3C WCAG 2.1 / NN-g / Python 官方文档</span>
         </div>
       </div>
+<section class="code-section"><h2>在线演示</h2>
+<div class="demo-panel" id="re-demo">
+  <div class="demo-grid">
+    <div class="demo-field" style="grid-column:1/-1">
+      <label for="re-text">待估算文本（中文按字、英文按词分别计时）</label>
+      <textarea id="re-text" class="demo-input" rows="7" placeholder="在此粘贴文章、脚本或讲稿……"></textarea>
+    </div>
+    <div class="demo-field">
+      <label for="re-mode">阅读方式</label>
+      <select id="re-mode" class="demo-input">
+        <option value="300">默读 · 中文 300 字/分</option>
+        <option value="200">朗读 · 中文 200 字/分</option>
+        <option value="450">速读 · 中文 450 字/分</option>
+      </select>
+    </div>
+    <div class="demo-field">
+      <label for="re-en">英文速率</label>
+      <select id="re-en" class="demo-input">
+        <option value="220">英文 220 词/分</option>
+        <option value="150">英文（含术语）150 词/分</option>
+      </select>
+    </div>
+  </div>
+  <div class="demo-actions">
+    <button type="button" class="btn" id="re-run">估算阅读时长</button>
+    <button type="button" class="btn btn-outline" id="re-sample">载入示例文本</button>
+    <button type="button" class="btn btn-outline" id="re-clear">清空</button>
+  </div>
+  <div class="demo-kpis" style="margin-top:16px">
+    <div class="demo-kpi"><b id="re-k-min">—</b><span>估算时长</span></div>
+    <div class="demo-kpi"><b id="re-k-words">0</b><span>中文汉字数</span></div>
+    <div class="demo-kpi"><b id="re-k-sent">0</b><span>句子数</span></div>
+    <div class="demo-kpi"><b id="re-k-long">0</b><span>长句数（&gt;40 字）</span></div>
+  </div>
+  <div class="demo-output" id="re-out"></div>
+  <div id="re-tblwrap" style="display:none;margin-top:14px"></div>
+  <p class="demo-status" id="re-status">等待操作：粘贴文本后点击“估算阅读时长”，也可直接点“载入示例文本”体验完整流程。</p>
+</div>
+</section>
 <section class="code-section"><h2>项目简介</h2><div class="code-card"><p>写博客、做 PPT 或给文案定稿前，先估算一下读者要花多久读完。本页提供<strong>阅读时长估算</strong>（按中文/英文语速区分）与<strong>可读性指标</strong>（长句比例、生僻度提示），帮助内容创作者控制篇幅与表达复杂度。</p></div></section><section class="code-section"><h2>代码示例：阅读时长估算</h2><div class="code-block"><span class="code-lang-badge">js</span><pre><code>function estimateReadingTime(text) {
   const trimmed = text.trim();
   if (!trimmed) return { minutes: 0, words: 0 };
@@ -83,7 +122,265 @@
     tips.push("逗号使用较密集，适当用句号分段能提升阅读节奏。");
   }
   return tips;
-}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>粘贴正文文本，页面自动统计字数并估算阅读时长（中文按 300 字/分、英文按 200 词/分）。</li><li>阅读“可读性提示”列表，针对性拆分长句、减少密集逗号。</li><li>适合用于公众号排版前检查、技术文档篇幅控制与 PPT 讲稿时间预算。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>reading-time-js</code>、<code>readability-score</code>（链接可替换为实际仓库地址）。</p></div></section>
+}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>粘贴正文文本，页面自动统计字数并估算阅读时长（中文按 300 字/分、英文按 200 词/分）。</li><li>阅读“可读性提示”列表，针对性拆分长句、减少密集逗号。</li><li>适合用于公众号排版前检查、技术文档篇幅控制与 PPT 讲稿时间预算。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-reading-estimator">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">零第三方依赖</span><span class="deploy-badge info">Python 3.8+</span></div>
+  <div class="code-card"><p>完整工程（非片段）：<code>estimate.py</code> 把「字数统计 → 分速率折算 → 长句判定」串成一条流水线，既可作为 CLI 使用，也可 <code>import estimate</code> 接入你的写作/发布脚本。<br><strong>依赖清单</strong>：仅 Python 标准库（re / unicodedata / argparse / json），无第三方依赖，无需 pip install。</p></div>
+  <div class="deploy-tree">reading-estimator/<br>&nbsp;&nbsp;├── estimate.py&nbsp;&nbsp;&nbsp;&nbsp;# 分析与 CLI 入口<br>&nbsp;&nbsp;├── test_estimate.py&nbsp;# 最小用例回归<br>&nbsp;&nbsp;├── requirements.txt<br>&nbsp;&nbsp;└── README.md</div>
+  <div class="deploy-file">
+    <h3>estimate.py</h3>
+    <p class="file-note">分析核心：analyze / estimate / fmt_duration / report，含 --selftest 自检入口。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="estimate.py"><code>#!/usr/bin/env python3
+"""阅读时长估算与可读性提示（零第三方依赖，仅标准库）
+
+用法：
+    python estimate.py article.txt
+    python estimate.py article.txt --cpm 300 --wpm 220 --json
+    python estimate.py --text "待估算的一句话。" --cpm 200
+    python estimate.py --selftest
+"""
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+HAN = re.compile(r"[\u4e00-\u9fff]")
+WORD = re.compile(r"[A-Za-z][A-Za-z'\-]*")
+DIGIT = re.compile(r"\d+(?:\.\d+)?")
+SPLIT = re.compile(r"[。！？!?；;]+|\n+")
+
+LONG_HAN = 40      # 单个中文句子超过 40 个汉字视为长句
+LONG_WORDS = 25    # 单个英文句子超过 25 个单词视为长句
+WORD_WEIGHT = 1.5  # 折算权重：1 个英文单词≈1.5 个汉字
+
+
+def analyze(text):
+    sents = []
+    for raw in SPLIT.split(text.replace("\r", "")):
+        s = raw.strip()
+        if not s:
+            continue
+        h = len(HAN.findall(s))
+        w = len(WORD.findall(s))
+        sents.append({"text": s, "han": h, "words": w, "weight": h + w * WORD_WEIGHT})
+    weights = [s["weight"] for s in sents]
+    return {
+        "han": len(HAN.findall(text)),
+        "words": len(WORD.findall(text)),
+        "digits": len(DIGIT.findall(text)),
+        "paragraphs": len([p for p in re.split(r"\n\s*\n", text) if p.strip()]),
+        "sentences": len(sents),
+        "avg_sentence": round(sum(weights) / len(weights), 1) if weights else 0,
+        "long_sentences": [s for s in sents if s["han"] &gt; LONG_HAN or s["words"] &gt; LONG_WORDS],
+        "detail": sents,
+    }
+
+
+def estimate(text, cpm=300, wpm=220):
+    """返回 (总秒数, 中文秒数, 英文秒数)。中英按各自速率累加，不混用一个系数。"""
+    a = analyze(text)
+    zh = a["han"] / cpm * 60
+    en = a["words"] / wpm * 60
+    return zh + en, zh, en
+
+
+def fmt_duration(sec):
+    if sec &lt;= 0:
+        return "0 秒"
+    m, s = divmod(int(round(sec)), 60)
+    if m and s:
+        return "%d 分 %d 秒" % (m, s)
+    if m:
+        return "%d 分钟" % m
+    return "%d 秒" % s
+
+
+def report(text, cpm, wpm):
+    a = analyze(text)
+    total, zh, en = estimate(text, cpm, wpm)
+    return {
+        "duration_seconds": round(total, 1),
+        "duration_human": fmt_duration(total),
+        "zh_seconds": round(zh, 1),
+        "en_seconds": round(en, 1),
+        "cpm": cpm,
+        "wpm": wpm,
+        "han": a["han"],
+        "words": a["words"],
+        "sentences": a["sentences"],
+        "paragraphs": a["paragraphs"],
+        "avg_sentence": a["avg_sentence"],
+        "long_sentences": len(a["long_sentences"]),
+        "advice": ("未发现超长句" if not a["long_sentences"]
+                   else "有 %d 句超过 %d 汉字 / %d 英文单词，建议拆分以降低回看成本"
+                        % (len(a["long_sentences"]), LONG_HAN, LONG_WORDS)),
+    }
+
+
+def selftest():
+    text = "你好世界。" + "a" * 0 + "Hello world this is a test."
+    a = analyze(text)
+    assert a["han"] == 4, a["han"]
+    assert a["words"] == 6, a["words"]
+    t, zh, en = estimate("中" * 300, cpm=300, wpm=220)
+    assert abs(t - 60) &lt; 1e-9, t
+    t2, _, en2 = estimate("word " * 220, cpm=300, wpm=220)
+    assert abs(t2 - 60) &lt; 1e-9, t2
+    long_text = "这是一个很长的句子" * 6 + "。"      # 60 个汉字
+    assert len(analyze(long_text)["long_sentences"]) == 1
+    assert fmt_duration(151) == "2 分 31 秒"
+    print("selftest OK：字数统计 / 分速率折算 / 长句判定 / 时长格式化 用例全部通过")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="阅读时长估算与可读性提示")
+    ap.add_argument("file", nargs="?", help="待分析文本文件（UTF-8）")
+    ap.add_argument("--text", help="直接传入文本")
+    ap.add_argument("--cpm", type=int, default=300, help="中文速率（字/分），默认 300")
+    ap.add_argument("--wpm", type=int, default=220, help="英文速率（词/分），默认 220")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args(argv)
+
+    if a.selftest:
+        selftest()
+        return 0
+    if a.text is not None:
+        text = a.text
+    elif a.file:
+        p = Path(a.file)
+        if not p.exists():
+            raise SystemExit("文件不存在：%s" % p)
+        text = p.read_text(encoding="utf-8", errors="replace")
+    else:
+        text = sys.stdin.read()
+    if not text.strip():
+        raise SystemExit("没有可分析的文本（可从文件、--text 或标准输入提供）。")
+
+    r = report(text, a.cpm, a.wpm)
+    if a.json:
+        print(json.dumps(r, ensure_ascii=False, indent=2))
+    else:
+        print("估算阅读时长：%s（%.1f 秒）" % (r["duration_human"], r["duration_seconds"]))
+        print("  汉字 %d · 英文单词 %d · 句子 %d · 段落 %d · 平均句长 %s 字"
+              % (r["han"], r["words"], r["sentences"], r["paragraphs"], r["avg_sentence"]))
+        print("  耗时拆解：中文 %.1f 秒 + 英文 %.1f 秒（%d 字/分，%d 词/分）" % (r["zh_seconds"], r["en_seconds"], r["cpm"], r["wpm"]))
+        print("  可读性：%s" % r["advice"])
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>test_estimate.py</h3>
+    <p class="file-note">unittest 回归：中英计数、双速率折算、长句判定、输出字段完整性。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="test_estimate.py"><code>"""estimate.py 最小用例回归（标准库 unittest）"""
+import unittest
+
+from estimate import analyze, estimate, fmt_duration, report
+
+
+class TestEstimate(unittest.TestCase):
+    def test_han_and_word_count(self):
+        a = analyze("你好世界。Hello world this is a test.")
+        self.assertEqual(a["han"], 4)
+        self.assertEqual(a["words"], 6)
+
+    def test_zh_rate(self):
+        total, zh, _ = estimate("中" * 300, cpm=300, wpm=220)
+        self.assertAlmostEqual(total, 60.0, places=6)
+        self.assertAlmostEqual(zh, 60.0, places=6)
+
+    def test_en_rate(self):
+        total, _, en = estimate("word " * 220, cpm=300, wpm=220)
+        self.assertAlmostEqual(total, 60.0, places=6)
+        self.assertAlmostEqual(en, 60.0, places=6)
+
+    def test_long_sentence_detection(self):
+        text = "这是一个很长的句子" * 6 + "。"
+        self.assertEqual(len(analyze(text)["long_sentences"]), 1)
+
+    def test_report_fields(self):
+        r = report("短文一句。", 300, 220)
+        for k in ("duration_seconds", "duration_human", "han", "words", "long_sentences", "advice"):
+            self.assertIn(k, r)
+
+    def test_fmt_duration(self):
+        self.assertEqual(fmt_duration(151), "2 分 31 秒")
+        self.assertEqual(fmt_duration(0), "0 秒")
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：仅标准库。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># 本工程仅使用 Python 标准库（argparse / re / json / pathlib / unittest）。
+# 不需要安装任何第三方包；此文件保留是为了统一 `pip install -r requirements.txt` 流程。
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">参数说明、阈值常量位置与流水线接入方式。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 阅读时长估算（reading-estimator）
+
+中文按汉字数、英文按单词数**分别**用各自速率折算时长，再对句长分布做可读性提示。
+不做「一个系数通吃」的估算，是本工具与随手写的字数除法最大的区别。
+
+## 文件说明
+
+| 文件 | 作用 |
+|---|---|
+| `estimate.py` | 分析核心 + 命令行入口（仅标准库） |
+| `test_estimate.py` | unittest 最小用例回归 |
+| `requirements.txt` | 依赖清单（本工程无第三方依赖） |
+
+## 运行
+
+```bash
+python -m pip install -r requirements.txt       # 无第三方依赖，可跳过
+python estimate.py article.txt --cpm 300 --wpm 220
+python estimate.py article.txt --json
+echo "一段中文文本。" | python estimate.py
+python estimate.py --selftest
+python test_estimate.py
+```
+
+## 参数
+
+| 参数 | 含义 | 默认 |
+|---|---|---|
+| `--cpm` | 中文速率（字/分） | 300（默读） |
+| `--wpm` | 英文速率（词/分） | 220 |
+| `--json` | 输出结构化结果，便于接入流水线 | 关闭 |
+
+## 判定阈值
+
+- 长句：中文句 &gt; 40 个汉字，或英文句 &gt; 25 个单词；
+- 英文单词折算权重 1.5（用于计算加权平均句长）。
+
+阈值写在 `estimate.py` 顶部的 `LONG_HAN` / `LONG_WORDS` / `WORD_WEIGHT` 三个常量，
+按你的读者群体调整即可，无需改动其它逻辑。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行标注</h3><ol><li><b>可直接运行</b>：保存 4 个文件到同一目录，执行 <code>python estimate.py 你的文章.txt</code> 即可得到时长与可读性报告。</li><li><b>需按需修改的配置项</b>：中文/英文速率用 <code>--cpm</code> / <code>--wpm</code> 传参（默认 300 字/分、220 词/分）；长句阈值在 <code>estimate.py</code> 顶部 <code>LONG_HAN</code>(40) / <code>LONG_WORDS</code>(25) 调整。<b>不改也能直接跑</b>。</li><li>自测：<code>python estimate.py --selftest</code>（或 <code>python test_estimate.py</code>），6 个用例应全部通过。</li></ol></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-reading-estimator">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://docs.python.org/3/library/re.html" target="_blank" rel="noopener">Python 官方文档 · re（正则表达式，用于字数与分句）</a>
+<a href="https://docs.python.org/3/library/unicodedata.html" target="_blank" rel="noopener">Python 官方文档 · unicodedata（CJK 字符判定参考）</a>
+<a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener">W3C · WCAG 2.1（可读性与无障碍官方规范）</a>
+<a href="https://www.nngroup.com/articles/how-little-do-users-read/" target="_blank" rel="noopener">Wikipedia · Words per minute（阅读速率取值依据）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -106,6 +403,7 @@
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/reading-estimator.js"></script>
 </body>
 </html>

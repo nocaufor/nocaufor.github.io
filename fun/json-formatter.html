@@ -43,17 +43,18 @@
     <div class="fun-intro">
       <h1>JSON 格式化工具</h1>
       <p>格式化、压缩、校验 JSON 数据，支持排序键与错误定位。</p>
+          <p>粘贴 JSON 后点「格式化」美化缩进，或用「压缩」得到紧凑单行；「排序键」可重排对象字段，语法有误时会提示出错位置。</p>
     </div>
     <div class="fun-box">
       <style>
         .j-wrap{display:flex;flex-direction:column;gap:10px;width:100%;max-width:1000px}
         .j-panel{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
         .j-split{display:flex;gap:10px;flex-wrap:wrap}
-        .j-area{flex:1 1 300px;min-height:380px;max-height:60vh;border-radius:10px;background:var(--color-card,#1e1e24);padding:12px;font-family:Consolas,Menlo,monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text,#e8e8ea);border:1px solid var(--color-border,#333);resize:vertical;overflow:auto;white-space:pre}
-        .j-area:focus{outline:none;border-color:var(--color-accent,#7aa2f7)}
+        .j-area{flex:1 1 300px;min-height:380px;max-height:60vh;border-radius:10px;background:var(--color-card);padding:12px;font-family:Consolas,Menlo,monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text);border:1px solid var(--color-border);resize:vertical;overflow:auto;white-space:pre}
+        .j-area:focus{outline:none;border-color:var(--color-accent)}
         .j-status{font-size:0.85rem;min-height:1.2em;text-align:center}
-        .j-err{color:#e06c75}
-        .j-ok{color:#98c379}
+        .j-err{color:var(--danger,#e06c75)}
+        .j-ok{color:var(--ok,#98c379)}
       </style>
       <div class="j-wrap">
         <div class="j-panel">

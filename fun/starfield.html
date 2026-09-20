@@ -47,17 +47,17 @@
       <style>
         .sf-wrap{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:860px;padding:18px}
         .sf-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-        .sf-stage{position:relative;width:100%;max-width:760px;background:#04060c;border:1px solid var(--color-border,#28303c);border-radius:14px;overflow:hidden;touch-action:none}
+        .sf-stage{position:relative;width:100%;max-width:760px;background:#04060c;border:1px solid var(--color-border);border-radius:14px;overflow:hidden;touch-action:none}
         #sf-canvas{display:block;width:100%;height:auto;background:transparent}
         .sf-note{position:absolute;left:10px;bottom:8px;font-size:0.74rem;color:rgba(190,202,230,.6);pointer-events:none}
-        .sf-status{font-size:0.84rem;min-height:1.3em;text-align:center;color:var(--color-muted,#9aa3b2)}
+        .sf-status{font-size:0.84rem;min-height:1.3em;text-align:center;color:var(--color-muted)}
       </style>
       <div class="sf-wrap">
         <div class="sf-bar">
           <button type="button" id="sf-auto" class="btn btn-primary">自动旋转</button>
           <button type="button" id="sf-pause" class="btn btn-outline">暂停</button>
           <label>拖拽旋转：
-            <input id="sf-drag" type="checkbox" checked style="accent-color:#7aa2f7">
+            <input id="sf-drag" type="checkbox" checked style="accent-color:var(--info,#7aa2f7)">
           </label>
         </div>
         <div class="sf-stage" id="sf-stage">

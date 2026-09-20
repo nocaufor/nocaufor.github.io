@@ -47,10 +47,10 @@
       <style>
         .as-wrap{display:flex;flex-direction:column;gap:14px;align-items:center;width:100%;max-width:860px;padding:18px}
         .as-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-        .as-opts{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;font-size:0.84rem;color:var(--color-muted,#9aa3b2)}
+        .as-opts{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;font-size:0.84rem;color:var(--color-muted)}
         .as-stage{display:none;width:100%;max-width:520px}
-        .as-stage canvas{width:100%;height:auto;display:block;background:var(--color-card,#0d1117);border:1px solid var(--color-border,#28303c);border-radius:12px}
-        .as-out{width:100%;max-width:860px;background:#080b10;border:1px solid var(--color-border,#28303c);border-radius:12px;color:#b9c6dd;font-family:"Cascadia Mono","SF Mono",Consolas,"Courier New",monospace;font-size:11px;line-height:1.25;padding:14px;overflow:auto;white-space:pre;max-height:520px}
+        .as-stage canvas{width:100%;height:auto;display:block;background:var(--color-card);border:1px solid var(--color-border);border-radius:12px}
+        .as-out{width:100%;max-width:860px;background:#080b10;border:1px solid var(--color-border);border-radius:12px;color:#b9c6dd;font-family:"Cascadia Mono","SF Mono",Consolas,"Courier New",monospace;font-size:11px;line-height:1.25;padding:14px;overflow:auto;white-space:pre;max-height:520px}
         .as-copy{font-size:0.82rem}
       </style>
       <div class="as-wrap">
@@ -69,12 +69,12 @@
               <option value="2">细腻</option>
             </select>
           </label>
-          <label>宽度限制 <input id="as-cols" type="number" min="40" max="200" value="110" style="width:64px;background:#0d1117;color:var(--color-text,#e8eefb);border:1px solid var(--color-border,#28303c);border-radius:8px;padding:3px 8px"></label>
+          <label>宽度限制 <input id="as-cols" type="number" min="40" max="200" value="110" style="width:64px;background:#0d1117;color:var(--color-text);border:1px solid var(--color-border);border-radius:8px;padding:3px 8px"></label>
           <span>字符集：<code>@%#*+=-:. </code></span>
         </div>
         <div class="as-stage" id="as-stage"><canvas id="as-canvas" width="600" height="420" aria-label="原图预览"></canvas></div>
         <div class="as-out" id="as-out" aria-live="polite">字符画会显示在这里。</div>
-        <p class="as-copy" id="as-status" style="color:var(--color-muted,#9aa3b2)">上传图片或点击“示例图”开始。</p>
+        <p class="as-copy" id="as-status" style="color:var(--color-muted)">上传图片或点击“示例图”开始。</p>
       </div>
     </div>
     <div class="fun-footer">

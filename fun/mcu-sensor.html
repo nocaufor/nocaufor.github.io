@@ -103,7 +103,431 @@ while True:
         if "blocked" in data:
             print("前方障碍" if data["blocked"] else "畅通")
     except json.JSONDecodeError:
-        print("raw:", line)</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>Arduino 安装 DHT 库（库管理器搜索 DHT sensor library），按注释接线后上传。</li><li>红外模块接 3.3V/5V、GND、OUT 到 D3，观察串口监视器输出。</li><li>上位机用 <code>pip install pyserial</code>，修改 COM 口后运行解析脚本。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>dht11-arduino</code>、<code>ir-obstacle-avoid</code>、<code>serial-json-protocol</code>（链接可替换为实际仓库地址）。</p></div></section>
+        print("raw:", line)</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>Arduino 安装 DHT 库（库管理器搜索 DHT sensor library），按注释接线后上传。</li><li>红外模块接 3.3V/5V、GND、OUT 到 D3，观察串口监视器输出。</li><li>上位机用 <code>pip install pyserial</code>，修改 COM 口后运行解析脚本。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-mcu-sensor">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行（上位机解析）</span><span class="deploy-badge info">固件需实机 + DHT 库</span><span class="deploy-badge">含示例日志与自测</span></div>
+  <div class="code-card"><p>运行环境：上位机 <code>host/parse_serial.py</code> 为 Python 3.8+ 标准库（<strong>不装 pyserial 也能跑自测与离线解析</strong>）；实际连板读串口需 <code>pip install pyserial</code>。固件为 Arduino / PlatformIO 工程，依赖 <code>DHT sensor library</code>（Adafruit）。</p><p>先用 <code>python host/parse_serial.py --self-test</code> 零配置验证协议解析，再用 <code>--demo</code> 跑通 <code>host/sample_log.txt</code>（6 帧，含 1 帧坏 CRC）的完整统计。</p></div>
+  <div class="deploy-tree">mcu-sensor/
+├── README.md              运行步骤、协议定义与配置项说明
+├── platformio.ini         PlatformIO 工程配置（含 lib_deps：DHT sensor library）
+├── requirements.txt       依赖清单（上位机仅标准库，可选 pyserial）
+├── src/
+│   └── main.cpp           完整固件：DHT11 温湿度 + 红外避障 + CRC8 串口协议
+└── host/
+    ├── parse_serial.py    上位机解析：帧校验、统计、CSV 导出，支持 --self-test / --demo
+    └── sample_log.txt     示例日志（6 帧：有效 4 / 传感器无效 1 / 坏 CRC 丢弃 1）</div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、串口协议帧格式、需先改的配置项与自测命令。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># mcu-sensor · 单片机传感器采集与上位机解析（可运行工程）
+
+DHT11 温湿度（单总线时序） + 红外避障（数字量输入） + **带 CRC8 校验的串口上报协议**，
+并配套一个可在电脑上直接跑通的上位机解析器（`--demo` 模式零第三方依赖）。
+
+## 目录结构
+
+```
+mcu-sensor/
+├── platformio.ini           PlatformIO 配置（依赖清单：DHT sensor library 等）
+├── requirements.txt         电脑端依赖清单（演示模式零依赖；真实串口需 pyserial）
+├── src/main.cpp             Arduino 完整固件：采集 + CRC8 + 串口上报
+└── host/
+    ├── parse_serial.py      上位机解析器：串口实时 / 日志回放 / 导出 CSV / 自检
+    └── sample_log.txt       示例串口日志（含 1 个坏校验帧，用于验证拒帧逻辑）
+```
+
+## 可直接运行（无需硬件）
+
+```bash
+cd host
+python parse_serial.py --self-test              # 断言自检（协议正则、CRC8、拒帧）
+python parse_serial.py --demo                   # 回放示例日志，打印统计
+python parse_serial.py --demo --csv out.csv     # 回放并导出 CSV
+```
+
+`--self-test` 通过即输出 `ALL CHECKS PASSED`；`--demo` 会报告 6 帧中 4 帧有效、1 帧为
+传感器读取失败（`nan`）、1 帧因 CRC 不符被拒——CRC8（多项式 0x07）在固件与上位机两端
+逐位一致，坏帧被正确拦截，不污染统计。
+
+## 需先改的配置项
+
+| 位置 | 配置项 | 说明 |
+|---|---|---|
+| `src/main.cpp` | `DHT_PIN` / `DHT_TYPE` | 数据引脚与传感器型号（DHT11 或 DHT22） |
+| `src/main.cpp` | `OBSTACLE_PIN` | 红外避障模块数字输出脚（默认 D3） |
+| `src/main.cpp` | `REPORT_INTERVAL_MS` | 上报周期，DHT11 建议 ≥ 2000ms |
+| `src/main.cpp` | `Serial.begin(115200)` | 波特率需与上位机 `--baud` 一致 |
+| `host/parse_serial.py` | `--port COM3 --baud 115200` | 真实串口名与波特率 |
+| `platformio.ini` | `board` | 默认 `uno`，换板需同步改引脚 |
+
+## 串口协议（固件与上位机共用）
+
+```
+TEMP=25.3,HUM=48.0,DIST=1*7F\r\n
+ ^温度℃   ^湿度%RH   ^0=无遮挡 1=遮挡
+                         ^^^^^ CRC8(poly=0x07, init=0x00) 覆盖 '*' 之前的全部字节
+```
+
+- 读取失败（DHT 超时）时输出 `TEMP=nan,HUM=nan,DIST=x*CRC`，上位机标记为无效采样；
+- 上位机对 CRC 不符、字段缺失、数值越界的帧一律丢弃并计数，不污染统计结果。
+
+## 依赖清单
+
+- 电脑端：Python 3.8+；`--demo/--self-test` 零依赖；真实串口读取需 `pyserial&gt;=3.5`（见 requirements.txt）
+- Arduino 端：PlatformIO 自动安装 `adafruit/DHT sensor library` 与 `adafruit/Adafruit Unified Sensor`（见 platformio.ini 的 lib_deps）
+
+## 需硬件的部分
+
+固件需实际开发板 + DHT11 + 红外模块；无硬件时可用 [Wokwi](https://wokwi.com/) 在线仿真 DHT22 与按钮替代红外模块。
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>platformio.ini</h3>
+    <p class="file-note">PlatformIO 工程配置：板型、框架与 lib_deps（DHT 库版本）。</p>
+    <div class="code-block"><span class="code-lang-badge">ini</span><pre data-file="platformio.ini"><code>; PlatformIO 工程配置 —— 依赖清单（lib_deps 即固件所需第三方库）
+; 用法：pio run -t upload  然后  pio device monitor -b 115200
+[env:uno]
+platform = atmelavr
+board = uno
+framework = arduino
+lib_deps =
+    adafruit/DHT sensor library@^1.4.6
+    adafruit/Adafruit Unified Sensor@^1.1.14
+monitor_speed = 115200
+
+; ESP32 版本（DHT 数据脚可任选 GPIO）
+; [env:esp32dev]
+; platform = espressif32
+; board = esp32dev
+; framework = arduino
+; lib_deps =
+;     adafruit/DHT sensor library@^1.4.6
+;     adafruit/Adafruit Unified Sensor@^1.1.14
+; monitor_speed = 115200
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：上位机仅标准库，连板读串口需 pyserial。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># mcu-sensor 电脑端依赖清单
+#   pip install -r requirements.txt
+#
+# Python &gt;= 3.8
+# --demo / --self-test 模式：零第三方依赖（仅标准库 argparse/csv/re/os/sys/math）
+# 真实串口读取（--port COM3 --baud 115200）需要：
+pyserial&gt;=3.5
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>src/main.cpp</h3>
+    <p class="file-note">完整固件：DHT11 采集 + 红外避障 + CRC8 打包串口上报（含 nan 帧语义）。</p>
+    <div class="code-block"><span class="code-lang-badge">cpp</span><pre data-file="src/main.cpp"><code>/* Arduino 完整固件：DHT11 温湿度 + 红外避障 + CRC8 串口上报
+ * 平台：Arduino UNO（AVR）/ ESP32；依赖：adafruit/DHT sensor library（见 platformio.ini）
+ * 输出协议（每行一帧，上位机见 host/parse_serial.py）：
+ *   TEMP=25.3,HUM=48.0,DIST=1*7F
+ * 需先改的配置项：DHT_PIN / DHT_TYPE / OBSTACLE_PIN / REPORT_INTERVAL_MS
+ */
+#include &lt;Arduino.h&gt;
+#include &lt;DHT.h&gt;
+
+/* ===== 配置区 ===== */
+#define DHT_PIN             2          /* DHT 数据脚 */
+#define DHT_TYPE            DHT11      /* 用 DHT22 时改为 DHT22 */
+#define OBSTACLE_PIN        3          /* 红外避障模块数字输出（低电平=遮挡） */
+#define OBSTACLE_ACTIVE_LOW true       /* 模块输出极性：多数模块遮挡时输出低电平 */
+#define REPORT_INTERVAL_MS  2000       /* 上报周期，DHT11 建议 &gt;= 2000ms */
+
+DHT dht(DHT_PIN, DHT_TYPE);
+
+/* ---------- CRC8：多项式 0x07、初值 0x00（与上位机 parse_serial.py 完全一致） ---------- */
+static uint8_t crc8(const char *data)
+{
+    uint8_t crc = 0x00;
+    while (*data) {
+        crc ^= (uint8_t)(*data++);
+        for (uint8_t i = 0; i &lt; 8; ++i)
+            crc = (crc &amp; 0x80) ? (uint8_t)((crc &lt;&lt; 1) ^ 0x07) : (uint8_t)(crc &lt;&lt; 1);
+    }
+    return crc;
+}
+
+/* 拼帧并补校验位后发送，例如 TEMP=25.3,HUM=48.0,DIST=1*7F */
+static void sendFrame(float t, float h, uint8_t dist)
+{
+    char body[64];
+    char tempStr[12], humStr[12];
+
+    if (isnan(t) || isnan(h)) {                 /* 读取失败：明确标记为 nan，便于上位机统计无效帧 */
+        strcpy(tempStr, "nan");
+        strcpy(humStr, "nan");
+    } else {
+        dtostrf(t, 0, 1, tempStr);
+        dtostrf(h, 0, 1, humStr);
+    }
+    snprintf(body, sizeof(body), "TEMP=%s,HUM=%s,DIST=%u", tempStr, humStr, (unsigned)dist);
+
+    Serial.print(body);
+    Serial.print('*');
+    if (crc8(body) &lt; 0x10) Serial.print('0');   /* 固定两位大写十六进制 */
+    Serial.println(crc8(body), HEX);
+}
+
+void setup()
+{
+    Serial.begin(115200);
+    pinMode(OBSTACLE_PIN, INPUT_PULLUP);
+    dht.begin();
+    delay(1500);                                /* DHT11 上电稳定时间 */
+    Serial.println(F("mcu-sensor ready (TEMP,HUM,DIST*CRC8)"));
+}
+
+void loop()
+{
+    float t = dht.readTemperature();
+    float h = dht.readHumidity();
+
+    int raw = digitalRead(OBSTACLE_PIN);
+    uint8_t dist = OBSTACLE_ACTIVE_LOW ? (raw == LOW ? 1 : 0) : (raw == HIGH ? 1 : 0);
+
+    sendFrame(t, h, dist);
+    delay(REPORT_INTERVAL_MS);
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>host/parse_serial.py</h3>
+    <p class="file-note">上位机解析器：帧校验、越界拒绝、统计与 CSV 导出，自带自测与演示。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="host/parse_serial.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""mcu-sensor 上位机解析器：串口实时读取 / 日志回放 / 导出 CSV。
+
+协议（与 src/main.cpp 固件端一致）：
+    TEMP=25.3,HUM=48.0,DIST=1*7F
+    TEMP=nan,HUM=nan,DIST=0*5C      ← 传感器读取失败时显式标记 nan
+
+校验：CRC8(poly=0x07, init=0x00) 覆盖 '*' 之前的全部字节；CRC 不符 / 字段缺失 /
+数值越界的帧一律丢弃并计数，不进入统计。
+
+用法：
+  python parse_serial.py --self-test                    断言自检（零依赖）
+  python parse_serial.py --demo                         回放 host/sample_log.txt
+  python parse_serial.py --demo --csv out.csv           回放并导出 CSV
+  python parse_serial.py --port COM3 --baud 115200      真实串口（需 pyserial）
+"""
+import argparse
+import csv
+import math
+import os
+import re
+import sys
+
+FRAME_RE = re.compile(
+    r'^TEMP=(?P&lt;t&gt;-?\d+\.\d|nan),HUM=(?P&lt;h&gt;-?\d+\.\d|nan),DIST=(?P&lt;d&gt;[01])\*(?P&lt;crc&gt;[0-9A-Fa-f]{2})$'
+)
+T_MIN, T_MAX = -40.0, 85.0      # DHT11/22 量程
+H_MIN, H_MAX = 0.0, 100.0
+
+
+def crc8(s):
+    """CRC8：多项式 0x07、初值 0x00，与固件 crc8() 逐位一致。"""
+    crc = 0x00
+    for ch in s.encode('ascii'):
+        crc ^= ch
+        for _ in range(8):
+            crc = ((crc &lt;&lt; 1) ^ 0x07) &amp; 0xFF if (crc &amp; 0x80) else (crc &lt;&lt; 1) &amp; 0xFF
+    return crc
+
+
+def parse_line(raw):
+    """解析一行；返回 (record, None) 或 (None, 丢弃原因)。"""
+    line = raw.strip()
+    if not line:
+        return None, 'empty'
+    m = FRAME_RE.match(line)
+    if not m:
+        return None, 'format'
+
+    body = line.rsplit('*', 1)[0]
+    if crc8(body) != int(m.group('crc'), 16):
+        return None, 'crc'
+
+    t_raw, h_raw = m.group('t'), m.group('h')
+    valid = not (t_raw == 'nan' or h_raw == 'nan')
+    t = None if t_raw == 'nan' else float(t_raw)
+    h = None if h_raw == 'nan' else float(h_raw)
+
+    if valid and not (T_MIN &lt;= t &lt;= T_MAX):
+        return None, 'range_temp'
+    if valid and not (H_MIN &lt;= h &lt;= H_MAX):
+        return None, 'range_hum'
+
+    return {'valid': valid, 'temp': t, 'hum': h, 'dist': int(m.group('d'))}, None
+
+
+def summarize(records, dropped):
+    ok = [r for r in records if r['valid']]
+    summary = {
+        'frames': len(records) + sum(dropped.values()),
+        'valid': len(ok),
+        'invalid_nan': len(records) - len(ok),
+        'dropped': dict(dropped),
+        'blocked': sum(1 for r in ok if r['dist'] == 1),
+    }
+    if ok:
+        summary['temp_avg'] = round(sum(r['temp'] for r in ok) / len(ok), 2)
+        summary['hum_avg'] = round(sum(r['hum'] for r in ok) / len(ok), 2)
+        summary['temp_range'] = [min(r['temp'] for r in ok), max(r['temp'] for r in ok)]
+    return summary
+
+
+def run_lines(lines, csv_path=''):
+    records, dropped, reasons = [], {}, []
+    for raw in lines:
+        rec, why = parse_line(raw)
+        if rec is None:
+            dropped[why] = dropped.get(why, 0) + 1
+            reasons.append((raw.strip()[:60], why))
+        else:
+            records.append(rec)
+    s = summarize(records, dropped)
+    print('帧总数 %d | 有效 %d | 传感器无效(nan) %d | 丢弃 %d %s' % (
+        s['frames'], s['valid'], s['invalid_nan'],
+        sum(s['dropped'].values()), s['dropped'] or ''))
+    if s['valid']:
+        print('有效样本：平均温度 %.2f℃（%s~%s）、平均湿度 %.2f%%RH、遮挡次数 %d' % (
+            s['temp_avg'], s['temp_range'][0], s['temp_range'][1], s['hum_avg'], s['blocked']))
+    for raw, why in reasons:
+        print('  [丢弃/%s] %s' % (why, raw))
+    if csv_path:
+        with open(csv_path, 'w', newline='', encoding='utf-8-sig') as f:
+            w = csv.writer(f)
+            w.writerow(['index', 'valid', 'temp_c', 'hum_rh', 'obstacle'])
+            for i, r in enumerate(records):
+                w.writerow([i, int(r['valid']), '' if r['temp'] is None else r['temp'],
+                            '' if r['hum'] is None else r['hum'], r['dist']])
+        print('已导出 CSV -&gt; %s（%d 行）' % (csv_path, len(records)))
+    return s
+
+
+def self_test():
+    ok = True
+
+    def check(name, cond, extra=''):
+        nonlocal ok
+        print('  [%s] %s %s' % ('OK' if cond else 'FAIL', name, extra if not cond else ''))
+        if not cond:
+            ok = False
+
+    good_body = 'TEMP=25.3,HUM=48.0,DIST=1'
+    good = '%s*%02X' % (good_body, crc8(good_body))
+    rec, why = parse_line(good)
+    check('合法帧解析', rec is not None and why is None, why)
+    check('字段正确', rec and rec['temp'] == 25.3 and rec['hum'] == 48.0 and rec['dist'] == 1)
+
+    bad = '%s*%02X' % (good_body, (crc8(good_body) ^ 0xFF) &amp; 0xFF)
+    rec2, why2 = parse_line(bad)
+    check('坏 CRC 被拒', rec2 is None and why2 == 'crc', why2)
+
+    rec3, why3 = parse_line('TEMP=25.3,HUM=48.0,DIST=1')
+    check('缺校验位被拒', rec3 is None and why3 == 'format', why3)
+
+    body4 = 'TEMP=25.3,HUM=150.0,DIST=0'
+    rec4, why4 = parse_line('%s*%02X' % (body4, crc8(body4)))
+    check('湿度越界被拒', rec4 is None and why4 == 'range_hum', why4)
+
+    body5 = 'TEMP=nan,HUM=nan,DIST=0'
+    rec5, why5 = parse_line('%s*%02X' % (body5, crc8(body5)))
+    check('nan 帧保留但标记无效', rec5 is not None and rec5['valid'] is False, why5)
+
+    # 与示例日志联动：6 帧中 4 帧有效、1 帧 nan 无效帧、1 帧因 CRC 被拒
+    log = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_log.txt')
+    if os.path.exists(log):
+        with open(log, encoding='utf-8') as f:
+            s = run_lines(f)
+        check('sample_log.txt 统计（有效 4 / nan 1 / 丢弃 1）',
+              s['valid'] == 4 and s['invalid_nan'] == 1 and sum(s['dropped'].values()) == 1, s)
+    else:
+        print('  [SKIP] 未找到 sample_log.txt')
+
+    print('ALL CHECKS PASSED' if ok else 'SELF TEST FAILED')
+    return 0 if ok else 1
+
+
+def read_serial(port, baud, seconds):
+    try:
+        import serial
+    except ImportError:
+        sys.exit('真实串口读取需安装 pyserial：pip install pyserial（--demo / --self-test 无需依赖）')
+    ser = serial.Serial(port, baud, timeout=1)
+    print('已打开 %s @ %d，读取 %s 秒（Ctrl+C 提前结束）' % (port, baud, seconds or '∞'))
+    import time
+    t0 = time.time()
+    try:
+        while True:
+            yield ser.readline().decode('ascii', 'ignore')
+            if seconds and time.time() - t0 &gt; seconds:
+                break
+    finally:
+        ser.close()
+
+
+def main():
+    ap = argparse.ArgumentParser(description='mcu-sensor 上位机解析器')
+    ap.add_argument('--self-test', action='store_true')
+    ap.add_argument('--demo', action='store_true', help='回放 host/sample_log.txt')
+    ap.add_argument('--log', default='', help='自定义日志文件路径')
+    ap.add_argument('--csv', default='', help='导出 CSV 路径')
+    ap.add_argument('--port', default='', help='串口名，如 COM3')
+    ap.add_argument('--baud', type=int, default=115200)
+    ap.add_argument('--seconds', type=int, default=15)
+    a = ap.parse_args()
+
+    if a.self_test:
+        return self_test()
+
+    if a.port:
+        run_lines(read_serial(a.port, a.baud, a.seconds), a.csv)
+        return 0
+
+    path = a.log or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_log.txt')
+    if not os.path.exists(path):
+        sys.exit('日志不存在：%s（可用 --port 读取真实串口，或先生成示例日志）' % path)
+    with open(path, encoding='utf-8') as f:
+        run_lines(f, a.csv)
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>host/sample_log.txt</h3>
+    <p class="file-note">示例日志：供离线验证解析与统计（无需硬件）。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="host/sample_log.txt"><code>TEMP=25.3,HUM=48.0,DIST=0*FF
+TEMP=25.4,HUM=47.8,DIST=0*1B
+TEMP=nan,HUM=nan,DIST=0*31
+TEMP=25.6,HUM=48.2,DIST=1*E8
+TEMP=25.7,HUM=48.5,DIST=1*9F
+TEMP=25.8,HUM=48.6,DIST=0*08
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>可直接运行 / 需先改的配置项：</strong></p><ul><li><strong>可直接运行</strong>：<code>python host/parse_serial.py --self-test</code>（零依赖）；<code>python host/parse_serial.py --demo</code> 解析示例日志并打印统计。</li><li><strong>需先改</strong>·串口参数：<code>parse_serial.py</code> 的 <code>--port COM3 --baud 115200</code> 换成你的端口（Windows 设备管理器可查）。</li><li><strong>需先改</strong>·固件引脚：<code>src/main.cpp</code> 的 <code>DHT_PIN</code> / <code>IR_PIN</code> 与实际接线一致；DHT 型号宏 <code>DHT_TYPE</code> 默认 DHT11。</li><li><strong>需先改</strong>·告警阈值：<code>parse_serial.py</code> 顶部 <code>TEMP_MAX</code> / <code>HUM_MAX</code> / <code>DIST_ALERT_CM</code> 按场景调整。</li><li>连板读取需 <code>pip install pyserial</code>；仅离线分析无需安装。</li></ul></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-mcu-sensor">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section>
+<section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://github.com/adafruit/DHT-sensor-library" target="_blank" rel="noopener">Adafruit DHT sensor library（GitHub 官方仓库）</a>
+<a href="https://learn.adafruit.com/dht" target="_blank" rel="noopener">Adafruit 官方教程 · DHT11 / DHT22 接线与用法</a>
+<a href="https://pyserial.readthedocs.io/en/latest/pyserial_api.html" target="_blank" rel="noopener">pyserial 官方文档 · Serial API</a>
+<a href="https://docs.platformio.org/en/latest/projectconf/sections/env/options/library/lib_deps.html" target="_blank" rel="noopener">PlatformIO 官方文档 · lib_deps 依赖声明</a>
+<a href="https://docs.arduino.cc/language-reference/en/functions/communication/serial/" target="_blank" rel="noopener">Arduino 官方文档 · Serial 串口通信</a>
+</div></div></section>
+
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -126,6 +550,7 @@ while True:
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/mcu-sensor.js"></script>
 </body>
 </html>

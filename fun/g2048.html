@@ -43,15 +43,16 @@
     <div class="fun-intro">
       <h1>2048</h1>
       <p>方向键合并相同数字，合成 2048 即通关。</p>
+          <p>用方向键 / WASD 或触屏滑动移动方块，相同数字相撞即合并，目标是合成 2048；随时点「重新开始」重开一局。</p>
     </div>
     <div class="fun-box">
       <style>
         .g-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
         .g-panel{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center}
-        .g-score{font-size:1rem;font-weight:700;background:var(--color-card,#1e1e24);padding:6px 14px;border-radius:999px}
-        .g-board{position:relative;width:min(420px,92vw);height:min(420px,92vw);background:var(--color-bg,#121216);border-radius:12px;padding:10px;touch-action:none}
-        .g-cell{position:absolute;width:calc((100% - 50px)/4);height:calc((100% - 50px)/4);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;border-radius:8px;background:var(--color-card,#1e1e24);color:var(--color-text,#e8e8ea);transition:all .12s}
-        .g-cell.t2{background:#2c313a}.g-cell.t4{background:#39404d}.g-cell.t8{background:#4a5a7a;color:#fff}.g-cell.t16{background:#7aa2f7;color:#fff}.g-cell.t32{background:#5d8ee6;color:#fff}.g-cell.t64{background:#3d8bff;color:#fff}.g-cell.t128{background:#e5c07b;color:#222}.g-cell.t256{background:#d19a66;color:#222}.g-cell.t512{background:#e06c75;color:#fff}.g-cell.t1024{background:#c678dd;color:#fff}.g-cell.t2048{background:#98c379;color:#222;font-size:1.4rem}
+        .g-score{font-size:1rem;font-weight:700;background:var(--color-card);padding:6px 14px;border-radius:999px}
+        .g-board{position:relative;width:min(420px,92vw);height:min(420px,92vw);background:var(--color-bg);border-radius:12px;padding:10px;touch-action:none}
+        .g-cell{position:absolute;width:calc((100% - 50px)/4);height:calc((100% - 50px)/4);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;border-radius:8px;background:var(--color-card);color:var(--color-text);transition:all .12s}
+        .g-cell.t2{background:#2c313a;color:#e8eaed}.g-cell.t4{background:#39404d;color:#e8eaed}.g-cell.t8{background:#4a5a7a;color:#fff}.g-cell.t16{background:#7aa2f7;color:#fff}.g-cell.t32{background:#5d8ee6;color:#fff}.g-cell.t64{background:#3d8bff;color:#fff}.g-cell.t128{background:#e5c07b;color:#222}.g-cell.t256{background:#d19a66;color:#222}.g-cell.t512{background:#e06c75;color:#fff}.g-cell.t1024{background:#c678dd;color:#fff}.g-cell.t2048{background:#98c379;color:#222;font-size:1.4rem}
         .g-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(0,0,0,.6);border-radius:12px;font-size:1.6rem;font-weight:800}
         .g-hint{font-size:0.8rem;opacity:.75;text-align:center}
       </style>

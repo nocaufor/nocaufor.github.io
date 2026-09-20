@@ -98,7 +98,250 @@ function drawPixel(ctx, sprite, px, py, cell) {
       if (sprite[y][x]) ctx.fillRect(px + x * cell, py + y * cell, cell, cell);
 }</code></pre></div></section>
     </div>
-    <div class="fun-footer">
+<section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-pixel-pet">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">纯前端 · 零依赖</span><span class="deploy-badge info">状态每秒衰减</span></div>
+  <div class="code-card"><p>把演示区的「像素电子宠物」抽成独立工程：状态机（喂食 / 玩耍 / 睡觉）+ 按秒衰减 + 像素风渲染，状态机是纯函数，可在命令行自测。<br><strong>依赖清单</strong>：零第三方依赖（Canvas 2D + localStorage），无需 npm install。</p></div>
+  <div class="deploy-tree">pixel-pet/
+├─ index.html      画布 + 交互按钮 + 状态条
+├─ app.js          状态机 / 衰减 / 像素渲染
+├─ styles.css      样式（跟随系统深浅色）
+└─ README.md       运行方式与扩展点
+</div>
+  <div class="deploy-file">
+    <h3>index.html</h3>
+    <p class="file-note">画布 + 三个交互按钮 + 状态条</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="index.html"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;像素电子宠物 · 独立工程版&lt;/title&gt;
+  &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;main class="wrap"&gt;
+    &lt;h1&gt;像素电子宠物&lt;/h1&gt;
+    &lt;p class="sub"&gt;喂食 / 玩耍 / 睡觉三状态，饱食度、快乐值与精力实时衰减。&lt;/p&gt;
+    &lt;section class="panel"&gt;
+      &lt;canvas id="pet" height="220"&gt;&lt;/canvas&gt;
+      &lt;div class="row" style="margin-top:14px"&gt;
+        &lt;button id="feed" type="button" class="btn"&gt;喂食&lt;/button&gt;
+        &lt;button id="play" type="button" class="btn ghost"&gt;玩耍&lt;/button&gt;
+        &lt;button id="sleep" type="button" class="btn ghost"&gt;睡觉 / 唤醒&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class="bars" id="bars"&gt;&lt;/div&gt;
+      &lt;p class="msg" id="say"&gt;它正看着你。&lt;/p&gt;
+    &lt;/section&gt;
+  &lt;/main&gt;
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.js</h3>
+    <p class="file-note">状态机 / 衰减 / 像素渲染（action 可测）</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="app.js"><code>/* app.js —— 像素电子宠物：状态机 + 衰减 + 渲染（状态机为纯逻辑，node 可测） */
+var DECAY = { full: 0.55, happy: 0.4, energy: 0.3 };
+
+function createPet() { return { full: 80, happy: 60, energy: 70, sleeping: false }; }
+
+/* clamp100：数值收敛到 [0,100] */
+function clamp100(v) { return Math.max(0, Math.min(100, v)); }
+
+/* action：执行一次交互，返回 { pet, msg }（纯函数，便于自测） */
+function action(pet, kind) {
+  var p = { full: pet.full, happy: pet.happy, energy: pet.energy, sleeping: pet.sleeping };
+  var msg = "";
+  if (kind === "feed") {
+    if (p.full &gt;= 98) { msg = "它吃饱了，扭头不理你。"; }
+    else { p.full = clamp100(p.full + 18); p.happy = clamp100(p.happy + 3); msg = "吃得很香。"; }
+  } else if (kind === "play") {
+    if (p.sleeping) { msg = "它睡着了，别吵。"; }
+    else if (p.energy &lt; 12) { msg = "太累了，玩不动。"; }
+    else { p.happy = clamp100(p.happy + 16); p.energy = clamp100(p.energy - 14); p.full = clamp100(p.full - 6); msg = "玩得很开心。"; }
+  } else if (kind === "sleep") {
+    p.sleeping = !p.sleeping;
+    msg = p.sleeping ? "它蜷起来睡了。" : "它醒了，伸了个懒腰。";
+  }
+  return { pet: p, msg: msg };
+}
+
+/* tickDecay：按秒衰减 */
+function tickDecay(pet, dt) {
+  var rate = pet.sleeping ? 0.35 : 1;
+  if (pet.sleeping) pet.energy = clamp100(pet.energy + 0.9 * dt);
+  else { pet.full = clamp100(pet.full - DECAY.full * dt); pet.happy = clamp100(pet.happy - DECAY.happy * dt); pet.energy = clamp100(pet.energy - DECAY.energy * dt); }
+  if (pet.full &lt;= 0 || pet.happy &lt;= 0) pet.happy = clamp100(pet.happy - 1.5 * dt * rate);
+  return pet;
+}
+
+if (typeof module !== "undefined" &amp;&amp; module.exports) {
+  module.exports = { createPet: createPet, action: action, tickDecay: tickDecay, clamp100: clamp100 };
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    var canvas = document.getElementById("pet"), ctx = canvas.getContext("2d");
+    var barsEl = document.getElementById("bars"), sayEl = document.getElementById("say");
+    var pet = createPet(), last = 0, blink = 0;
+
+    ["full", "happy", "energy"].forEach(function (k) {
+      var row = document.createElement("div");
+      row.className = "bar";
+      row.innerHTML = "&lt;span&gt;" + (k === "full" ? "饱食" : k === "happy" ? "快乐" : "精力") + "&lt;/span&gt;&lt;span&gt;&lt;i id='bar-" + k + "'&gt;&lt;/i&gt;&lt;/span&gt;&lt;span id='val-" + k + "'&gt;0&lt;/span&gt;";
+      barsEl.appendChild(row);
+    });
+
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = canvas.clientWidth * dpr;
+      canvas.height = 220 * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+    }
+
+    function draw() {
+      var W = canvas.clientWidth, H = 220;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = pet.sleeping ? "#0d1420" : "#121a14";
+      ctx.fillRect(0, 0, W, H);
+      var cx = W / 2, cy = H / 2 + (pet.sleeping ? 12 : 0);
+      ctx.fillStyle = pet.happy &gt; 40 ? "#8fd6a8" : "#c9a06a";
+      ctx.fillRect(cx - 34, cy - 30, 68, 52);
+      ctx.fillRect(cx - 46, cy - 14, 12, 20);
+      ctx.fillRect(cx + 34, cy - 14, 12, 20);
+      ctx.fillRect(cx - 20, cy + 22, 14, 8);
+      ctx.fillRect(cx + 6, cy + 22, 14, 8);
+      ctx.fillStyle = "#0d1117";
+      if (pet.sleeping || blink % 100 &lt; 12) {
+        ctx.fillRect(cx - 18, cy - 10, 12, 3);
+        ctx.fillRect(cx + 6, cy - 10, 12, 3);
+      } else {
+        ctx.fillRect(cx - 18, cy - 14, 12, 12);
+        ctx.fillRect(cx + 6, cy - 14, 12, 12);
+      }
+      if (!pet.sleeping &amp;&amp; pet.happy &gt; 55) {
+        ctx.fillStyle = "#f7768e";
+        ctx.fillRect(cx - 26, cy + 4, 10, 2);
+        ctx.fillRect(cx + 16, cy + 4, 10, 2);
+      }
+      if (pet.sleeping) {
+        ctx.fillStyle = "rgba(160,190,255,.8)";
+        ctx.font = "13px system-ui";
+        ctx.fillText("Z", cx + 42, cy - 24);
+        ctx.fillText("z", cx + 54, cy - 38);
+      }
+    }
+
+    function paint() {
+      var map = { full: "bar-full", happy: "bar-happy", energy: "bar-energy" };
+      Object.keys(map).forEach(function (k) {
+        document.getElementById(map[k]).style.width = pet[k] + "%";
+        document.getElementById("val-" + k).textContent = Math.round(pet[k]);
+      });
+      draw();
+    }
+
+    function loop(now) {
+      var dt = last ? Math.min((now - last) / 1000, 1) : 0;
+      last = now;
+      tickDecay(pet, dt);
+      blink++;
+      paint();
+      requestAnimationFrame(loop);
+    }
+
+    ["feed", "play", "sleep"].forEach(function (kind) {
+      document.getElementById(kind).addEventListener("click", function () {
+        var r = action(pet, kind);
+        pet = r.pet;
+        sayEl.textContent = r.msg;
+        paint();
+      });
+    });
+    window.addEventListener("resize", function () { resize(); draw(); });
+    resize();
+    requestAnimationFrame(loop);
+  });
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>styles.css</h3>
+    <p class="file-note">样式：跟随系统深浅色</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="styles.css"><code>:root {
+  --bg: #0e1014; --panel: #171a20; --ink: #e8ecf1; --muted: #9aa4b2; --line: #262b33; --brand: #6fb3a8;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f6f7f8; --panel: #ffffff; --ink: #1a1d21; --muted: #5b636e; --line: #e3e6ea; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 6px; }
+h2 { font-size: 1.05rem; margin: 22px 0 10px; }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--brand);
+  background: var(--brand); color: #0b0f12; cursor: pointer; font-size: .92rem;
+}
+.btn.ghost { background: transparent; color: var(--brand); }
+.msg { color: var(--muted); margin: 12px 0 0; font-size: .92rem; }
+.bars { display: grid; gap: 6px; margin-top: 10px; }
+.bar { display: grid; grid-template-columns: 64px 1fr 44px; gap: 8px; align-items: center; font-size: .88rem; }
+.bar i { display: block; height: 8px; border-radius: 6px; background: var(--brand); }
+.bar span:first-child { color: var(--muted); }
+input, select {
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); font: inherit;
+}
+textarea { width: 100%; min-height: 90px; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; }
+canvas { width: 100%; display: block; border-radius: 10px; }
+.chat { max-height: 260px; overflow: auto; display: grid; gap: 10px; }
+.chat .me, .chat .pet { padding: 9px 12px; border-radius: 12px; max-width: 82%; font-size: .93rem; }
+.chat .me { background: rgba(111,179,168,.16); justify-self: end; }
+.chat .pet { background: rgba(255,255,255,.06); justify-self: start; }
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行方式与扩展点</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 像素电子宠物（独立可运行工程）
+
+作品站 fun 区「像素电子宠物」的独立工程版：纯前端、零依赖。
+
+## 文件
+- `index.html`：画布 + 三个交互按钮 + 状态条
+- `app.js`：状态机（喂食 / 玩耍 / 睡觉）、按秒衰减、像素渲染
+- `styles.css`：样式
+
+## 运行
+1. 双击 `index.html`，点按钮观察状态变化与衰减
+2. 逻辑自测：`node -e "const m=require('./app.js');const r=m.action(m.createPet(),'play');console.log(r.pet.happy&gt;60, r.msg)"` → 期望 `true 玩得很开心。`
+
+## 扩展点
+- 存档：把 `pet` 序列化到 localStorage，页面加载时恢复
+- 加情绪动画：按 `happy` 与 `energy` 阈值切换多套精灵帧
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行方式</h3><ol><li>新建一个目录，把上面全部文件按文件名分别保存（用「一键复制整份工程」可一次拿全）。</li><li>前端部分：直接双击 <code>index.html</code> 即可运行；若浏览器限制本地文件读取，执行 <code>python -m http.server 8000</code> 后访问 <code>http://localhost:8000/</code>。</li><li>逻辑自测：各文件 <code>README.md</code> 中给出了对应的 Node / Python 自测命令（均为真实可跑的最小用例）。</li></ol><p class="file-note">标注：可直接运行、无需构建；要改造只需动 <code>app.js</code> 顶部常量与 <code>styles.css</code> 里的变量。</p></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-pixel-pet">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现涉及的官方文档（可直接访问）：</p>
+<div class="src-links">
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas" target="_blank" rel="noopener">MDN · Canvas 像素操作</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Window/localStorage" target="_blank" rel="noopener">MDN · localStorage（做存档用）</a>
+</div></div></section>    <div class="fun-footer">
       <a href="index.html" class="btn btn-outline">← 返回代码开发合集</a>
     </div>
   </main>
@@ -116,6 +359,7 @@ function drawPixel(ctx, sprite, px, py, cell) {
     </div>
   </footer>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/pixel-pet.js"></script>
 </body>
 </html>

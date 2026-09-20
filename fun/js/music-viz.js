@@ -119,4 +119,6 @@
 
   window.addEventListener("resize", resize);
   resize();
+  // 初始按钮文案与当前模式（freq）保持一致
+  modeBtn.textContent = mode === "freq" ? "切换：波形" : "切换：频谱";
 })();

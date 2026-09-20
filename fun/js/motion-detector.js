@@ -11,7 +11,7 @@
   var demoState = { balls: [], t: 0, t0: 0 };
   var lastFire = 0;
 
-  function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#e06c75" : "var(--color-muted,#9aa3b2)"; }
+  function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#e06c75" : "var(--color-muted)"; }
   function grayFrom(img) {
     var n = img.data.length, out = new Uint8Array(n / 4);
     for (var i = 0, j = 0; i < n; i += 4, j++) {

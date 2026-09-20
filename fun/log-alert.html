@@ -54,6 +54,41 @@
           <span class="tag">来源：GitHub 参考</span>
         </div>
       </div>
+<section class="code-section"><h2>在线演示</h2>
+<div class="demo-panel" id="la-demo">
+  <div class="demo-grid">
+    <div class="demo-field" style="grid-column:1/-1">
+      <label for="la-text">日志内容（Nginx / Apache 访问日志，或含 ERROR / WARN 的应用日志，每行一条）</label>
+      <textarea id="la-text" class="demo-input" rows="8" placeholder="粘贴日志文本，每行一条记录……"></textarea>
+    </div>
+    <div class="demo-field">
+      <label for="la-thr">告警阈值：单分钟错误数 ≥</label>
+      <input id="la-thr" class="demo-input" type="number" min="1" step="1" value="3" />
+    </div>
+    <div class="demo-field">
+      <label for="la-win">统计窗口</label>
+      <select id="la-win" class="demo-input">
+        <option value="60">按分钟聚合（60 秒）</option>
+        <option value="300">按 5 分钟聚合（300 秒）</option>
+      </select>
+    </div>
+  </div>
+  <div class="demo-actions">
+    <button type="button" class="btn" id="la-run">分析日志</button>
+    <button type="button" class="btn btn-outline" id="la-sample">载入示例日志</button>
+    <button type="button" class="btn btn-outline" id="la-clear">清空</button>
+  </div>
+  <div class="demo-kpis" style="margin-top:16px">
+    <div class="demo-kpi"><b id="la-k-lines">0</b><span>有效日志行</span></div>
+    <div class="demo-kpi"><b id="la-k-alerts">0</b><span>触发告警窗口</span></div>
+    <div class="demo-kpi"><b id="la-k-err">0</b><span>ERROR / 5xx 条数</span></div>
+    <div class="demo-kpi"><b id="la-k-rate">0%</b><span>错误占比</span></div>
+  </div>
+  <div class="demo-output" id="la-out"></div>
+  <div id="la-tblwrap" style="display:none;margin-top:14px"></div>
+  <p class="demo-status" id="la-status">等待操作：粘贴日志或点击“载入示例日志”，再点“分析日志”。</p>
+</div>
+</section>
 <section class="code-section"><h2>项目简介</h2><div class="code-card"><p>服务日志里藏着最真实的运行状态。本页实现一个<strong>日志监控告警器</strong>：持续 tail 日志文件，用正则提取错误码与耗时指标，窗口内错误数或平均耗时超过阈值时输出告警并生成摘要，可对接企业微信 / 钉钉 webhook。</p></div></section><section class="code-section"><h2>代码示例：tail 与指标提取</h2><div class="code-block"><span class="code-lang-badge">py</span><pre><code>import re
 import time
 from collections import deque
@@ -97,7 +132,320 @@ def run(log_path: Path):
             latencies.clear()
 
 def alert(msg: str) -&gt; None:
-    print(f"[ALERT] {time.strftime('%H:%M:%S')} {msg}")  # 可替换为 webhook 推送</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>按你的日志格式调整 <code>ERROR_RE</code> 与 <code>LATENCY_RE</code> 正则，阈值常量按需修改。</li><li>运行 <code>python log_alert.py /var/log/app/app.log</code> 即可实时监控。</li><li>把 <code>alert()</code> 替换为 requests 调用企业微信 / 钉钉机器人 webhook，实现移动端告警。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>python-tail-monitor</code>、<code>log-watcher-alert</code>（链接可替换为实际仓库地址）。</p></div></section>
+    print(f"[ALERT] {time.strftime('%H:%M:%S')} {msg}")  # 可替换为 webhook 推送</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>按你的日志格式调整 <code>ERROR_RE</code> 与 <code>LATENCY_RE</code> 正则，阈值常量按需修改。</li><li>运行 <code>python log_alert.py /var/log/app/app.log</code> 即可实时监控。</li><li>把 <code>alert()</code> 替换为 requests 调用企业微信 / 钉钉机器人 webhook，实现移动端告警。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-log-alert">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">零第三方依赖</span><span class="deploy-badge info">Python 3.8+</span></div>
+  <div class="code-card"><p>完整工程（非片段）：解析、聚合、告警三段逻辑集中在 <code>log_alert.py</code>，页面上的在线演示与它使用同一套判定规则（级别词优先、再退回状态码），因此演示里看到的结论就是命令行会得到的结论。</p></div>
+  <div class="deploy-tree">log-alert/<br>&nbsp;&nbsp;├── log_alert.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 解析 / 聚合 / 告警 + CLI<br>&nbsp;&nbsp;├── test_log_alert.py&nbsp;# 最小用例回归<br>&nbsp;&nbsp;├── requirements.txt<br>&nbsp;&nbsp;└── README.md</div>
+  <div class="deploy-file">
+    <h3>log_alert.py</h3>
+    <p class="file-note">核心实现：parse / level_of / bucketize / run_report，含 --selftest。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="log_alert.py"><code>#!/usr/bin/env python3
+"""日志指标提取与阈值告警（零第三方依赖，仅标准库）
+
+用法：
+    python log_alert.py access.log --threshold 3 --window 60
+    python log_alert.py app.log --json
+    tail -n 500 access.log | python log_alert.py -
+    python log_alert.py --selftest
+"""
+import argparse
+import json
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+
+ACCESS = re.compile(r'^(\S+) \S+ \S+ \[([^\]]+)\] "(\w+) ([^"]*?) [^"]*" (\d{3}) (\d+|-)')
+APP_TIME = re.compile(r"^(\d{2}/\w{3}/\d{4})\s+([\d:]+)")
+ERR_PAT = re.compile(r"\bERROR\b|\bFATAL\b|Exception|Traceback")
+WARN_PAT = re.compile(r"\bWARN(?:ING)?\b")
+
+
+def level_of(status, line):
+    """级别判定顺序：显式级别词 &gt; HTTP 状态码。避免把 "GET /api/errors 200" 误判为错误。"""
+    if ERR_PAT.search(line):
+        return "ERROR"
+    if WARN_PAT.search(line):
+        return "WARN"
+    if status is not None:
+        return "ERROR" if status &gt;= 500 else ("WARN" if status &gt;= 400 else "INFO")
+    return "INFO"
+
+
+TIME_RE = re.compile(r"(?<!\d)(\d{1,2}):(\d{2})(?::(\d{2}))?")
+
+
+def _normalize(ts):
+    """剥掉日期前缀：否则 "18/Sep/2026:13:55:02" 会被读成 "26:13"。"""
+    return re.sub(r"\d{1,2}/[A-Za-z]{3}/\d{4}:?", " ", ts)
+
+
+def _second_of(ts):
+    m = TIME_RE.search(_normalize(ts))
+    if not m:
+        return None
+    return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3) or 0)
+
+
+def _stamp(ts):
+    """规范化后的 HH:MM:SS，兼容 access 的 [18/Sep/2026:13:55:02 +0800] 与 app 的 18/Sep/2026 13:57:31"""
+    norm = _normalize(ts)
+    m = re.search(r"(\d{2}:\d{2}:\d{2})", norm)
+    if m:
+        return m.group(1)
+    m2 = TIME_RE.search(norm)
+    return ("%s:%s" % (m2.group(1).zfill(2), m2.group(2))) if m2 else ts.strip()
+
+
+def parse(text, win=60):
+    rows, bad = [], 0
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        m = ACCESS.match(line)
+        if m:
+            ip, ts, method, path, status, size = m.group(1), m.group(2), m.group(3), m.group(4), int(m.group(5)), m.group(6)
+        else:
+            t = APP_TIME.match(line)
+            if not t:
+                bad += 1
+                continue
+            ip, ts, method, path, status, size = "-", t.group(2), "-", "-", None, "-"
+        sec = _second_of(ts)
+        rows.append({
+            "ip": ip, "ts": _stamp(ts), "method": method, "path": path.split("?")[0],
+            "status": status, "size": size, "level": level_of(status, line),
+            "slot": None if sec is None else sec // win * win, "line": line,
+        })
+    return {"rows": rows, "skipped": bad}
+
+
+def bucketize(rows, win=60):
+    buckets = {}
+    for r in rows:
+        key = r["slot"]
+        b = buckets.setdefault(key, {"slot": key, "total": 0, "error": 0, "warn": 0})
+        b["total"] += 1
+        if r["level"] == "ERROR":
+            b["error"] += 1
+        elif r["level"] == "WARN":
+            b["warn"] += 1
+    return [buckets[k] for k in sorted(buckets, key=lambda x: (x is None, x))]
+
+
+def top_n(rows, field, n=3, only_error=True):
+    counts = {}
+    for r in rows:
+        if only_error and r["level"] != "ERROR":
+            continue
+        counts[r[field]] = counts.get(r[field], 0) + 1
+    return sorted(counts.items(), key=lambda kv: -kv[1])[:n]
+
+
+def fmt_slot(slot):
+    if slot is None:
+        return "未知时间段"
+    return "%02d:%02d" % (slot // 3600 % 24, slot // 60 % 60)
+
+
+def run_report(text, threshold=3, win=60):
+    p = parse(text, win)
+    rows = p["rows"]
+    buckets = bucketize(rows, win)
+    alerts = [b for b in buckets if b["error"] &gt;= threshold]
+    errors = [r for r in rows if r["level"] == "ERROR"]
+    return {
+        "lines": len(rows),
+        "skipped": p["skipped"],
+        "errors": len(errors),
+        "warns": len([r for r in rows if r["level"] == "WARN"]),
+        "error_rate": round(len(errors) / len(rows) * 100, 2) if rows else 0.0,
+        "threshold": threshold,
+        "window_seconds": win,
+        "buckets": [{"slot": fmt_slot(b["slot"]), "total": b["total"], "error": b["error"],
+                     "warn": b["warn"], "alert": b["error"] &gt;= threshold} for b in buckets],
+        "alerts": [{"slot": fmt_slot(b["slot"]), "error": b["error"]} for b in alerts],
+        "top_error_ip": [{"key": k, "count": c} for k, c in top_n(rows, "ip")],
+        "top_error_path": [{"key": k, "count": c} for k, c in top_n(rows, "path")],
+    }
+
+
+SAMPLE = "\n".join([
+    '203.0.113.7 - - [18/Sep/2026:13:55:02 +0800] "GET /api/orders HTTP/1.1" 200 5123',
+    '203.0.113.7 - - [18/Sep/2026:13:55:18 +0800] "POST /api/pay HTTP/1.1" 500 218',
+    '198.51.100.24 - - [18/Sep/2026:13:55:41 +0800] "GET /api/orders HTTP/1.1" 502 189',
+    '198.51.100.24 - - [18/Sep/2026:13:56:03 +0800] "GET /api/pay HTTP/1.1" 500 203',
+    '198.51.100.24 - - [18/Sep/2026:13:56:44 +0800] "GET /api/pay HTTP/1.1" 500 199',
+    '18/Sep/2026 13:57:31 [ERROR] db pool exhausted, retry in 2s',
+    '18/Sep/2026 13:57:35 [ERROR] db pool exhausted, retry in 2s',
+])
+
+def selftest():
+    r = run_report(SAMPLE, threshold=2, win=60)
+    assert r["lines"] == 7, r["lines"]
+    assert r["errors"] == 6, r["errors"]          # 5xx 四条 + 显式 ERROR 两条
+    assert level_of(200, 'GET /api/errors HTTP/1.1" 200') == "INFO"   # 路径含 errors 不误判
+    assert level_of(500, 'GET /x HTTP/1.1" 500') == "ERROR"
+    assert fmt_slot(13 * 3600 + 55 * 60) == "13:55"
+    b = bucketize(parse(SAMPLE)["rows"])
+    assert b and b[-1]["error"] == 2, b
+    assert len(run_report(SAMPLE, 1, 60)["alerts"]) &gt;= 1
+    print("selftest OK：级别判定 / 时间槽聚合 / 阈值告警 / 阈值敏感度 用例通过")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="日志指标提取与阈值告警")
+    ap.add_argument("file", nargs="?", help="日志文件；用 - 从标准输入读取")
+    ap.add_argument("--threshold", type=int, default=3, help="单窗口错误数告警阈值，默认 3")
+    ap.add_argument("--window", type=int, default=60, help="聚合窗口（秒），默认 60")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args(argv)
+
+    if a.selftest:
+        selftest()
+        return 0
+    if a.file and a.file != "-":
+        p = Path(a.file)
+        if not p.exists():
+            raise SystemExit("日志文件不存在：%s" % p)
+        text = p.read_text(encoding="utf-8", errors="replace")
+    else:
+        text = sys.stdin.read()
+    if not text.strip():
+        raise SystemExit("没有可分析的日志内容。")
+
+    r = run_report(text, a.threshold, a.window)
+    if a.json:
+        print(json.dumps(r, ensure_ascii=False, indent=2))
+        return 0
+    print("解析 %d 行（跳过 %d 行）：ERROR %d · WARN %d · 错误占比 %.2f%%"
+          % (r["lines"], r["skipped"], r["errors"], r["warns"], r["error_rate"]))
+    print("TOP 错误 IP：%s" % (", ".join("%s(%d)" % (x["key"], x["count"]) for x in r["top_error_ip"]) or "无"))
+    print("TOP 错误路径：%s" % (", ".join("%s(%d)" % (x["key"], x["count"]) for x in r["top_error_path"]) or "无"))
+    if r["alerts"]:
+        print("告警 %d 个窗口（阈值 %d）：%s" % (len(r["alerts"]), a.threshold,
+              ", ".join("%s→%d 条" % (x["slot"], x["error"]) for x in r["alerts"])))
+        return 2      # 有告警时用退出码 2，便于接入 cron / CI 判断
+    print("未触发告警（阈值 %d，窗口 %ds）" % (a.threshold, a.window))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>test_log_alert.py</h3>
+    <p class="file-note">unittest 回归：级别判定、误判防护、时间槽聚合、阈值敏感度。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="test_log_alert.py"><code>"""log_alert.py 最小用例回归（标准库 unittest）"""
+import unittest
+
+from log_alert import bucketize, fmt_slot, level_of, parse, run_report, SAMPLE
+
+
+class TestLogAlert(unittest.TestCase):
+    def test_level_from_status(self):
+        self.assertEqual(level_of(500, 'GET /x HTTP/1.1" 500'), "ERROR")
+        self.assertEqual(level_of(404, 'GET /x HTTP/1.1" 404'), "WARN")
+        self.assertEqual(level_of(200, 'GET /x HTTP/1.1" 200'), "INFO")
+
+    def test_path_keyword_not_misjudged(self):
+        self.assertEqual(level_of(200, 'GET /api/errors HTTP/1.1" 200'), "INFO")
+
+    def test_explicit_level_word(self):
+        self.assertEqual(level_of(None, "18/Sep/2026 13:57:31 [ERROR] db pool exhausted"), "ERROR")
+        self.assertEqual(level_of(None, "18/Sep/2026 13:57:33 [WARN] slow query"), "WARN")
+
+    def test_parse_counts(self):
+        p = parse(SAMPLE)
+        self.assertEqual(len(p["rows"]), 7)
+        self.assertEqual(p["skipped"], 0)
+
+    def test_bucket_and_fmt(self):
+        b = bucketize(parse(SAMPLE)["rows"])
+        self.assertEqual(len(b), 3)
+        self.assertEqual(fmt_slot(13 * 3600 + 55 * 60), "13:55")
+
+    def test_alert_threshold_sensitivity(self):
+        self.assertEqual(len(run_report(SAMPLE, 99, 60)["alerts"]), 0)
+        self.assertGreaterEqual(len(run_report(SAMPLE, 1, 60)["alerts"]), 1)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：仅标准库。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># 本工程仅使用 Python 标准库（argparse / re / json / pathlib / datetime）。
+# 不需要安装任何第三方包；此文件保留是为了统一 `pip install -r requirements.txt` 流程。
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行方式、支持的日志格式、退出码约定。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 日志指标提取与阈值告警（log-alert）
+
+读日志 → 判级别 → 按时间窗口聚合 → 超阈值告警，全程零第三方依赖。
+既适合 `tail -f | python log_alert.py -` 做轻量巡检，也能作为接入 Prometheus 之前的过渡方案。
+
+## 文件说明
+
+| 文件 | 作用 |
+|---|---|
+| `log_alert.py` | 解析 / 聚合 / 告警核心 + CLI 入口 |
+| `test_log_alert.py` | unittest 最小用例回归 |
+| `requirements.txt` | 依赖清单（本工程无第三方依赖） |
+
+## 运行
+
+```bash
+python -m pip install -r requirements.txt        # 无第三方依赖，可跳过
+python log_alert.py access.log --threshold 3 --window 60
+python log_alert.py access.log --json
+tail -n 500 /var/log/nginx/access.log | python log_alert.py -
+python log_alert.py --selftest
+python test_log_alert.py
+```
+
+## 支持的日志格式
+
+1. **访问日志**（Nginx / Apache combined）：
+   `IP - - [18/Sep/2026:13:55:02 +0800] "POST /api/pay HTTP/1.1" 500 218`
+2. **应用日志**（行首为时间戳的文本日志）：
+   `18/Sep/2026 13:57:31 [ERROR] db pool exhausted`
+
+级别判定优先看显式级别词（ERROR / FATAL / Exception / Traceback、WARN），其次看 HTTP 状态码
+（500+ → ERROR，400–499 → WARN，其余 INFO）。因此 `/api/errors` 这类**正常返回 200 的路径不会被误判**。
+
+## 退出码约定
+
+| 退出码 | 含义 |
+|---|---|
+| 0 | 解析成功且未触发告警 |
+| 2 | 触发告警（可被 cron / CI 直接捕获） |
+| 1 | 参数或输入错误 |
+
+阈值与窗口通过 `--threshold` / `--window` 传入，默认「60 秒内 ERROR ≥ 3 条」。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行标注</h3><ol><li><b>可直接运行</b>：保存 4 个文件到同一目录，执行 <code>python log_alert.py 你的日志.log --threshold 3</code>。</li><li><b>需按需修改的配置项</b>：阈值与窗口用 <code>--threshold</code> / <code>--window</code> 传参（默认 3 条 / 60 秒）；若日志时间格式与示例不同，改 <code>log_alert.py</code> 顶部的 <code>ACCESS</code> / <code>APP_TIME</code> 两个正则即可。<b>不改也能直接跑</b>。</li><li>配套用法：<code>tail -n 500 access.log | python log_alert.py -</code> 可做滚动巡检；触发告警时退出码为 2。</li><li>自测：<code>python log_alert.py --selftest</code>（或 <code>python test_log_alert.py</code>），6 个用例应全部通过。</li></ol></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-log-alert">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://docs.python.org/3/library/re.html" target="_blank" rel="noopener">Python 官方文档 · re（日志行解析正则）</a>
+<a href="https://docs.python.org/3/library/collections.html" target="_blank" rel="noopener">Python 官方文档 · collections（计数与聚合参考）</a>
+<a href="https://nginx.org/en/docs/http/ngx_http_log_module.html" target="_blank" rel="noopener">Nginx 官方文档 · 访问日志默认格式</a>
+<a href="https://httpd.apache.org/docs/current/logs.html" target="_blank" rel="noopener">Apache 官方文档 · 日志文件与 combined 格式</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -120,6 +468,7 @@ def alert(msg: str) -&gt; None:
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/log-alert.js"></script>
 </body>
 </html>

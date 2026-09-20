@@ -14,7 +14,7 @@
     var idx = Math.min(RAMP.length - 1, Math.floor((lum / 255) * RAMP.length));
     return RAMP[RAMP.length - 1 - idx];
   }
-  function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#e06c75" : "var(--color-muted,#9aa3b2)"; }
+  function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#e06c75" : "var(--color-muted)"; }
   function drawSource(img) {
     stage.style.display = "block";
     var scale = Math.min(560 / img.naturalWidth, 380 / img.naturalHeight, 1);

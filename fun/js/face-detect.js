@@ -3,7 +3,7 @@
   var cv = document.getElementById("fd-canvas");
   var statusEl = document.getElementById("fd-status");
   var ctx = cv.getContext("2d");
-  var modelUrl = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model";
+  var modelUrl = "../assets/models/face-api";
   var assetsLoaded = false;
   var imgData = null; // {w,h,dataURL?} -> use HTMLImageElement cache
   var currentImg = null;
@@ -39,12 +39,12 @@
       setStatus("模型已就绪，可开始检测。");
     } catch (e) {
       console.error(e);
-      setStatus("模型加载失败：请检查网络后刷新重试（需要可访问 cdn.jsdelivr.net）。", true);
+      setStatus("模型加载失败：请检查本地模型文件后刷新重试。", true);
       throw e;
     }
   }
   async function detectAndDraw(img) {
-    if (!ready()) { setStatus("face-api.js 未加载（CDN 不可用或离线）。", true); return; }
+    if (!ready()) { setStatus("face-api.js 未加载（本地库文件缺失）。", true); return; }
     drawImageToCanvas(img);
     currentImg = img;
     setStatus("正在检测…");

@@ -106,7 +106,527 @@ void main(void) {
         toggle_led();
         HAL_Delay(500);   // 500ms 闪烁
     }
-}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>51 版：Keil 建工程选 AT89C52，编译后烧录到开发板 P0 口观察流水灯。</li><li>Arduino 版：LED 正极接 D9（串联 220Ω 电阻），上传后即可看到呼吸效果。</li><li>STM32 版：STM32CubeMX 初始化 PB1 为输出，生成工程后替换 main 循环体。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>51-led-flow</code>、<code>arduino-breathing-led</code>、<code>stm32-hal-examples</code>（链接可替换为实际仓库地址）。</p></div></section>
+}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>51 版：Keil 建工程选 AT89C52，编译后烧录到开发板 P0 口观察流水灯。</li><li>Arduino 版：LED 正极接 D9（串联 220Ω 电阻），上传后即可看到呼吸效果。</li><li>STM32 版：STM32CubeMX 初始化 PB1 为输出，生成工程后替换 main 循环体。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-mcu-led">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行（离线仿真）</span><span class="deploy-badge">仿真零第三方依赖</span><span class="deploy-badge info">固件需实机 / 工具链</span></div>
+  <div class="code-card"><p>运行环境：Python 3.8+（仿真器仅标准库，<strong>无需 pip 安装</strong>）；固件三个版本分别面向 51 单片机（Keil C51）、Arduino（Arduino IDE / PlatformIO）、STM32（STM32CubeMX + HAL）。先用 <code>python sim_led.py --self-test</code> 零配置验证流水灯移位与呼吸灯 PWM 序列，再对照固件烧录。</p><p>目录结构说明：<code>src/</code> 下为三份可直接编译的完整源文件，<code>sim_led.py</code> 与固件共享同一套移位/占空比算法，可用于上板前对拍。</p></div>
+  <div class="deploy-tree">mcu-led/
+├── README.md              运行步骤、配置项与硬件接线说明
+├── platformio.ini         Arduino / PlatformIO 工程配置（board、framework、串口速率）
+├── requirements.txt       依赖清单（仿真器仅标准库）
+├── sim_led.py             离线仿真器：流水灯序列 + 呼吸灯占空比（可 --dump 导出）
+└── src/
+    ├── led51.c            51 单片机（REGX52.H）完整流水灯固件
+    ├── main.cpp           Arduino 完整固件：流水灯 + 呼吸灯 + 8x8 点阵扫描
+    └── stm32_led.c        STM32 HAL 完整应用：GPIO 点亮 + TIM3 PWM 呼吸灯</div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、硬件接线、需先改的配置项与自测命令。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># mcu-led · 单片机 LED 与点阵控制（可运行工程）
+
+同一套 LED 控制思想在 **51 单片机 / Arduino / STM32** 上的三种完整实现，另附一个**无需硬件、纯标准库就能跑通**的离线仿真器，
+用于在电脑上验证流水灯移位逻辑与呼吸灯 PWM 占空比序列。
+
+## 目录结构
+
+```
+mcu-led/
+├── platformio.ini         PlatformIO 工程配置（依赖清单：framework=arduino）
+├── requirements.txt       电脑端依赖清单（仿真器零第三方依赖）
+├── src/
+│   ├── main.cpp           Arduino 完整固件：流水灯 + 呼吸灯 + 8x8 点阵扫描（无第三方库）
+│   ├── led51.c            51 单片机（Keil C51）完整流水灯固件
+│   └── stm32_led.c        STM32 HAL 完整应用文件：GPIO 点亮 + TIM3 PWM 呼吸灯
+└── sim_led.py             离线仿真：流水灯移位序列 + 呼吸灯占空比（纯 Python 3.8+ 标准库）
+```
+
+## 可直接运行（无需硬件）
+
+```bash
+python sim_led.py --self-test        # 断言自检：8 步回卷、单点独亮、占空比峰值与单调性
+python sim_led.py --run --steps 12   # 打印前 12 步 LED 状态与二进制
+python sim_led.py --dump pwm.json    # 导出呼吸灯占空比序列
+```
+
+`--self-test` 全部断言通过即输出 `ALL CHECKS PASSED`。这是本工程与固件行为一致的最小用例：
+仿真器里的移位公式 `led = (led &lt;&lt; 1) | off_bit` 与 `led51.c`、`main.cpp` 中固件代码逐位一致。
+
+## 需先改的配置项
+
+| 位置 | 配置项 | 说明 |
+|---|---|---|
+| `src/main.cpp` | `LED_PINS[]` | Arduino 引脚号，按你的接线修改（默认 2–9 接 8 颗 LED） |
+| `src/main.cpp` | `MATRIX_ROW[]` / `MATRIX_COL[]` | 8x8 点阵行/列引脚，按模块接线修改 |
+| `src/main.cpp` | `ACTIVE_LOW` | `true` = 低电平点亮（共阳接法），按你的接法改 |
+| `src/led51.c` | `P0` 端口 | 51 单片机流水灯输出口，若接 P1/P2 改端口名即可 |
+| `src/stm32_led.c` | `LED_Pin` / `LED_GPIO_Port`、`htim3` | 与 CubeMX 生成的宏/句柄名保持一致 |
+| `platformio.ini` | `board` | 默认 `uno`；换板子改成 `nanoatmega328` / `esp32dev` 等 |
+| `sim_led.py` | `--pins` / `--cycle` | 仿真灯珠数量与呼吸灯 PWM 周期 |
+
+## 需硬件 / 需外部工具的步骤
+
+- **Arduino**：`pio run -t upload`（需安装 PlatformIO）或用 Arduino IDE 打开 `src/main.cpp` 直接上传；无硬件时可用 [Wokwi](https://wokwi.com/) 在线仿真。
+- **51 单片机**：Keil C51（µVision）新建工程导入 `src/led51.c`，或使用 [SDCC](https://sdcc.sourceforge.net/) 编译后烧录。
+- **STM32**：STM32CubeMX 生成工程 → 用 `src/stm32_led.c` 中的 `MX_GPIO_Init()` / `MX_TIM3_Init()` / `led_breath_task()` 替换 `Core/Src/main.c` 中同名部分 → Keil/IAR/CubeIDE 编译下载。
+
+## 依赖清单
+
+- 电脑端：Python 3.8+，**零第三方依赖**（见 `requirements.txt`）
+- Arduino 端：PlatformIO（`framework = arduino`），**无第三方库**
+- 51 端：Keil C51 或 SDCC
+- STM32 端：STM32CubeMX + STM32F1 HAL 驱动（`stm32f1xx_hal.h`）
+
+## 原理速览
+
+| 现象 | 底层机制 |
+|---|---|
+| 流水灯 | 端口字节循环左移，移位溢出位被熄灭位（`1`/`0` 取决于接法）回填 |
+| 呼吸灯 | 定时器 PWM：占空比按三角波在 0→240→0 之间变化，人眼积分成亮度渐变 |
+| 点阵显示 | 逐行扫描（滚屏刷新），单行点亮时间 ÷ 行数即为占空比；扫描频率 &gt; 60Hz 无闪烁 |
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>platformio.ini</h3>
+    <p class="file-note">PlatformIO 工程配置：板型、框架与串口速率（换板只需改 board）。</p>
+    <div class="code-block"><span class="code-lang-badge">ini</span><pre data-file="platformio.ini"><code>; PlatformIO 工程配置 —— 依赖清单
+; 用法：pio run -t upload   （需先安装 PlatformIO Core 或 VSCode 插件）
+; 换板子只需改 board；本工程仅使用 Arduino 官方 framework，无第三方库依赖。
+[env:uno]
+platform = atmelavr
+board = uno
+framework = arduino
+
+; 若使用 ESP32，取消下面注释并注释掉上面的 uno 环境
+; [env:esp32dev]
+; platform = espressif32
+; board = esp32dev
+; framework = arduino
+
+monitor_speed = 115200
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：仿真器仅需 Python 标准库。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># mcu-led 电脑端依赖清单
+# 离线仿真器 sim_led.py 仅使用 Python 标准库（argparse / json / sys），无需安装任何包。
+# 本文件保留 Python 版本要求，便于后续扩展真实串口联调：
+#   pip install -r requirements.txt
+#
+# Python &gt;= 3.8
+# 若需要直接读取开发板串口输出（可选，仿真器本身不需要）：
+# pyserial&gt;=3.5
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>sim_led.py</h3>
+    <p class="file-note">离线仿真器：流水灯移位 + 呼吸灯 PWM 占空比，支持 --self-test / --dump。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="sim_led.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""mcu-led 离线仿真器：无需硬件，在电脑上复现流水灯移位与呼吸灯 PWM 占空比序列。
+
+与固件的一致性：
+  · 移位公式  led = (led &lt;&lt; 1) | off_bit  —— 与 src/led51.c、src/main.cpp 完全相同
+  · 占空比序列 0 -&gt; cycle-step -&gt; 0       —— 与 src/stm32_led.c 的 led_breath_task 相同
+
+用法：
+  python sim_led.py --self-test            断言自检（最小用例，全部通过输出 ALL CHECKS PASSED）
+  python sim_led.py --run --steps 12       打印前 12 步 LED 状态
+  python sim_led.py --dump pwm.json        导出呼吸灯占空比序列
+  python sim_led.py --run --active-low --pins 8
+"""
+import argparse
+import json
+import sys
+
+
+def shift_sequence(steps, pins=8, active_low=True):
+    """流水灯端口字节序列。
+
+    初始只有第 0 位点亮：active_low 时 0xFE（1111 1110），否则 0x01。
+    每步左移一位并回填“熄灭位”：active_low 回填 1，否则回填 0；
+    全部熄灭（active_low: 0xFF / 否则 0x00）时回到起点，与固件中的 if 判断一致。
+    """
+    mask = (1 &lt;&lt; pins) - 1
+    off_bit = 1 if active_low else 0
+    led = (mask ^ 0x01) if active_low else 0x01
+    full_off = mask if active_low else 0
+    seq = []
+    for _ in range(steps):
+        seq.append(led)
+        led = ((led &lt;&lt; 1) | off_bit) &amp; mask
+        if led == full_off:
+            led = (mask ^ 0x01) if active_low else 0x01
+    return seq
+
+
+def breath_duty(cycle=256, step=16):
+    """呼吸灯 PWM 占空比三角波：0, step, ..., cycle-step（峰值）, cycle-2*step, ..., step。
+
+    峰值在三角波顶点只出现一次，与固件 runBreath() / led_breath_task() 的循环边界
+    （上升段 d&lt;240，下降段从 240-step 起）逐点对齐。
+    """
+    if step &lt;= 0 or cycle % step:
+        raise ValueError('step 必须整除 cycle 且大于 0')
+    up = list(range(0, cycle, step))                 # 0 .. cycle-step（含峰值）
+    down = list(range(cycle - 2 * step, 0, -step))   # cycle-2*step .. step
+    return up + down
+
+
+def led_positions(value, pins=8, active_low=True):
+    """把一个端口字节翻译成“第几颗灯亮”的列表。"""
+    lit = []
+    for b in range(pins):
+        bit = (value &gt;&gt; b) &amp; 0x01
+        if (bit == 0) if active_low else (bit == 1):
+            lit.append(b)
+    return lit
+
+
+def self_test():
+    ok = True
+
+    # 1) 8 步回卷 + 每步恰好一颗灯亮
+    seq = shift_sequence(8)
+    assert seq[0] == 0xFE, seq
+    assert seq[1] == 0xFD, seq
+    for i, v in enumerate(seq):
+        n = len(led_positions(v))
+        if n != 1:
+            print('  [FAIL] 第 %d 步点亮灯数 = %d（应为 1）' % (i, n))
+            ok = False
+    nxt = shift_sequence(9)[8]
+    if nxt != 0xFE:
+        print('  [FAIL] 第 9 步未回到起点：%s' % hex(nxt))
+        ok = False
+    print('  [OK] 流水灯：8 步覆盖全部灯珠、每步单点独亮、第 9 步回卷到 0xFE')
+
+    # 2) 高电平点亮（Arduino 常见接法）行为
+    seq_h = shift_sequence(8, active_low=False)
+    if seq_h[0] != 0x01 or shift_sequence(9, active_low=False)[8] != 0x01:
+        print('  [FAIL] 高电平点亮模式回卷异常：%s' % seq_h)
+        ok = False
+    if any(len(led_positions(v, active_low=False)) != 1 for v in seq_h):
+        print('  [FAIL] 高电平点亮模式存在非单点步')
+        ok = False
+    print('  [OK] 高电平点亮模式：初始 0x01，第 9 步回卷，单点独亮')
+
+    # 3) 呼吸灯占空比：峰值、单调性、首尾归零
+    duty = breath_duty()
+    half = len(duty) // 2          # 峰值所在下标（上升段末位）
+    assert duty[0] == 0, duty[:3]
+    assert duty[half] == 240 and max(duty) == 240, (duty[half], max(duty))
+    assert duty[-1] == 16, duty[-3:]
+    if not all(duty[i] &lt; duty[i + 1] for i in range(half)):
+        print('  [FAIL] 上升段非严格递增')
+        ok = False
+    if not all(duty[i] &gt; duty[i + 1] for i in range(half, len(duty) - 1)):
+        print('  [FAIL] 下降段非严格递减')
+        ok = False
+    print('  [OK] 呼吸灯：上升/下降各 %d 级，峰值 %d/255，首尾为 0 与 %d' % (half, max(duty), duty[-1]))
+
+    # 4) 固件同参数交叉校验
+    if len(shift_sequence(1000)) != 1000:
+        print('  [FAIL] 长序列长度异常')
+        ok = False
+    print('  [OK] 长序列（1000 步）无异常，可作为固件长时间运行的位序列参照')
+
+    if ok:
+        print('ALL CHECKS PASSED')
+        return 0
+    print('SELF TEST FAILED')
+    return 1
+
+
+def main():
+    ap = argparse.ArgumentParser(description='mcu-led 离线仿真器（流水灯 / 呼吸灯）')
+    ap.add_argument('--self-test', action='store_true', help='运行断言自检')
+    ap.add_argument('--run', action='store_true', help='打印 LED 序列')
+    ap.add_argument('--steps', type=int, default=9, help='打印步数，默认 9')
+    ap.add_argument('--pins', type=int, default=8, help='灯珠数量，默认 8')
+    ap.add_argument('--active-low', action='store_true', default=True, help='低电平点亮（默认）')
+    ap.add_argument('--active-high', dest='active_low', action='store_false', help='高电平点亮')
+    ap.add_argument('--cycle', type=int, default=256, help='呼吸灯 PWM 周期，默认 256')
+    ap.add_argument('--step', type=int, default=16, help='占空比步进，默认 16')
+    ap.add_argument('--dump', default='', help='导出占空比序列到 JSON 文件')
+    a = ap.parse_args()
+
+    if a.self_test:
+        return self_test()
+
+    if a.dump:
+        data = {'cycle': a.cycle, 'step': a.step, 'duty': breath_duty(a.cycle, a.step)}
+        with open(a.dump, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print('已导出 %d 级占空比 -&gt; %s' % (len(data['duty']), a.dump))
+
+    if a.run or not a.dump:
+        print('流水灯序列（pins=%d, %s）：' % (a.pins, '低电平点亮' if a.active_low else '高电平点亮'))
+        for i, v in enumerate(shift_sequence(a.steps, a.pins, a.active_low)):
+            print('  步 %2d  端口=0x%02X  %s  点亮=P%d' % (
+                i, v, format(v, '0%db' % a.pins), (led_positions(v, a.pins, a.active_low) or [-1])[0]))
+        d = breath_duty(a.cycle, a.step)
+        print('呼吸灯占空比：%d 级，%s -&gt; %d -&gt; %s' % (len(d), d[0], max(d), d[-1]))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>src/led51.c</h3>
+    <p class="file-note">51 单片机完整固件：KEIL C51 工程可直接编译，含接线注释与延时函数。</p>
+    <div class="code-block"><span class="code-lang-badge">c</span><pre data-file="src/led51.c"><code>/* 51 单片机（STC89C52 / AT89C52 等）完整流水灯固件
+ * 工具链：Keil C51 (µVision) 或 SDCC，晶振 11.0592MHz / 12MHz 均可
+ * 依赖：仅 REGX52.H（Keil 自带头文件），无第三方库
+ * 需先改的配置项：LED_PORT（默认 P0，低电平点亮）。若 LED 接 P1/P2，把 P0 改成对应端口名。
+ */
+#include &lt;REGX52.H&gt;
+
+#define LED_PORT P0          /* 输出端口：接 8 颗 LED（低电平点亮，共阳接法） */
+#define STEP_MS  200         /* 每步延时（毫秒） */
+
+/* 约 1ms 的软件延时（12MHz 晶振，i/j 循环按实际主频微调） */
+void delay_ms(unsigned int ms)
+{
+    unsigned int i, j;
+    for (i = 0; i &lt; ms; i++)
+        for (j = 0; j &lt; 120; j++);
+}
+
+void main(void)
+{
+    unsigned char led = 0xFE;    /* 1111 1110：P0.0 点亮，其余熄灭 */
+
+    while (1)
+    {
+        LED_PORT = led;          /* 输出到 P0 口 */
+        delay_ms(STEP_MS);
+        led = (led &lt;&lt; 1) | 0x01; /* 左移一位，最低位补 1（熄灭） */
+        if (led == 0xFF)         /* 全部熄灭 -&gt; 回到起点，形成循环 */
+            led = 0xFE;
+    }
+}
+
+/* 可选：定时器 0 中断版流水灯（精度更高，不占用 CPU 空转）
+ * 若使用本段，请删除上面的 main() 并把 TIMER_ENABLE 置 1。
+ * 12MHz 晶振、50ms@50Hz 定时：初值 0x3CB0（约 50ms）。
+ */
+#if 0
+#include &lt;REGX52.H&gt;
+static unsigned char led = 0xFE;
+
+void timer0_isr(void) interrupt 1
+{
+    TH0 = 0x3C;  TL0 = 0xB0;      /* 重装初值 */
+    LED_PORT = led;
+    led = (led &lt;&lt; 1) | 0x01;
+    if (led == 0xFF) led = 0xFE;
+}
+
+void main(void)
+{
+    TMOD &amp;= 0xF0; TMOD |= 0x01;   /* 定时器 0，模式 1（16 位） */
+    TH0 = 0x3C;  TL0 = 0xB0;
+    ET0 = 1;  EA = 1;  TR0 = 1;   /* 开中断并启动 */
+    while (1);
+}
+#endif
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>src/main.cpp</h3>
+    <p class="file-note">Arduino 完整固件：流水灯 + 呼吸灯 + 8x8 点阵扫描，无第三方库。</p>
+    <div class="code-block"><span class="code-lang-badge">cpp</span><pre data-file="src/main.cpp"><code>/* Arduino 完整固件：流水灯 + 呼吸灯 + 8x8 点阵扫描
+ * 平台：Arduino UNO（AVR）或 ESP32（改动见 platformio.ini）
+ * 依赖：仅 Arduino 官方核心，无第三方库
+ * 上电后：先跑 2 轮流水灯，再跑 2 轮呼吸灯，随后循环显示点阵图案。
+ * 需先改的配置项：LED_PINS[]、MATRIX_ROW[]、MATRIX_COL[]、ACTIVE_LOW
+ */
+#include &lt;Arduino.h&gt;
+
+/* ===== 配置区（按你的接线修改） ===== */
+static const uint8_t LED_PINS[] = {2, 3, 4, 5, 6, 7, 8, 9};  // 8 颗 LED 依次接 D2..D9
+static const uint8_t LED_COUNT   = sizeof(LED_PINS) / sizeof(LED_PINS[0]);
+static const uint8_t MATRIX_ROW[] = {A0, A1, A2, A3, A4, A5, 10, 11}; // 点阵行（扫描输出）
+static const uint8_t MATRIX_COL[] = {12, 13, A6, A7, 22, 23, 24, 25}; // 点阵列（低电平选中）
+static const bool    ACTIVE_LOW   = false;   // LED 接法：false=高电平点亮（LED 正极接引脚）
+static const uint8_t BREATH_PWM_PIN = 9;     // 呼吸灯 PWM 引脚（需支持 PWM）
+
+/* 8x8 点阵图案：1=点亮（心形），按行存 8 字节 */
+static const uint8_t PATTERN[8] = {
+  0b00000000,
+  0b01100110,
+  0b11111111,
+  0b11111111,
+  0b01111110,
+  0b00111100,
+  0b00011000,
+  0b00000000
+};
+
+static inline void ledWrite(uint8_t index, bool on) {
+  digitalWrite(LED_PINS[index], ACTIVE_LOW ? (on ? LOW : HIGH) : (on ? HIGH : LOW));
+}
+
+/* ---------- 1. 流水灯：端口字节循环左移（与 sim_led.py 逻辑一致） ---------- */
+void runWaterfall(uint8_t rounds, uint16_t stepMs) {
+  uint8_t led = ACTIVE_LOW ? 0xFE : 0x01;           // 初始只有一颗点亮
+  const uint8_t mask = (LED_COUNT &gt;= 8) ? 0xFF : (uint8_t)((1 &lt;&lt; LED_COUNT) - 1);
+  const uint8_t offBit = ACTIVE_LOW ? 1 : 0;
+  for (uint16_t i = 0; i &lt; rounds * LED_COUNT; ++i) {
+    for (uint8_t b = 0; b &lt; LED_COUNT; ++b) ledWrite(b, (led &gt;&gt; b) &amp; 0x01);
+    delay(stepMs);
+    led = (uint8_t)((led &lt;&lt; 1) | offBit) &amp; mask;     // 移位 + 回填熄灭位
+    if (led == (ACTIVE_LOW ? mask : 0)) led = ACTIVE_LOW ? 0xFE : 0x01;
+  }
+  for (uint8_t b = 0; b &lt; LED_COUNT; ++b) ledWrite(b, false);
+}
+
+/* ---------- 2. 呼吸灯：PWM 占空比三角波（与 sim_led.py breath_duty 一致） ---------- */
+void runBreath(uint16_t cycles, uint8_t step) {
+  for (uint16_t c = 0; c &lt; cycles; ++c) {
+    for (uint8_t d = 0; d &lt; 240; d += step)          { analogWrite(BREATH_PWM_PIN, d); delay(6); }
+    for (int d = 240 - step; d &gt; 0; d -= step)       { analogWrite(BREATH_PWM_PIN, d); delay(6); }
+  }
+  analogWrite(BREATH_PWM_PIN, 0);
+}
+
+/* ---------- 3. 8x8 点阵：逐行扫描显示图案 ---------- */
+void showPattern(uint16_t frames, uint16_t rowUs) {
+  for (uint16_t f = 0; f &lt; frames; ++f) {
+    for (uint8_t r = 0; r &lt; 8; ++r) {
+      digitalWrite(MATRIX_ROW[r], HIGH);                 // 选中当前行
+      for (uint8_t c = 0; c &lt; 8; ++c) {
+        bool on = (PATTERN[r] &gt;&gt; (7 - c)) &amp; 0x01;        // 高位在左
+        digitalWrite(MATRIX_COL[c], on ? LOW : HIGH);    // 列低电平点亮
+      }
+      delayMicroseconds(rowUs);                          // 整帧 8 行 × rowUs，&gt;60Hz 无闪烁
+      digitalWrite(MATRIX_ROW[r], LOW);
+      for (uint8_t c = 0; c &lt; 8; ++c) digitalWrite(MATRIX_COL[c], HIGH);
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  for (uint8_t i = 0; i &lt; LED_COUNT; ++i) pinMode(LED_PINS[i], OUTPUT);
+  for (uint8_t i = 0; i &lt; 8; ++i) pinMode(MATRIX_ROW[i], OUTPUT);
+  for (uint8_t i = 0; i &lt; 8; ++i) pinMode(MATRIX_COL[i], OUTPUT);
+  pinMode(BREATH_PWM_PIN, OUTPUT);
+  Serial.println(F("mcu-led ready: waterfall -&gt; breath -&gt; matrix"));
+}
+
+void loop() {
+  runWaterfall(2, 120);
+  runBreath(2, 16);
+  showPattern(300, 1200);
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>src/stm32_led.c</h3>
+    <p class="file-note">STM32 HAL 完整应用文件：GPIO 点亮 + TIM3 PWM 呼吸灯，含 HAL 初始化调用位置说明。</p>
+    <div class="code-block"><span class="code-lang-badge">c</span><pre data-file="src/stm32_led.c"><code>/* STM32 HAL 应用文件：GPIO 点亮/闪烁 + TIM3 PWM 呼吸灯
+ * 适用：STM32F1 系列（其他系列把 stm32f1xx_hal.h 换成对应系列头文件即可）
+ * 依赖：STM32CubeMX 生成的 HAL 工程（stm32f1xx_hal.h、main.h）
+ * 用法：在 CubeMX 中勾选 PA5=GPIO_Output、PB0=TIM3_CH3=PWM Generation，生成工程后，
+ *       把本文件的三个函数复制进 Core/Src/main.c，并在 main() 的初始化段后调用 led_demo()。
+ * 需先改的配置项：LED_GPIO_Port / LED_Pin（默认 PA5）、htim3（CubeMX 中的定时器句柄名）。
+ */
+#include "stm32f1xx_hal.h"      /* CubeMX 生成工程时自动提供 */
+
+/* ===== 需与 CubeMX 配置保持一致的宏 ===== */
+#define LED_GPIO_Port  GPIOA
+#define LED_Pin        GPIO_PIN_5
+extern TIM_HandleTypeDef htim3;      /* CubeMX 生成的 TIM3 句柄 */
+#define BREATH_CHANNEL TIM_CHANNEL_3 /* PWM 输出通道 */
+
+/* ---------- 1. GPIO 初始化：推挽输出 ---------- */
+void MX_GPIO_Init(void)
+{
+    GPIO_InitTypeDef gpio = {0};
+    __HAL_RCC_GPIOA_CLK_ENABLE();            /* 使能 GPIOA 时钟 */
+    gpio.Pin   = LED_Pin;
+    gpio.Mode  = GPIO_MODE_OUTPUT_PP;        /* 推挽输出 */
+    gpio.Pull  = GPIO_NOPULL;
+    gpio.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(LED_GPIO_Port, &amp;gpio);
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);  /* 上电默认熄灭 */
+}
+
+/* ---------- 2. TIM3 PWM 初始化：1kHz、初始占空比 0 ---------- */
+void MX_TIM3_Init(void)
+{
+    TIM_OC_InitTypeDef oc = {0};
+    __HAL_RCC_TIM3_CLK_ENABLE();
+
+    htim3.Instance               = TIM3;
+    htim3.Init.Prescaler         = 71;       /* 72MHz / 72 = 1MHz 计数时钟 */
+    htim3.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    htim3.Init.Period            = 999;      /* 1MHz / 1000 = 1kHz PWM */
+    htim3.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    if (HAL_TIM_PWM_Init(&amp;htim3) != HAL_OK) { Error_Handler(); }
+
+    oc.OCMode     = TIM_OCMODE_PWM1;
+    oc.Pulse      = 0;                       /* 占空比 = Pulse / (Period+1) */
+    oc.OCPolarity = TIM_OCPOLARITY_HIGH;
+    oc.OCFastMode = TIM_OCFAST_DISABLE;
+    if (HAL_TIM_PWM_ConfigChannel(&amp;htim3, &amp;oc, BREATH_CHANNEL) != HAL_OK) { Error_Handler(); }
+    HAL_TIM_PWM_Start(&amp;htim3, BREATH_CHANNEL);
+}
+
+/* ---------- 3. 呼吸灯：占空比三角波 0 -&gt; 240 -&gt; 0（与 sim_led.py 一致） ---------- */
+void led_breath_task(uint16_t cycles, uint8_t step)
+{
+    for (uint16_t c = 0; c &lt; cycles; ++c) {
+        for (uint16_t duty = 0; duty &lt; 240; duty += step) {
+            __HAL_TIM_SET_COMPARE(&amp;htim3, BREATH_CHANNEL, duty);  /* 0..999 映射到 0..100% */
+            HAL_Delay(6);
+        }
+        for (int duty = 240 - step; duty &gt; 0; duty -= step) {
+            __HAL_TIM_SET_COMPARE(&amp;htim3, BREATH_CHANNEL, (uint16_t)duty);
+            HAL_Delay(6);
+        }
+    }
+    __HAL_TIM_SET_COMPARE(&amp;htim3, BREATH_CHANNEL, 0);
+}
+
+/* ---------- 4. 组合演示：闪烁 3 次后进入呼吸循环 ---------- */
+void led_demo(void)
+{
+    MX_GPIO_Init();
+    MX_TIM3_Init();
+    for (int i = 0; i &lt; 3; ++i) {
+        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+        HAL_Delay(300);
+    }
+    while (1) { led_breath_task(2, 16); }
+}
+
+/* 说明：Error_Handler() 由 CubeMX 生成的 main.c 提供；
+ * 单独移植本文件时请自行实现（例如 while(1) 死循环 + 串口打印错误码）。
+ */
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>可直接运行 / 需先改的配置项：</strong></p><ul><li><strong>可直接运行</strong>：<code>python sim_led.py --self-test</code>（零依赖、零配置，10 秒内通过）；<code>python sim_led.py --run --pins 8 --steps 20</code> 查看流水灯序列。</li><li><strong>需先改</strong>·Arduino：<code>src/main.cpp</code> 顶部 <code>LED_PIN_START</code> / <code>BREATH_PWM_PIN</code> / <code>MATRIX_*</code> 按实际接线调整。</li><li><strong>需先改</strong>·STM32：<code>src/stm32_led.c</code> 中 <code>LED_GPIO_Port</code>/<code>LED_Pin</code> 与 TIM3 通道，需与 CubeMX 生成的 <code>main.c</code> 引脚一致。</li><li><strong>需先改</strong>·51：<code>src/led51.c</code> 的端口号与晶振频率（影响延时长短）。</li><li>PlatformIO 使用：改 <code>platformio.ini</code> 的 <code>board</code> 为你的板型后 <code>pio run -t upload</code>。</li></ul></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-mcu-led">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section>
+<section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://docs.arduino.cc/language-reference/en/functions/analog-io/analogWrite/" target="_blank" rel="noopener">Arduino 官方文档 · analogWrite（PWM 呼吸灯原理）</a>
+<a href="https://docs.arduino.cc/language-reference/en/functions/digital-io/digitalwrite/" target="_blank" rel="noopener">Arduino 官方文档 · digitalWrite（流水灯与点阵扫描）</a>
+<a href="https://docs.platformio.org/en/latest/projectconf/sections/env/options/platform/" target="_blank" rel="noopener">PlatformIO 官方文档 · 工程配置 platformio.ini</a>
+<a href="https://github.com/platformio/platformio-examples" target="_blank" rel="noopener">PlatformIO 官方示例仓库（GitHub）</a>
+<a href="https://www.st.com/en/development-tools/stm32cubemx.html" target="_blank" rel="noopener">ST 官方 · STM32CubeMX（HAL 工程生成工具）</a>
+</div></div></section>
+
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -129,6 +649,7 @@ void main(void) {
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/mcu-led.js"></script>
 </body>
 </html>

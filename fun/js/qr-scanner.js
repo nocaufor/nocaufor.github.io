@@ -1,4 +1,4 @@
-/* nocau fun P000033: 二维码扫码（jsQR + qrcode 生成，均走 CDN，本地解码） */
+/* nocau fun P000033: 二维码扫码（jsQR + qrcode 生成，均为本地库，本地解码） */
 (function () {
   "use strict";
   var cv = document.getElementById("qr-canvas");
@@ -11,7 +11,7 @@
 
   function setStatus(msg, err) {
     statusEl.textContent = msg;
-    statusEl.style.color = err ? "#e06c75" : "var(--color-brand,#7aa2f7)";
+    statusEl.style.color = err ? "#e06c75" : "var(--color-brand)";
   }
   function libReady() {
     return typeof window.jsQR === "function";
@@ -29,7 +29,7 @@
     cv.hidden = false;
   }
   function decodeFromCanvas(source, label) {
-    if (!libReady()) { setStatus("jsQR 未加载成功：请检查网络或刷新重试（需访问 cdn.jsdelivr.net）。", true); return; }
+    if (!libReady()) { setStatus("jsQR 未加载成功：本地库文件缺失，请刷新重试。", true); return; }
     var w = cv.width, h = cv.height;
     try {
       var img = ctx.getImageData(0, 0, w, h);
@@ -129,7 +129,7 @@
   window.addEventListener("pagehide", stopCam);
 
   if (!libReady()) {
-    setStatus("jsQR 库加载失败：离线或 CDN 不可用，请联网后刷新。", true);
+    setStatus("jsQR 库加载失败：本地库文件缺失，请刷新重试。", true);
   } else {
     setStatus("jsQR 就绪。可开启摄像头扫码、上传二维码图片或点“生成示例二维码”。");
   }

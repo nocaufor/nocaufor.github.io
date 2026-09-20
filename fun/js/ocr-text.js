@@ -1,4 +1,4 @@
-/* nocau fun P000034: OCR 图片文字识别（Tesseract.js v5，CDN，模型按需下载缓存） */
+/* nocau fun P000034: OCR 图片文字识别（Tesseract.js v5，本地库与语言模型） */
 (function () {
   "use strict";
   var cv = document.getElementById("ocr-canvas");
@@ -9,7 +9,7 @@
 
   function setStatus(msg, err) {
     statusEl.textContent = msg;
-    statusEl.style.color = err ? "#e06c75" : "var(--color-muted,#9aa3b2)";
+    statusEl.style.color = err ? "#e06c75" : "var(--color-muted)";
   }
   function libReady() {
     return typeof window.Tesseract !== "undefined" && !!window.Tesseract.createWorker;
@@ -45,8 +45,8 @@
   async function runOcr() {
     if (busy) return;
     if (!libReady()) {
-      setStatus("Tesseract.js 加载失败：离线或 CDN 不可用，请联网后刷新。", true);
-      outEl.textContent = "（需联网：模型与库均来自 cdn.jsdelivr.net）";
+      setStatus("Tesseract.js 加载失败：本地库文件缺失，请刷新重试。", true);
+      outEl.textContent = "（本地库与语言模型，无需联网）";
       return;
     }
     busy = true;
@@ -55,10 +55,13 @@
     outEl.textContent = "";
     try {
       worker = await window.Tesseract.createWorker(lang, 1, {
+        workerPath: "../assets/vendor/tesseract/worker.min.js",
+        corePath: "../assets/vendor/tesseract/core",
+        langPath: "../assets/vendor/tesseract/lang",
         logger: function (m) {
           if (m && typeof m.progress === "number") {
             var pct = Math.round(m.progress * 100);
-            setStatus("识别中：模型 " + (m.status || "") + " " + pct + "%（首次使用会下载模型，稍候）");
+            setStatus("识别中：模型 " + (m.status || "") + " " + pct + "%（加载本地语言模型，稍候）");
           }
         }
       });
@@ -99,8 +102,8 @@
   if (input) input.addEventListener("change", function (e) { var f = e.target.files && e.target.files[0]; if (f) handleFile(f); });
   document.getElementById("ocr-sample").addEventListener("click", drawSample);
   if (!libReady()) {
-    setStatus("Tesseract.js 加载失败：离线或 CDN 不可用，请联网后刷新。", true);
+    setStatus("Tesseract.js 加载失败：本地库文件缺失，请刷新重试。", true);
   } else {
-    setStatus("Tesseract.js 就绪。首次识别会自动下载模型（10~15MB）。");
+    setStatus("Tesseract.js 就绪。首次识别会加载本地语言模型（10~15MB）。");
   }
 })();

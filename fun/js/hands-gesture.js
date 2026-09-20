@@ -1,4 +1,4 @@
-/* nocau fun P000040: 手势识别（MediaPipe Hands + Camera Utils，CDN 加载；需联网） */
+/* nocau fun P000040: 手势识别（MediaPipe Hands + Camera Utils，本地资源加载） */
 (function () {
   "use strict";
   var video = document.getElementById("hd-video");
@@ -8,7 +8,7 @@
   var statusEl = document.getElementById("hd-status");
   var hands = null, camera = null, running = false;
 
-  function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#e06c75" : "var(--color-muted,#9aa3b2)"; }
+  function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#e06c75" : "var(--color-muted)"; }
   function libReady() {
     return typeof window.Hands === "function" && typeof window.Camera === "function" && typeof window.drawConnectors === "function";
   }
@@ -54,16 +54,16 @@
   }
   function setup() {
     if (!libReady()) {
-      setStatus("MediaPipe 库加载失败：离线或 CDN 不可用，请联网后刷新重试。", true);
-      gestureEl.textContent = "需联网";
+      setStatus("MediaPipe 库加载失败：本地资源缺失，请刷新重试。", true);
+      gestureEl.textContent = "库未就绪";
       return;
     }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setStatus("当前浏览器不支持摄像头，或需在 https / localhost 下访问。", true);
       return;
     }
-    setStatus("正在初始化 MediaPipe Hands（需联网下载模型，首次约 6MB）…");
-    hands = new Hands({ locateFile: function (file) { return "https://cdn.jsdelivr.net/npm/@mediapipe/hands/" + file; } });
+    setStatus("正在初始化 MediaPipe Hands（加载本地模型，首次约 6MB）…");
+    hands = new Hands({ locateFile: function (file) { return "../assets/vendor/mediapipe/hands/" + file; } });
     hands.setOptions({
       maxNumHands: 1,
       modelComplexity: 1,
@@ -98,9 +98,9 @@
   document.getElementById("hd-stop").addEventListener("click", stopAll);
   window.addEventListener("pagehide", function () { if (running) stopAll(); });
   if (!libReady()) {
-    setStatus("MediaPipe 库加载失败：离线或 CDN 不可用，请联网后刷新重试。", true);
-    gestureEl.textContent = "需联网";
+    setStatus("MediaPipe 库加载失败：本地资源缺失，请刷新重试。", true);
+    gestureEl.textContent = "库未就绪";
   } else {
-    setStatus("MediaPipe 已就绪（需联网）。点击“开启手势识别”并允许摄像头。");
+    setStatus("MediaPipe 已就绪（本地模型）。点击“开启手势识别”并允许摄像头。");
   }
 })();

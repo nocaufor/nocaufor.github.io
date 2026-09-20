@@ -52,9 +52,9 @@
         .ag-btns .btn{min-width:96px}
         .ag-log{display:flex;flex-direction:column;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;max-height:200px;overflow:auto;font-size:0.86rem;text-align:left}
         .ag-log .q{color:var(--text-soft)}
-        .ag-log .a{color:var(--brand)}
+        .ag-log .a{color:var(--brand-text,var(--brand))}
         .ag-hint{font-size:0.8rem;color:var(--text-soft);text-align:center}
-        .ag-msg{font-size:1rem;color:var(--brand);min-height:1.5em;text-align:center}
+        .ag-msg{font-size:1rem;color:var(--brand-text,var(--brand));min-height:1.5em;text-align:center}
       </style>
       <div class="ag-wrap" id="ag-root">
         <p class="ag-msg">心里想一个常见物品，我来猜。</p>
@@ -95,7 +95,265 @@ function answer(prop, value) {
   if (candidates.length === 1) guess(candidates[0].name);
 }</code></pre></div></section>
     </div>
-    <div class="fun-footer">
+<section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-ai-guess">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">纯前端 · 零依赖</span><span class="deploy-badge info">双击 index.html 即用</span></div>
+  <div class="code-card"><p>把演示区的「20 问猜物」抽成一个独立小工程：4 个文件、零依赖，逻辑与演示区一致（信息量优先提问），并额外提供 <code>simulate()</code> 供命令行自测。</p></div>
+  <div class="deploy-tree">ai-guess/
+├─ index.html      页面骨架
+├─ app.js          核心算法 + 交互层
+├─ styles.css      样式（跟随系统深浅色）
+└─ README.md       运行方式与扩展点
+</div>
+  <div class="deploy-file">
+    <h3>index.html</h3>
+    <p class="file-note">页面骨架：问题区 / 按钮区 / 提问日志</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="index.html"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;20 问猜物 · 独立工程版&lt;/title&gt;
+  &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;main class="wrap"&gt;
+    &lt;h1&gt;20 问猜物&lt;/h1&gt;
+    &lt;p class="sub"&gt;心里想一个常见物品，AI 用区分度最高的提问逐步缩小候选范围。&lt;/p&gt;
+    &lt;section class="panel"&gt;
+      &lt;p id="q" class="q"&gt;准备好了吗？&lt;/p&gt;
+      &lt;div id="btns" class="btns"&gt;&lt;/div&gt;
+      &lt;p id="msg" class="msg"&gt;&lt;/p&gt;
+    &lt;/section&gt;
+    &lt;h2&gt;提问日志&lt;/h2&gt;
+    &lt;section class="log-wrap"&gt;&lt;div id="log" class="log"&gt;&lt;/div&gt;&lt;/section&gt;
+  &lt;/main&gt;
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.js</h3>
+    <p class="file-note">核心算法 + 浏览器交互层（含 simulate 自测入口）</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="app.js"><code>/* app.js —— 20 问猜物：核心算法 + 浏览器交互（node 中可直接 require 做逻辑自测） */
+var ITEMS = [
+  { name: "冰箱", props: ["电器", "能制冷", "有门", "放在厨房", "插电使用", "体积较大"] },
+  { name: "空调", props: ["电器", "能制冷", "挂在高处", "插电使用", "遥控操作", "体积较大"] },
+  { name: "手机", props: ["电器", "能上网", "屏幕", "放进口袋", "触屏操作", "随身携带"] },
+  { name: "电脑", props: ["电器", "能上网", "屏幕", "有键盘", "办公使用", "体积较大"] },
+  { name: "台灯", props: ["电器", "能发光", "插电使用", "放在桌上", "手动开关", "体积较小"] },
+  { name: "雨伞", props: ["能挡雨", "可折叠", "出门携带", "布类材质", "手持使用"] },
+  { name: "帽子", props: ["能遮阳", "穿戴身上", "布类材质", "出门携带"] },
+  { name: "眼镜", props: ["戴在脸上", "玻璃镜片", "出门携带", "体积较小"] },
+  { name: "牙刷", props: ["洗漱用品", "放进口袋", "体积较小", "塑料材质", "手动使用"] },
+  { name: "水杯", props: ["装液体", "放在桌上", "出门携带", "杯状容器", "体积较小"] },
+  { name: "书包", props: ["装物品", "背在身上", "出门携带", "布类材质", "体积较大"] },
+  { name: "吉他", props: ["乐器", "能发声", "手持使用", "木制材质", "体积较大"] },
+  { name: "篮球", props: ["运动器材", "圆形球体", "能弹跳", "户外运动", "体积较大"] },
+  { name: "钥匙", props: ["金属材质", "放进口袋", "体积较小", "出门携带", "开锁使用"] }
+];
+var ALL_PROPS = ["电器", "能上网", "能制冷", "能发光", "能挡雨", "能发声", "能弹跳", "屏幕",
+  "有门", "插电使用", "触屏操作", "戴在脸上", "背在身上", "手持使用", "放在桌上", "放在厨房",
+  "放进口袋", "出门携带", "体积较小", "体积较大", "金属材质", "塑料材质", "布类材质", "木制材质",
+  "玻璃镜片", "圆形球体", "户外运动", "随身携带", "手动开关", "穿戴身上", "洗漱用品", "装液体",
+  "杯状容器", "有键盘", "办公使用", "遥控操作", "挂在高处", "能遮阳", "可折叠", "开锁使用"];
+
+/* 信息量优先：选 yes/no 最接近平分的属性作为下一个问题 */
+function bestQuestion(candidates, asked) {
+  var best = null, bestScore = -Infinity;
+  for (var i = 0; i &lt; ALL_PROPS.length; i++) {
+    var prop = ALL_PROPS[i];
+    if (asked.indexOf(prop) &gt;= 0) continue;
+    var yes = 0;
+    for (var j = 0; j &lt; candidates.length; j++) {
+      if (candidates[j].props.indexOf(prop) &gt;= 0) yes++;
+    }
+    var score = -Math.abs(yes - (candidates.length - yes));
+    if (score &gt; bestScore) { bestScore = score; best = prop; }
+  }
+  return best;
+}
+
+function filterBy(candidates, prop, value) {
+  return candidates.filter(function (it) {
+    var has = it.props.indexOf(prop) &gt;= 0;
+    if (value === "yes") return has;
+    if (value === "no") return !has;
+    return true;
+  });
+}
+
+/* simulate：用一个"诚实回答者"跑完整流程，返回 {rounds, hit, left} —— 最小用例自测入口 */
+function simulate(targetName) {
+  var target = null;
+  for (var i = 0; i &lt; ITEMS.length; i++) if (ITEMS[i].name === targetName) target = ITEMS[i];
+  if (!target) throw new Error("未知物品：" + targetName);
+  var candidates = ITEMS.slice(), asked = [], rounds = 0;
+  while (rounds &lt; 20) {
+    var prop = bestQuestion(candidates, asked);
+    if (!prop) break;
+    rounds++;
+    asked.push(prop);
+    candidates = filterBy(candidates, prop, target.props.indexOf(prop) &gt;= 0 ? "yes" : "no");
+    if (candidates.length &lt;= 1) break;
+  }
+  return { rounds: rounds, hit: candidates.length === 1 &amp;&amp; candidates[0].name === targetName,
+           left: candidates.map(function (c) { return c.name; }).join("、") };
+}
+
+if (typeof module !== "undefined" &amp;&amp; module.exports) {
+  module.exports = { ITEMS: ITEMS, ALL_PROPS: ALL_PROPS, bestQuestion: bestQuestion, filterBy: filterBy, simulate: simulate };
+}
+
+/* ---- 浏览器交互层（node 环境下自动跳过） ---- */
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    var qEl = document.getElementById("q"), btnEl = document.getElementById("btns"),
+        logEl = document.getElementById("log"), msgEl = document.getElementById("msg");
+    var candidates = [], asked = [], rounds = 0;
+
+    function say(text) {
+      var d = document.createElement("div");
+      d.textContent = text;
+      logEl.appendChild(d);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    function buttons(list) {
+      btnEl.innerHTML = "";
+      list.forEach(function (item) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = item[2] || "btn";
+        b.textContent = item[0];
+        b.addEventListener("click", item[1]);
+        btnEl.appendChild(b);
+      });
+    }
+    function finish(won, reason) {
+      var left = candidates.map(function (c) { return c.name; }).join("、");
+      if (won) {
+        qEl.textContent = "我猜到了：是「" + candidates[0].name + "」！";
+        msgEl.textContent = "用了 " + rounds + " 问，命中 " + candidates[0].name + "。";
+      } else if (reason === "empty") {
+        qEl.textContent = "没有匹配的候选了，我认输。";
+        msgEl.textContent = "这个物品不在候选库里，可在 ITEMS 中补充。";
+      } else if (reason === "noprop") {
+        qEl.textContent = "没有更有区分度的问题了，我认输。";
+        msgEl.textContent = "剩余候选：" + left;
+      } else {
+        qEl.textContent = "超过 20 问，我认输。";
+        msgEl.textContent = "剩余候选：" + left;
+      }
+      buttons([["再来一局", start, "btn"]]);
+    }
+    function ask() {
+      rounds++;
+      var prop = bestQuestion(candidates, asked);
+      if (!prop) { finish(false, "noprop"); return; }
+      if (rounds &gt; 20) { finish(false, "rounds"); return; }
+      asked.push(prop);
+      qEl.textContent = "第 " + rounds + " 问：" + prop + "？";
+      buttons([
+        ["是", function () { answer(prop, "yes"); }],
+        ["否", function () { answer(prop, "no"); }],
+        ["不确定", function () { answer(prop, "maybe"); }, "btn ghost"]
+      ]);
+    }
+    function answer(prop, value) {
+      say("Q" + rounds + " " + prop + " → " + (value === "yes" ? "是" : value === "no" ? "否" : "不确定"));
+      candidates = filterBy(candidates, prop, value);
+      if (candidates.length === 1) { finish(true); return; }
+      if (candidates.length === 0) { finish(false, "empty"); return; }
+      ask();
+    }
+    function start() {
+      candidates = ITEMS.slice();
+      asked = [];
+      rounds = 0;
+      logEl.innerHTML = "";
+      msgEl.textContent = "心里想一个常见物品，我来猜（候选 " + ITEMS.length + " 个）。";
+      ask();
+    }
+    buttons([["开始游戏", start]]);
+  });
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>styles.css</h3>
+    <p class="file-note">样式：跟随系统深浅色，全部用 CSS 变量</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="styles.css"><code>:root {
+  --bg: #0e1014; --panel: #171a20; --ink: #e8ecf1; --muted: #9aa4b2; --line: #262b33; --brand: #6fb3a8;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f6f7f8; --panel: #ffffff; --ink: #1a1d21; --muted: #5b636e; --line: #e3e6ea; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 6px; }
+h2 { font-size: 1.05rem; margin: 22px 0 10px; }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.panel, .log-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.q { font-size: 1.06rem; margin: 0 0 12px; }
+.btns, .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--brand);
+  background: var(--brand); color: #0b0f12; cursor: pointer; font-size: .92rem;
+}
+.btn.ghost { background: transparent; color: var(--brand); }
+.msg { color: var(--muted); margin: 12px 0 0; font-size: .92rem; }
+.log { max-height: 200px; overflow: auto; font-size: .88rem; color: var(--muted); }
+.log div { padding: 3px 0; border-bottom: 1px dashed var(--line); }
+input, select {
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); font: inherit;
+}
+canvas { width: 100%; display: block; border-radius: 10px; }
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行方式、自测命令与扩展点</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 20 问猜物（独立可运行工程）
+
+把作品站 fun 区的「AI 猜物 20 问」演示抽成的最小可运行工程：零依赖、纯前端。
+
+## 文件
+- `index.html`：页面骨架（问题区 / 按钮区 / 提问日志）
+- `app.js`：核心算法（属性表 + 信息量优先提问 + 过滤）与浏览器交互层
+- `styles.css`：样式（跟随系统深浅色）
+
+## 运行
+1. 双击 `index.html`，或 `python -m http.server 8000` 后访问 http://localhost:8000/
+2. 逻辑自测：`node -e "console.log(require('./app.js').simulate('手机'))"` → 期望 `{ rounds: 4, hit: true, left: '手机' }` 之类结果
+
+## 扩展点
+- 想扩充物品：在 `app.js` 的 `ITEMS` 中按 `{ name, props }` 增加，并把新属性加入 `ALL_PROPS`
+- 想换成"任意问题"：把 `bestQuestion` 替换为你的打分函数即可（例如接大模型生成候选问题）
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行方式</h3><ol><li>新建一个目录，把上面全部文件按文件名分别保存（用「一键复制整份工程」可一次拿全）。</li><li>前端部分：直接双击 <code>index.html</code> 即可运行；若浏览器限制本地文件读取，执行 <code>python -m http.server 8000</code> 后访问 <code>http://localhost:8000/</code>。</li><li>逻辑自测：各文件 <code>README.md</code> 中给出了对应的 Node / Python 自测命令（均为真实可跑的最小用例）。</li></ol><p class="file-note">标注：可直接运行、无需构建；要改造只需动 <code>app.js</code> 顶部的常量与 <code>styles.css</code> 里的变量。</p></div>
+  <!-- inject:howto -->
+<div class="deploy-steps code-card">
+  <p><strong>依赖清单：</strong>无第三方依赖 —— 纯前端（浏览器原生 JS/DOM），不需要 Node、不需要构建工具</p>
+  <p><strong>可直接运行：</strong><span class="deploy-badge info">可直接运行</span> 双击 <code>index.html</code> 即可开玩；命令行自测 <code>node -e "console.log(require('./app.js').simulate('手机'))"</code></p>
+  <p><strong>需先改的配置项：</strong><strong>无配置项需要修改</strong>。想扩充题库时改 <code>app.js</code> 的 <code>ITEMS</code> 与 <code>ALL_PROPS</code> 即可</p>
+</div>
+<div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-ai-guess">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现涉及的官方文档（可直接访问）：</p>
+<div class="src-links">
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript" target="_blank" rel="noopener">MDN · JavaScript 参考</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Document_Object_Model" target="_blank" rel="noopener">MDN · DOM 操作</a>
+</div></div></section>    <div class="fun-footer">
       <a href="index.html" class="btn btn-outline">← 返回代码开发合集</a>
     </div>
   </main>
@@ -113,6 +371,7 @@ function answer(prop, value) {
     </div>
   </footer>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/ai-guess.js"></script>
 </body>
 </html>

@@ -6,10 +6,10 @@
   <title>图片文字识别 OCR · nocau Fun</title>
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
-  <meta name="description" content="浏览器端 OCR 文字识别，基于开源 Tesseract.js（CDN 加载模型），支持中英文，图片本地处理。" />
+  <meta name="description" content="浏览器端 OCR 文字识别，基于开源 Tesseract.js（本地语言模型），支持中英文，图片本地处理。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://cdn.jsdelivr.net data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob: https://cdn.jsdelivr.net; child-src 'self' blob:" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; child-src 'self' blob:" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
@@ -41,7 +41,7 @@
   <main class="fun-main">
     <div class="fun-intro">
       <h1>图片文字识别 · Tesseract.js</h1>
-      <p>开源 <a href="https://github.com/naptha/tesseract.js" target="_blank" rel="noopener">Tesseract.js</a> 纯浏览器 OCR：首次运行会从 CDN 下载约 10~15MB 中英文识别模型，之后由浏览器缓存。图片不会上传。</p>
+      <p>开源 <a href="https://github.com/naptha/tesseract.js" target="_blank" rel="noopener">Tesseract.js</a> 纯浏览器 OCR：首次运行会加载约 10~15MB 本地中英文识别模型，之后由浏览器缓存。图片不会上传。</p>
     </div>
     <div class="fun-box">
       <style>
@@ -49,11 +49,11 @@
         .ocr-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
         .ocr-bar .btn{min-width:96px}
         .ocr-stage{width:100%;max-width:640px}
-        .ocr-stage canvas{width:100%;height:auto;display:block;background:var(--color-card,#0d1117);border:1px solid var(--color-border,#28303c);border-radius:12px}
-        .ocr-out{width:100%;max-width:640px;min-height:120px;background:#0a0d12;border:1px solid var(--color-border,#28303c);border-radius:12px;color:var(--color-text,#e8eefb);padding:14px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;word-break:break-word}
-        .ocr-status{font-size:0.84rem;min-height:1.3em;text-align:center;color:var(--color-muted,#9aa3b2)}
-        .ocr-opt{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;font-size:0.84rem;color:var(--color-muted,#9aa3b2)}
-        .ocr-opt select{background:#0d1117;color:var(--color-text,#e8eefb);border:1px solid var(--color-border,#28303c);border-radius:8px;padding:5px 10px}
+        .ocr-stage canvas{width:100%;height:auto;display:block;background:var(--color-card);border:1px solid var(--color-border);border-radius:12px}
+        .ocr-out{width:100%;max-width:640px;min-height:120px;background:#0a0d12;border:1px solid var(--color-border);border-radius:12px;color:var(--color-text);padding:14px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+        .ocr-status{font-size:0.84rem;min-height:1.3em;text-align:center;color:var(--color-muted)}
+        .ocr-opt{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;font-size:0.84rem;color:var(--color-muted)}
+        .ocr-opt select{background:#0d1117;color:var(--color-text);border:1px solid var(--color-border);border-radius:8px;padding:5px 10px}
       </style>
       <div class="ocr-wrap">
         <div class="ocr-bar">
@@ -92,7 +92,7 @@
       </nav>
     </div>
   </footer>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+  <script src="../assets/vendor/tesseract/tesseract.min.js"></script>
   <script src="js/fun-common.js"></script>
   <script src="js/ocr-text.js"></script>
 </body>

@@ -105,7 +105,337 @@ cap.release()
 <li>上方 Demo 可玩：移动瞄准、点击发射激光，命中蚊子计分。</li>
 <li>真实硬件思路：摄像头帧差检测运动目标 → 追踪坐标 → 舵机云台带动激光器。</li>
 <li>安全提醒：激光功率必须低于安全标准，仅用于展示，请勿照射人眼。</li>
-</ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>laser-mosquito-killer</code>、<code>opencv-object-tracking</code>、<code>pan-tilt-laser</code>。</p></div></section>
+</ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-laser">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">浏览器模拟零依赖</span><span class="deploy-badge warn">Python 版需 pip install</span></div>
+  <div class="code-card"><p>工程由两部分组成：浏览器 Canvas 模拟（瞄准 / 开火 / 命中 / 蚊群动力学）+ 真实硬件版核心 <code>tracking.py</code>（帧差检测 → 中心误差 → PID），后者自带 <code>--self-test</code>，不接摄像头也能验证链路。</p></div>
+  <div class="deploy-tree">laser-mosquito/
+├─ index.html      模拟画布 + 状态
+├─ app.js          蚊群推进 / 命中判定 / 渲染
+├─ styles.css      样式（跟随系统深浅色）
+├─ tracking.py     OpenCV 硬件版核心（含 --self-test）
+├─ requirements.txt
+└─ README.md       运行方式与扩展点
+</div>
+  <div class="deploy-file">
+    <h3>index.html</h3>
+    <p class="file-note">模拟画布 + 状态栏</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="index.html"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;激光追踪打蚊器模拟 · 独立工程版&lt;/title&gt;
+  &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;main class="wrap"&gt;
+    &lt;h1&gt;激光追踪打蚊器模拟&lt;/h1&gt;
+    &lt;p class="sub"&gt;Canvas 模拟监控画面：移动鼠标瞄准、点击发射激光；附 OpenCV 真实硬件版核心代码。&lt;/p&gt;
+    &lt;section class="panel"&gt;
+      &lt;div class="row"&gt;
+        &lt;button id="add" type="button" class="btn ghost"&gt;加一只&lt;/button&gt;
+        &lt;span class="msg" id="stat" style="margin:0"&gt;命中 0 / 发射 0&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+    &lt;h2&gt;模拟画面&lt;/h2&gt;
+    &lt;div class="panel" style="position:relative;padding:8px"&gt;
+      &lt;canvas id="scene" height="320"&gt;&lt;/canvas&gt;
+    &lt;/div&gt;
+    &lt;p class="msg"&gt;提示：点击画布即开火，命中判定半径 32px。&lt;/p&gt;
+  &lt;/main&gt;
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.js</h3>
+    <p class="file-note">蚊群推进 / 命中判定（hitTest 可测） / 渲染</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="app.js"><code>/* app.js —— 激光打蚊器模拟（含可复用的命中判定纯函数） */
+var HIT_RADIUS = 32;
+
+/* hitTest：返回被命中的蚊子下标，未命中返回 -1（纯函数，node 可测） */
+function hitTest(mosq, x, y, r) {
+  r = r || HIT_RADIUS;
+  for (var i = 0; i &lt; mosq.length; i++) {
+    var dx = mosq[i].x - x, dy = mosq[i].y - y;
+    if (dx * dx + dy * dy &lt; r * r) return i;
+  }
+  return -1;
+}
+
+/* stepAll：推进一帧（边界反弹 + 寿命） */
+function stepAll(mosq, w, h) {
+  for (var i = mosq.length - 1; i &gt;= 0; i--) {
+    var m = mosq[i];
+    m.x += m.vx; m.y += m.vy;
+    if (m.x &lt; 10 || m.x &gt; w - 10) m.vx *= -1;
+    if (m.y &lt; 10 || m.y &gt; h - 40) m.vy *= -1;
+    m.life--;
+  }
+  return mosq.filter(function (m) { return m.life &gt; 0; });
+}
+
+if (typeof module !== "undefined" &amp;&amp; module.exports) {
+  module.exports = { HIT_RADIUS: HIT_RADIUS, hitTest: hitTest, stepAll: stepAll };
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    var canvas = document.getElementById("scene"), ctx = canvas.getContext("2d");
+    var statEl = document.getElementById("stat"), addBtn = document.getElementById("add");
+    var W = 0, H = 320, mosq = [], score = 0, shots = 0;
+    var mouse = { x: -100, y: -100 };
+
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = canvas.clientWidth;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function spawn() {
+      mosq.push({ x: 20 + Math.random() * (W - 40), y: 20 + Math.random() * (H - 60),
+        vx: (Math.random() - 0.5) * 1.4, vy: (Math.random() - 0.5) * 1.4,
+        r: 4 + Math.random() * 2, life: 260 + Math.random() * 120 });
+    }
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = "#0b1118";
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = "rgba(90,140,90,0.28)";
+      for (var gx = 0; gx &lt; W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+      for (var gy = 0; gy &lt; H; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+      mosq.forEach(function (m) {
+        ctx.fillStyle = "#d9a066";
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.strokeStyle = "rgba(231,76,60,0.55)";
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(mouse.x, mouse.y - 60); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    function tick() {
+      mosq = stepAll(mosq, W, H);
+      if (mosq.length &lt; 8 &amp;&amp; Math.random() &lt; 0.01) spawn();
+      draw();
+      requestAnimationFrame(tick);
+    }
+    function fire() {
+      shots++;
+      var hit = hitTest(mosq, mouse.x, mouse.y);
+      if (hit &gt;= 0) { score++; mosq.splice(hit, 1); spawn(); }
+      statEl.textContent = "命中 " + score + " / 发射 " + shots;
+    }
+    canvas.addEventListener("mousemove", function (e) {
+      var rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    });
+    canvas.addEventListener("click", fire);
+    canvas.addEventListener("pointerdown", function (e) { if (e.pointerType === "touch") fire(); });
+    addBtn.addEventListener("click", function () { spawn(); });
+    window.addEventListener("resize", resize);
+    resize();
+    spawn(); spawn(); spawn();
+    tick();
+  });
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>styles.css</h3>
+    <p class="file-note">样式：跟随系统深浅色</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="styles.css"><code>:root {
+  --bg: #0e1014; --panel: #171a20; --ink: #e8ecf1; --muted: #9aa4b2; --line: #262b33; --brand: #6fb3a8;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f6f7f8; --panel: #ffffff; --ink: #1a1d21; --muted: #5b636e; --line: #e3e6ea; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 6px; }
+h2 { font-size: 1.05rem; margin: 22px 0 10px; }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.panel, .log-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.q { font-size: 1.06rem; margin: 0 0 12px; }
+.btns, .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--brand);
+  background: var(--brand); color: #0b0f12; cursor: pointer; font-size: .92rem;
+}
+.btn.ghost { background: transparent; color: var(--brand); }
+.msg { color: var(--muted); margin: 12px 0 0; font-size: .92rem; }
+.log { max-height: 200px; overflow: auto; font-size: .88rem; color: var(--muted); }
+.log div { padding: 3px 0; border-bottom: 1px dashed var(--line); }
+input, select {
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); font: inherit;
+}
+canvas { width: 100%; display: block; border-radius: 10px; }
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>tracking.py</h3>
+    <p class="file-note">OpenCV 硬件版核心：运动检测 + PID（含 --self-test）</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="tracking.py"><code># tracking.py —— OpenCV 真实硬件版核心：运动目标检测 + 激光指向
+# 依赖：opencv-python（见 requirements.txt）
+# 运行：python tracking.py --self-test        # 无需摄像头，用合成帧验证算法链路
+#       python tracking.py --camera 0          # 接摄像头实测
+import argparse
+
+import numpy as np
+
+
+def detect_motion(prev_gray, gray, min_area=40):
+    # 帧差法找运动目标，返回按面积降序的候选框 [(x, y, w, h), ...]
+    diff = cv2_absdiff(prev_gray, gray)
+    blurred = cv2_blur(diff)
+    thresh = (blurred &gt; 25).astype("uint8") * 255
+    boxes = cv2_find_contours(thresh)
+    boxes = [b for b in boxes if b[2] * b[3] &gt;= min_area]
+    return sorted(boxes, key=lambda b: b[2] * b[3], reverse=True)
+
+
+def aim_error(box, frame_w, frame_h):
+    # 目标框中心相对画面中心的偏移（激光云台 PID 的输入误差）
+    cx = box[0] + box[2] / 2.0
+    cy = box[1] + box[3] / 2.0
+    return cx - frame_w / 2.0, cy - frame_h / 2.0
+
+
+def pid_step(err_x, err_y, kp=0.35, kd=0.12, last=(0.0, 0.0)):
+    # 最小 PID：输出两轴增量角度，返回 (out_x, out_y, 新误差缓存)
+    out_x = kp * err_x + kd * (err_x - last[0])
+    out_y = kp * err_y + kd * (err_y - last[1])
+    return out_x, out_y, (err_x, err_y)
+
+
+# ---- 以下为无 OpenCV 时的纯 numpy 替身，保证 --self-test 在最小环境下也能跑通 ----
+def cv2_absdiff(a, b):
+    return np.abs(a.astype("int16") - b.astype("int16")).astype("uint8")
+
+
+def cv2_blur(img, k=5):
+    pad = k // 2
+    out = np.zeros_like(img, dtype="float32")
+    padded = np.pad(img.astype("float32"), pad, mode="edge")
+    for dy in range(k):
+        for dx in range(k):
+            out += padded[dy:dy + img.shape[0], dx:dx + img.shape[1]]
+    return (out / (k * k)).astype("uint8")
+
+
+def cv2_find_contours(mask, thr=200):
+    # 极简连通域：按行扫描把超过阈值的像素聚成矩形（足够演示用）
+    ys, xs = np.where(mask &gt; thr)
+    if len(xs) == 0:
+        return []
+    return [(int(xs.min()), int(ys.min()), int(xs.max() - xs.min() + 1), int(ys.max() - ys.min() + 1))]
+
+
+def self_test():
+    h, w = 120, 160
+    frames = []
+    for i in range(3):
+        f = np.zeros((h, w), dtype="uint8")
+        f[40 + i * 6:70 + i * 6, 50 + i * 8:90 + i * 8] = 255   # 模拟一只移动的蚊子
+        frames.append(f)
+    boxes = detect_motion(frames[0], frames[-1])
+    assert boxes, "未检测到运动目标"
+    ex, ey = aim_error(boxes[0], w, h)
+    ox, oy, cache = pid_step(ex, ey)
+    print("目标框:", boxes[0])
+    print("画面中心误差: x=%.1f y=%.1f" % (ex, ey))
+    print("PID 输出增量: x=%.2f y=%.2f" % (ox, oy))
+    print("self-test OK")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--self-test", action="store_true")
+    ap.add_argument("--camera", type=int, default=-1)
+    a = ap.parse_args()
+    if a.self_test:
+        self_test()
+        return
+    if a.camera &lt; 0:
+        print("请指定 --camera 0 或使用 --self-test")
+        return
+    import cv2   # 真实运行时才需要
+    cap = cv2.VideoCapture(a.camera)
+    ok, prev = cap.read()
+    prev_gray = cv2.cvtColor(prev, cv2.COLOR_BGR2GRAY)
+    cache = (0.0, 0.0)
+    while ok:
+        ok, frame = cap.read()
+        if not ok:
+            break
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        for box in detect_motion(prev_gray, gray):
+            ex, ey = aim_error(box, frame.shape[1], frame.shape[0])
+            _, _, cache = pid_step(ex, ey, last=cache)
+        prev_gray = gray
+    cap.release()
+
+
+if __name__ == "__main__":
+    main()
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">Python 依赖清单</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code>numpy&gt;=1.24
+# 接真实摄像头时才需要：
+# opencv-python&gt;=4.8
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行方式与扩展点</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 激光追踪打蚊器模拟（独立可运行工程）
+
+作品站 fun 区「激光追踪打蚊器模拟」的独立工程版：浏览器模拟画面 + 真实硬件版 OpenCV 核心。
+
+## 文件
+- `index.html` / `app.js` / `styles.css`：Canvas 模拟（瞄准、开火、命中判定、蚊群边界反弹）
+- `tracking.py`：真实硬件版核心链路（帧差运动检测 → 目标中心误差 → PID 增量）
+- `requirements.txt`：Python 依赖（最小环境只需 numpy，接摄像头再加 opencv-python）
+
+## 运行
+- 浏览器模拟：双击 `index.html`，点击画布开火
+- 命中判定自测：`node -e "console.log(require('./app.js').hitTest([{x:10,y:10}], 20, 20))"` → 期望 `0`
+- 硬件版链路自测：`pip install -r requirements.txt` 后 `python tracking.py --self-test`
+- 接摄像头实测：`python tracking.py --camera 0`（需安装 opencv-python）
+
+## 扩展点
+- 真实激光云台：把 `pid_step` 的输出接到串口（如 pyserial 控制二维云台舵机）
+- 更稳的检测：把帧差法换成背景建模（MOG2）或 YOLO 小目标检测
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行方式</h3><ol><li>新建一个目录，把上面全部文件按文件名分别保存（用「一键复制整份工程」可一次拿全）。</li><li>前端部分：直接双击 <code>index.html</code> 即可运行；若浏览器限制本地文件读取，执行 <code>python -m http.server 8000</code> 后访问 <code>http://localhost:8000/</code>。</li><li>逻辑自测：各文件 <code>README.md</code> 中给出了对应的 Node / Python 自测命令（均为真实可跑的最小用例）。</li></ol><p class="file-note">标注：可直接运行、无需构建；要改造只需动 <code>app.js</code> 顶部的常量与 <code>styles.css</code> 里的变量。</p></div>
+  <!-- inject:howto -->
+<div class="deploy-steps code-card">
+  <p><strong>依赖清单：</strong>浏览器模拟：无依赖；硬件版核心：<code>numpy</code>（最小环境），接摄像头再加 <code>opencv-python</code></p>
+  <p><strong>可直接运行：</strong><span class="deploy-badge info">可直接运行</span> 双击 <code>index.html</code> 点画布开火；链路自测 <code>python tracking.py --self-test</code>（装完 numpy 即可）</p>
+  <p><strong>需先改的配置项：</strong>接真摄像头：改 <code>--camera</code> 索引并安装 <code>opencv-python</code>；PID 三个增益在 <code>tracking.py</code> 顶部常量里</p>
+</div>
+<div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-laser">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现涉及的官方文档（可直接访问）：</p>
+<div class="src-links">
+<a href="https://docs.opencv.org/4.x/d1/dc5/tutorial_background_subtraction.html" target="_blank" rel="noopener">OpenCV · 运动目标检测教程</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API" target="_blank" rel="noopener">MDN · Canvas API</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -128,6 +458,7 @@ cap.release()
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/laser-mosquito.js"></script>
 </body>
 </html>

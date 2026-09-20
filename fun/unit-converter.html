@@ -54,6 +54,41 @@
           <span class="tag">来源：GitHub 参考</span>
         </div>
       </div>
+<section class="code-section"><h2>在线演示</h2>
+<div class="demo-panel" id="uc-demo">
+  <div class="demo-grid">
+    <div class="demo-field">
+      <label for="uc-cat">换算类别</label>
+      <select id="uc-cat" class="demo-input"></select>
+    </div>
+    <div class="demo-field">
+      <label for="uc-val">数值</label>
+      <input id="uc-val" class="demo-input" type="number" step="any" value="100" />
+    </div>
+    <div class="demo-field">
+      <label for="uc-from">源单位</label>
+      <select id="uc-from" class="demo-input"></select>
+    </div>
+    <div class="demo-field">
+      <label for="uc-to">目标单位</label>
+      <select id="uc-to" class="demo-input"></select>
+    </div>
+  </div>
+  <div class="demo-actions">
+    <button type="button" class="btn" id="uc-run">换算</button>
+    <button type="button" class="btn btn-outline" id="uc-swap">交换单位</button>
+    <button type="button" class="btn btn-outline" id="uc-table">生成该类换算表</button>
+  </div>
+  <div class="demo-kpis" style="margin-top:16px">
+    <div class="demo-kpi"><b id="uc-k-value">—</b><span>换算结果</span></div>
+    <div class="demo-kpi"><b id="uc-k-factor">—</b><span>换算系数</span></div>
+    <div class="demo-kpi"><b id="uc-k-formula">—</b><span>换算方式</span></div>
+  </div>
+  <div class="demo-output" id="uc-out"></div>
+  <div id="uc-tblwrap" style="display:none;margin-top:14px"></div>
+  <p class="demo-status" id="uc-status">等待操作：选择类别与源 / 目标单位，输入数值后点击“换算”。</p>
+</div>
+</section>
 <section class="code-section"><h2>项目简介</h2><div class="code-card"><p>日常开发与写作里最常见的需求之一：把 16 寸换算成厘米、把 1.5TB 换算成 GB。本页给出一个<strong>因子表驱动</strong>的单位换算器：每种物理量维护一张换算因子表，输入数值即可在任意单位间实时换算，逻辑清晰、易于扩展。</p></div></section><section class="code-section"><h2>代码示例：因子表驱动换算</h2><div class="code-block"><span class="code-lang-badge">js</span><pre><code>const CATEGORIES = {
   length: { base: "m",
     units: { mm: 0.001, cm: 0.01, m: 1, km: 1000,
@@ -86,7 +121,292 @@ const TEMP = {
 function convertTemp(value, from, to) {
   if (from === to) return value;
   return TEMP[from][to](value);
-}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>选择物理量（长度 / 重量 / 数据量 / 温度），输入数值并选择源单位与目标单位。</li><li>结果实时更新：线性量走因子表统一换算，温度走公式分支。</li><li>新增单位只需在 <code>units</code> 表里加一行因子，无需改动换算逻辑。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>unit-converter-js</code>、<code>measurement-conversion</code>（链接可替换为实际仓库地址）。</p></div></section>
+}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>选择物理量（长度 / 重量 / 数据量 / 温度），输入数值并选择源单位与目标单位。</li><li>结果实时更新：线性量走因子表统一换算，温度走公式分支。</li><li>新增单位只需在 <code>units</code> 表里加一行因子，无需改动换算逻辑。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-unit-converter">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">零第三方依赖</span><span class="deploy-badge info">Python 3.8+</span></div>
+  <div class="code-card"><p>下面是完整工程（非片段）：保存为同一目录后即可用 <code>python convert.py --value 100 --from km --to mile</code> 直接换算。单位表外置为 <code>units.json</code>，新增单位无需改代码。</p></div>
+  <div class="deploy-tree">unit-converter/<br>&nbsp;&nbsp;├── convert.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 换算核心 + CLI<br>&nbsp;&nbsp;├── units.json&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 单位因子 / 仿射参数<br>&nbsp;&nbsp;├── test_convert.py&nbsp;# 最小用例回归<br>&nbsp;&nbsp;├── requirements.txt<br>&nbsp;&nbsp;└── README.md</div>
+  <div class="deploy-file">
+    <h3>units.json</h3>
+    <p class="file-note">单位表：线性类别给因子，温度给 scale / offset。可自行增删单位。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="units.json"><code>{
+  "length": {
+    "label": "长度",
+    "base": "m",
+    "units": {"mm": 0.001, "cm": 0.01, "m": 1, "km": 1000, "in": 0.0254, "ft": 0.3048, "yd": 0.9144, "mile": 1609.344, "nmi": 1852}
+  },
+  "mass": {
+    "label": "质量",
+    "base": "kg",
+    "units": {"mg": 1e-06, "g": 0.001, "kg": 1, "t": 1000, "oz": 0.028349523125, "lb": 0.45359237}
+  },
+  "data": {
+    "label": "数据量",
+    "base": "B",
+    "units": {"bit": 0.125, "B": 1, "KiB": 1024, "MiB": 1048576, "GiB": 1073741824, "TiB": 1099511627776, "KB": 1000, "MB": 1000000, "GB": 1000000000, "TB": 1000000000000}
+  },
+  "time": {
+    "label": "时间",
+    "base": "s",
+    "units": {"ms": 0.001, "s": 1, "min": 60, "h": 3600, "day": 86400, "week": 604800}
+  },
+  "temperature": {
+    "label": "温度",
+    "base": "C",
+    "affine": {"C": {"scale": 1, "offset": 0}, "F": {"scale": 0.5555555555555556, "offset": -32}, "K": {"scale": 1, "offset": -273.15}}
+  }
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>convert.py</h3>
+    <p class="file-note">换算核心与命令行入口；--selftest 内含 8 个断言用例。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="convert.py"><code>#!/usr/bin/env python3
+"""多类别单位换算 CLI（零第三方依赖，仅标准库）
+
+用法示例：
+    python convert.py --value 100 --from km --to mile
+    python convert.py --value 100 --from C --to F --json
+    python convert.py --list length
+    python convert.py --table length --unit m
+    python convert.py --selftest
+"""
+import argparse
+import json
+import sys
+from decimal import Decimal, getcontext
+from pathlib import Path
+
+getcontext().prec = 28
+UNITS_FILE = Path(__file__).with_name("units.json")
+
+
+def load_units(path=None):
+    """读取单位表；缺失文件时给出明确提示而不是静默失败。"""
+    p = Path(path) if path else UNITS_FILE
+    if not p.exists():
+        raise SystemExit("未找到单位表 %s，请与 convert.py 放在同一目录。" % p)
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def find_category(data, unit):
+    for name, cat in data.items():
+        pool = cat.get("units") or cat.get("affine") or {}
+        if unit in pool:
+            return name, cat
+    raise KeyError("未知单位：%s（可用 --list &lt;类别&gt; 查看）" % unit)
+
+
+def to_base(value, unit, cat):
+    v = Decimal(str(value))
+    if "affine" in cat:
+        a = cat["affine"][unit]
+        return (v + Decimal(str(a["offset"]))) * Decimal(str(a["scale"]))
+    return v * Decimal(str(cat["units"][unit]))
+
+
+def from_base(value, unit, cat):
+    v = Decimal(value)
+    if "affine" in cat:
+        a = cat["affine"][unit]
+        return v / Decimal(str(a["scale"])) - Decimal(str(a["offset"]))
+    return v / Decimal(str(cat["units"][unit]))
+
+
+def convert(value, src, dst, data=None):
+    """返回 (结果, 类别名, 中间基准量)。跨类别换算直接报错，避免静默给出错误数字。"""
+    data = data or load_units()
+    cs, scat = find_category(data, src)
+    cd, dcat = find_category(data, dst)
+    if cs != cd:
+        raise ValueError("跨类别换算不支持：%s(%s) -&gt; %s(%s)" % (src, cs, dst, cd))
+    base = to_base(value, src, scat)
+    return from_base(base, dst, scat), cs, base
+
+
+def fmt(x):
+    """12 位有效数字后去尾零，避免 0.6213711922373341 这类浮点噪声。"""
+    d = Decimal(x)
+    if d == 0:
+        return "0"
+    q = d.quantize(Decimal(1).scaleb(d.adjusted() - 11))
+    s = format(q, "f")
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+    return s or "0"
+
+
+def selftest():
+    cases = [
+        (0, "C", "F", 32), (100, "C", "F", 212), (0, "C", "K", 273.15),
+        (-40, "C", "F", -40), (1, "km", "m", 1000), (1, "mile", "km", 1.609344),
+        (1024, "MiB", "GiB", 1), (1, "day", "h", 24),
+    ]
+    for v, s, d, want in cases:
+        got = float(convert(v, s, d)[0])
+        assert abs(got - want) &lt; 1e-9, (v, s, d, got, want)
+    try:
+        convert(1, "km", "kg")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("跨类别换算应当报错")
+    print("selftest OK：%d 个用例全部通过（含仿射温度与非均匀因子）" % len(cases))
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="多类别单位换算（因子表 + 仿射公式）")
+    ap.add_argument("--value", type=float, help="待换算数值")
+    ap.add_argument("--from", dest="src", help="源单位，如 km / C / MiB")
+    ap.add_argument("--to", dest="dst", help="目标单位")
+    ap.add_argument("--list", dest="list_cat", help="列出某类别全部单位")
+    ap.add_argument("--table", dest="table_cat", help="生成以 --unit 为基准的换算表")
+    ap.add_argument("--unit", default="m", help="--table 的基准单位")
+    ap.add_argument("--json", action="store_true", help="以 JSON 输出")
+    ap.add_argument("--selftest", action="store_true", help="运行内置用例")
+    a = ap.parse_args(argv)
+
+    if a.selftest:
+        selftest()
+        return 0
+    data = load_units()
+    if a.list_cat:
+        cat = data[a.list_cat]
+        pool = cat.get("units") or cat.get("affine")
+        print("%s（基准单位 %s，共 %d 个）: %s" % (cat["label"], cat["base"], len(pool), ", ".join(pool)))
+        return 0
+    if a.table_cat:
+        cat = data[a.table_cat]
+        pool = cat.get("units") or cat.get("affine")
+        print("以 1 %s 为基准的 %s 换算表：" % (a.unit, cat["label"]))
+        for k in pool:
+            print("  1 %-6s = %s %s" % (a.unit, fmt(convert(1, a.unit, k, data)[0]), k))
+        return 0
+    if a.value is None or not a.src or not a.dst:
+        ap.error("请给出 --value / --from / --to，或使用 --list / --table / --selftest")
+    out, cat_name, base = convert(a.value, a.src, a.dst, data)
+    if a.json:
+        print(json.dumps({"value": a.value, "from": a.src, "to": a.dst, "result": float(out),
+                          "category": cat_name, "base_value": float(base), "base_unit": data[cat_name]["base"]},
+                         ensure_ascii=False))
+    else:
+        print("%s %s = %s %s   （%s 类别，中间量 %s %s）" % (fmt(a.value), a.src, fmt(out), a.dst,
+                                                            data[cat_name]["label"], fmt(base), data[cat_name]["base"]))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>test_convert.py</h3>
+    <p class="file-note">unittest 回归：温度仿射、长度因子、二进制 / 十进制数据量、跨类别报错。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="test_convert.py"><code>"""convert.py 的最小用例回归（标准库 unittest，零依赖）"""
+import unittest
+
+from convert import convert, fmt, load_units
+
+
+class TestConvert(unittest.TestCase):
+    def test_temperature_affine(self):
+        self.assertAlmostEqual(float(convert(0, "C", "F")[0]), 32.0, places=9)
+        self.assertAlmostEqual(float(convert(100, "C", "F")[0]), 212.0, places=9)
+        self.assertAlmostEqual(float(convert(0, "C", "K")[0]), 273.15, places=9)
+        self.assertAlmostEqual(float(convert(-40, "C", "F")[0]), -40.0, places=9)
+
+    def test_length_factors(self):
+        self.assertAlmostEqual(float(convert(1, "km", "m")[0]), 1000.0, places=9)
+        self.assertAlmostEqual(float(convert(1, "mile", "km")[0]), 1.609344, places=9)
+
+    def test_data_binary_vs_decimal(self):
+        self.assertAlmostEqual(float(convert(1024, "MiB", "GiB")[0]), 1.0, places=9)
+        self.assertAlmostEqual(float(convert(1000, "MB", "GB")[0]), 1.0, places=9)
+
+    def test_cross_category_raises(self):
+        with self.assertRaises(ValueError):
+            convert(1, "km", "kg")
+
+    def test_units_file_has_all_categories(self):
+        data = load_units()
+        for name in ("length", "mass", "data", "time", "temperature"):
+            self.assertIn(name, data)
+
+    def test_fmt_trims_noise(self):
+        self.assertEqual(fmt(0.5), "0.5")
+        self.assertEqual(fmt(0), "0")
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：本工程仅标准库，无需安装第三方包。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># 本工程仅使用 Python 标准库（argparse / decimal / json / pathlib / unittest），
+# 不需要安装任何第三方包。此文件保留是为了让 `pip install -r requirements.txt` 流程统一。
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">安装、运行、扩展单位与精度策略说明。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 单位换算 CLI（unit-converter）
+
+因子表驱动的多类别单位换算：长度 / 质量 / 数据量 / 时间走「线性因子」，温度走「仿射公式」，
+两类算法在 `convert.py` 中统一成 `to_base()` / `from_base()`，因此新增单位只需改 `units.json`。
+
+## 文件说明
+
+| 文件 | 作用 |
+|---|---|
+| `convert.py` | 换算核心 + 命令行入口（仅标准库） |
+| `units.json` | 单位表：线性类别给因子，温度类别给 `scale` / `offset` |
+| `test_convert.py` | unittest 最小用例回归 |
+| `requirements.txt` | 依赖清单（本工程无第三方依赖） |
+
+## 运行
+
+```bash
+python -m pip install -r requirements.txt      # 无第三方依赖，可跳过
+python convert.py --value 100 --from km --to mile
+python convert.py --value 100 --from C --to F --json
+python convert.py --list length
+python convert.py --table length --unit m
+python convert.py --selftest
+python test_convert.py
+```
+
+## 扩展单位
+
+在 `units.json` 对应类别里加一行即可，例如加「光年」到长度类别：
+
+```json
+"ly": 9460730472580800
+```
+
+因子含义是「1 个该单位等于多少个基准单位」。温度类单位则加 `{"scale": …, "offset": …}`，
+含义为 `基准 = (值 + offset) × scale`。
+
+## 精度策略
+
+内部使用 `decimal.Decimal`（28 位精度）而不是二进制浮点，输出前统一压到 12 位有效数字并去掉尾零，
+所以 `1 mile → km` 得到的是 `1.609344` 而不是 `1.6093440000000002`。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行标注</h3><ol><li><b>可直接运行</b>：把上面 5 个文件保存到同一目录，执行 <code>python convert.py --value 100 --from km --to mile</code> 即可得到结果。</li><li><b>无需改任何配置项</b>：默认单位表已覆盖长度 / 质量 / 数据量 / 时间 / 温度五类；只有要增删单位时才编辑 <code>units.json</code>。</li><li>自测：<code>python test_convert.py</code>（等价于 <code>python convert.py --selftest</code>），全部用例应通过。</li></ol></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-unit-converter">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://docs.python.org/3/library/argparse.html" target="_blank" rel="noopener">Python 官方文档 · argparse（命令行参数）</a>
+<a href="https://docs.python.org/3/library/decimal.html" target="_blank" rel="noopener">Python 官方文档 · decimal（高精度十进制运算）</a>
+<a href="https://docs.python.org/3/library/unittest.html" target="_blank" rel="noopener">Python 官方文档 · unittest（标准库单元测试）</a>
+<a href="https://physics.nist.gov/cuu/Units/" target="_blank" rel="noopener">NIST · 国际单位制（SI）与单位换算依据</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -109,6 +429,7 @@ function convertTemp(value, from, to) {
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/unit-converter.js"></script>
 </body>
 </html>

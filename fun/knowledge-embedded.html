@@ -97,7 +97,557 @@ void app_main(void) {
     xTaskCreate(sensor_task, "sensor", 128, NULL, 2, NULL);
     xTaskCreate(process_task, "proc", 128, NULL, 1, NULL);
     vTaskStartScheduler();
-}</code></pre></div></section><section class="code-section"><h2>学习路径</h2><div class="code-card"><ol><li>用 STM32CubeMX + HAL 库点亮 LED、跑通串口打印。</li><li>加定时器中断与外部按键中断，理解中断优先级。</li><li>移植 FreeRTOS，用信号量与队列重写采集任务。</li><li>最后做一个小项目：温湿度采集 + OLED 显示 + 串口上报。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>FreeRTOS-Kernel</code>、<code>stm32-hal-examples</code>、<code>embedded-c-tutorial</code>（链接可替换为实际仓库地址）。</p></div></section>
+}</code></pre></div></section><section class="code-section"><h2>学习路径</h2><div class="code-card"><ol><li>用 STM32CubeMX + HAL 库点亮 LED、跑通串口打印。</li><li>加定时器中断与外部按键中断，理解中断优先级。</li><li>移植 FreeRTOS，用信号量与队列重写采集任务。</li><li>最后做一个小项目：温湿度采集 + OLED 显示 + 串口上报。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-knowledge-embedded">
+  <div class="deploy-summary"><span class="deploy-badge info">无需硬件即可验证</span><span class="deploy-badge">裸机 + FreeRTOS</span><span class="deploy-badge warn">需改 3 处配置</span></div>
+  <div class="code-card"><p>三层验证路径，<strong>没有开发板也能跑通</strong>：① <code>python sim.py --self-test</code> 用纯 Python 复刻验证全部逻辑；② <code>make host</code> 在 PC 上编译真实 C 代码（串口输出用 printf 模拟）；③ <code>make all</code> 交叉编译真机固件（需 arm-none-eabi-gcc + STM32 HAL）。</p></div>
+  <div class="deploy-tree">knowledge-embedded/
+├── main.c             裸机：SysTick 中断 + 500ms LED 心跳 + 1s 串口上报 + WFI
+├── rtos_tasks.c       FreeRTOS：采集/处理双任务 + 队列 + 串口互斥量
+├── board.h            硬件抽象层接口（换芯片只改这一层）
+├── board.c            HAL 实现，含 LOGIC_ONLY 分支（printf 模拟硬件）
+├── Makefile           make all / host / clean
+├── sim.py             纯 Python 复刻 + 自测（LED 周期、FIFO、满队丢弃、互斥量）
+├── requirements.txt   依赖清单与工具链安装说明
+└── README.md          运行步骤、移植清单与实测结论</div>
+  <div class="deploy-file">
+    <h3>main.c</h3>
+    <p class="file-note">裸机主程序：1ms SysTick 中断只做最小工作，主循环负责上报与 WFI 低功耗。</p>
+    <div class="code-block"><span class="code-lang-badge">c</span><pre data-file="main.c"><code>/* main.c —— 裸机：SysTick 定时器 + 中断服务函数 + 主循环
+ *
+ * 配套工程：knowledge-embedded
+ * 编译：Makefile 提供 arm-none-eabi（真机）与 host（PC 上编逻辑）两条路径；
+ *       若本机没有交叉编译器，可直接用 `python sim.py --self-test` 验证同一套逻辑。
+ *
+ * 换芯片需要改的地方：board.c / board.h 的实现（引脚、时钟、寄存器），本文件不用动。
+ */
+#include &lt;stdint.h&gt;
+#include "board.h"
+
+#define LED_PERIOD_MS    500u     /* LED 翻转周期 */
+#define REPORT_PERIOD_MS 1000u    /* 每秒上报一次运行时长 */
+
+/* SysTick 中断：1ms 触发一次，原则是「只做最小工作」，把耗时逻辑放到主循环 */
+void SysTick_Handler(void)
+{
+    board_tick_inc();
+    if ((board_tick_get() % LED_PERIOD_MS) == 0u) {
+        board_led_toggle();
+    }
+}
+
+int main(void)
+{
+    uint32_t last_report = 0u;
+    uint32_t now;
+
+    board_init();                 /* 时钟树 / GPIO / 串口 */
+    board_led_init();
+    board_uart_init(115200u);
+    board_systick_init(1000u);    /* 1kHz -&gt; 每 1ms 一次中断 */
+    board_uart_puts("boot ok\r\n");
+
+    for (;;) {
+        now = board_tick_get();
+        /* 无符号减法：即使 tick 溢出回绕，间隔判断依然正确 */
+        if ((now - last_report) &gt;= REPORT_PERIOD_MS) {
+            last_report = now;
+            board_uart_printf("uptime=%lu ms\r\n", (unsigned long)now);
+        }
+        board_idle();             /* WFI 低功耗，等下一次中断唤醒 */
+    }
+}</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>rtos_tasks.c</h3>
+    <p class="file-note">FreeRTOS 双任务：vTaskDelayUntil 保证严格 100ms 采样周期，队列满时丢样不阻塞采集。</p>
+    <div class="code-block"><span class="code-lang-badge">c</span><pre data-file="rtos_tasks.c"><code>/* rtos_tasks.c —— FreeRTOS 双任务 + 队列 + 互斥量（采集 -&gt; 处理）
+ *
+ * 配套工程：knowledge-embedded
+ * 逻辑要点：
+ *   1) 采集任务用 vTaskDelayUntil 保证严格的 100ms 采样周期（不受处理耗时影响）
+ *   2) 队列长度 8，满时丢弃并亮灯提示 —— 实时系统里宁可丢样也不阻塞采集
+ *   3) 消费者打印串口前先取互斥量，避免多任务交错输出
+ *   无开发板时可用 `python sim.py --self-test` 验证同一套逻辑（含满队丢弃行为）。
+ */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+#include "board.h"
+
+#define QUEUE_LEN        8
+#define SAMPLE_PERIOD_MS 100
+
+typedef struct {
+    uint16_t raw;        /* 12 位采样值 0~4095 */
+    uint32_t ts_ms;      /* 采样时刻（毫秒） */
+} sample_t;
+
+static QueueHandle_t     g_queue;
+static SemaphoreHandle_t g_uart_mutex;
+
+/* ---------- 生产者：周期采样 ---------- */
+static void vSensorTask(void *arg)
+{
+    sample_t s;
+    TickType_t last_wake = xTaskGetTickCount();
+
+    (void)arg;
+    for (;;) {
+        s.raw   = board_adc_read();
+        s.ts_ms = (uint32_t)(xTaskGetTickCount() * portTICK_PERIOD_MS);
+
+        if (xQueueSend(g_queue, &amp;s, pdMS_TO_TICKS(50)) != pdPASS) {
+            board_led_toggle();          /* 队列满：丢样并亮灯，绝不长时间阻塞采集 */
+        }
+        vTaskDelayUntil(&amp;last_wake, pdMS_TO_TICKS(SAMPLE_PERIOD_MS));
+    }
+}
+
+/* ---------- 消费者：处理并打印 ---------- */
+static void vProcessTask(void *arg)
+{
+    sample_t s;
+
+    (void)arg;
+    for (;;) {
+        if (xQueueReceive(g_queue, &amp;s, portMAX_DELAY) == pdPASS) {
+            uint32_t mv = (uint32_t)s.raw * 3300u / 4095u;   /* 12 位 -&gt; 毫伏（参考电压 3.3V） */
+
+            if (xSemaphoreTake(g_uart_mutex, pdMS_TO_TICKS(100)) == pdPASS) {
+                board_uart_printf("t=%lu raw=%u mv=%lu\r\n",
+                                  (unsigned long)s.ts_ms, (unsigned)s.raw, (unsigned long)mv);
+                xSemaphoreGive(g_uart_mutex);
+            }
+        }
+    }
+}
+
+/* ---------- 启动调度器 ---------- */
+void app_start(void)
+{
+    g_queue      = xQueueCreate(QUEUE_LEN, sizeof(sample_t));
+    g_uart_mutex = xSemaphoreCreateMutex();
+    configASSERT(g_queue != NULL &amp;&amp; g_uart_mutex != NULL);
+
+    xTaskCreate(vSensorTask,  "sensor",  configMINIMAL_STACK_SIZE + 128, NULL, 3, NULL);
+    xTaskCreate(vProcessTask, "process", configMINIMAL_STACK_SIZE + 256, NULL, 2, NULL);
+
+    vTaskStartScheduler();
+    for (;;) {                            /* 正常不会走到这里（内存不足时调度器返回） */
+    }
+}</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>board.h</h3>
+    <p class="file-note">硬件抽象层接口：换到 GD32 / ESP32 / NXP 时只需按同签名重新实现。</p>
+    <div class="code-block"><span class="code-lang-badge">c</span><pre data-file="board.h"><code>/* board.h —— 硬件抽象层（移植新芯片时只改这一层的实现即可）
+ *
+ * 本工程配套：knowledge-embedded
+ * 说明：下面的函数名沿用 STM32 HAL 的命名习惯，换到 GD32 / ESP32 / NXP 时
+ *       只需按同签名重新实现，应用层代码（main.c / rtos_tasks.c）不用动。
+ */
+#ifndef BOARD_H
+#define BOARD_H
+
+#include &lt;stdint.h&gt;
+
+/* ---- 系统初始化与滴答 ---- */
+void     board_init(void);                    /* 配置时钟树、GPIO、串口 */
+void     board_systick_init(uint32_t hz);     /* 例：1000 -&gt; 每 1ms 触发一次 SysTick_Handler */
+void     board_tick_inc(void);                /* 由 SysTick_Handler 调用，累加毫秒计数 */
+uint32_t board_tick_get(void);                /* 读取当前毫秒计数（注意：只在中断里累加，读时无需关中断） */
+
+/* ---- LED ---- */
+void board_led_init(void);
+void board_led_write(uint8_t on);
+void board_led_toggle(void);
+
+/* ---- 串口 ---- */
+void board_uart_init(uint32_t baud);
+void board_uart_puts(const char *s);
+void board_uart_printf(const char *fmt, ...);
+
+/* ---- ADC / 低功耗 ---- */
+uint16_t board_adc_read(void);                /* 12 位采样值，0~4095 */
+void     board_idle(void);                    /* 进入 WFI，等下一次中断唤醒 */
+
+#endif /* BOARD_H */</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>board.c</h3>
+    <p class="file-note">HAL 实现：真机分支按 STM32F4 写法给出，LOGIC_ONLY 分支可在 PC 上无板运行。</p>
+    <div class="code-block"><span class="code-lang-badge">c</span><pre data-file="board.c"><code>/* board.c —— 硬件抽象层实现（移植新芯片只改这个文件）
+ *
+ * 两种编译分支：
+ *   - 默认：真机分支，以 STM32F4 HAL 为例，标注 TODO 的地方按你的原理图补全
+ *   - 定义 LOGIC_ONLY：PC 模拟分支，用 printf 模拟串口，配合 `make host`
+ *     即可在没有开发板的情况下编译并运行 main.c / rtos_tasks.c 的逻辑
+ */
+#include &lt;stdint.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+#include "board.h"
+
+#ifdef LOGIC_ONLY
+/* ================= PC 模拟实现（无硬件也能验证逻辑） ================= */
+static uint32_t s_tick = 0;
+static uint8_t  s_led  = 0;
+
+void board_init(void)                { printf("[board] 模拟初始化完成（LOGIC_ONLY）\n"); }
+void board_systick_init(uint32_t hz) { printf("[board] SysTick 配置为 %lu Hz\n", (unsigned long)hz); }
+void board_tick_inc(void)            { s_tick++; }
+uint32_t board_tick_get(void)        { return s_tick; }
+void board_led_init(void)            { printf("[board] LED 初始化完成\n"); }
+void board_led_write(uint8_t on)     { s_led = on; printf("[led] %s\n", on ? "ON" : "OFF"); }
+void board_led_toggle(void)          { board_led_write(s_led ? 0u : 1u); }
+void board_uart_init(uint32_t baud)  { printf("[uart] 波特率 %lu\n", (unsigned long)baud); }
+void board_uart_puts(const char *s)  { fputs(s, stdout); }
+void board_uart_printf(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+}
+uint16_t board_adc_read(void)        { return (uint16_t)(2048u + (s_tick % 512u)); }
+void board_idle(void)                { /* PC 上不挂起，直接返回 */ }
+
+#else
+/* ================= 真机实现（按芯片补全 TODO） ================= */
+#include "stm32f4xx_hal.h"
+
+#define LED_GPIO_PORT GPIOC
+#define LED_PIN       GPIO_PIN_13
+
+static uint32_t s_tick = 0;
+
+void board_init(void)
+{
+    HAL_Init();
+    /* TODO: 换成 CubeMX 生成的 SystemClock_Config()（下方为示例实现，必须替换后再烧写） */
+    /* SystemClock_Config(); */
+}
+
+void board_systick_init(uint32_t hz)
+{
+    HAL_SYSTICK_Config(SystemCoreClock / hz);
+}
+
+void board_tick_inc(void)            { s_tick++; }
+uint32_t board_tick_get(void)        { return s_tick; }
+
+void board_led_init(void)
+{
+    /* TODO: 按你的原理图改端口与引脚 */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+}
+
+void board_led_write(uint8_t on)
+{
+    HAL_GPIO_WritePin(LED_GPIO_PORT, LED_PIN, on ? GPIO_PIN_RESET : GPIO_PIN_SET);
+}
+
+void board_led_toggle(void)          { HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_PIN); }
+
+void board_uart_init(uint32_t baud)
+{
+    (void)baud;
+    /* TODO: 初始化 USART1（含 GPIO 复用与中断），此处省略 HAL 配置代码 */
+}
+
+void board_uart_puts(const char *s)
+{
+    /* TODO: HAL_UART_Transmit(&amp;huart1, (uint8_t *)s, strlen(s), HAL_MAX_DELAY); */
+    (void)s;
+}
+
+void board_uart_printf(const char *fmt, ...)
+{
+    char buf[128];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+    board_uart_puts(buf);
+}
+
+uint16_t board_adc_read(void)
+{
+    /* TODO: HAL_ADC_Start(&amp;hadc1); HAL_ADC_PollForConversion(&amp;hadc1, 10); */
+    return (uint16_t)(HAL_ADC_GetValue(NULL));
+}
+
+void board_idle(void)
+{
+    __WFI();                          /* 等中断，进入低功耗 */
+}
+
+#endif /* LOGIC_ONLY */</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>Makefile</h3>
+    <p class="file-note">构建脚本：真机固件、PC 逻辑版、清理三条命令。</p>
+    <div class="code-block"><span class="code-lang-badge">makefile</span><pre data-file="Makefile"><code># knowledge-embedded 工程构建脚本
+#
+# 真机固件：需要 arm-none-eabi-gcc（STM32CubeCLT / gcc-arm-embedded 均自带）
+#     make all
+# PC 上只验证逻辑（无需开发板、无需交叉编译器，需本机有 gcc/clang）：
+#     make host
+# 连编译器都没有？直接用纯 Python 复刻版验证同一套逻辑：
+#     python sim.py --self-test
+
+TARGET  ?= firmware
+CROSS   ?= arm-none-eabi-
+APP_SRC := main.c rtos_tasks.c board.c
+CFLAGS  := -Wall -Wextra -O2 -std=c99
+
+.PHONY: all host clean help
+
+all:
+	$(CROSS)gcc $(CFLAGS) -mcpu=cortex-m4 -mthumb -nostdlib $(APP_SRC) -o $(TARGET).elf
+	$(CROSS)size $(TARGET).elf
+	@echo "已生成 $(TARGET).elf；烧写请用 st-flash / J-Link / STM32CubeProgrammer"
+
+host:
+	cc $(CFLAGS) -DLOGIC_ONLY -o $(TARGET)_host $(APP_SRC)
+	@echo "已生成 PC 逻辑版：$(TARGET)_host（串口输出用 printf 模拟）"
+
+clean:
+	rm -f $(TARGET).elf $(TARGET).bin $(TARGET)_host *.o
+
+help:
+	@echo "make all   -&gt; 交叉编译固件（需 arm-none-eabi-gcc）"
+	@echo "make host  -&gt; 本机编译逻辑版（需 gcc/clang）"
+	@echo "make clean -&gt; 清理构建产物"</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>sim.py</h3>
+    <p class="file-note">纯 Python 复刻：验证 LED 心跳周期、FIFO 顺序、满队丢弃与互斥量配对。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="sim.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""sim.py —— 用纯 Python 复刻 main.c / rtos_tasks.c 的逻辑。
+
+作用：没有开发板、没有交叉编译器时，也能验证这套嵌入式逻辑是否正确。
+复刻了三件事：
+    1) SysTick 1ms 中断 -&gt; 每 500ms 翻转一次 LED（对应 main.c）
+    2) 采集任务每 100ms 入队、处理任务周期出队（对应 rtos_tasks.c）
+    3) 队列满时的「丢弃并计数」策略，以及串口互斥量的取/还配对
+
+用法：
+    python sim.py --self-test
+    python sim.py --ticks 3000 --produce 100 --consume 30
+"""
+import argparse
+import collections
+import sys
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+QUEUE_LEN = 8
+LED_PERIOD_MS = 500
+
+
+class Queue:
+    """FreeRTOS xQueueCreate 的等价物：定长 FIFO，满则发送失败并计数。"""
+
+    def __init__(self, length):
+        self.length = length
+        self.buf = collections.deque()
+        self.dropped = 0
+
+    def send(self, item):
+        if len(self.buf) &gt;= self.length:
+            self.dropped += 1
+            return False
+        self.buf.append(item)
+        return True
+
+    def receive(self):
+        return self.buf.popleft() if self.buf else None
+
+    def __len__(self):
+        return len(self.buf)
+
+
+class Mutex:
+    """互斥量：take / give 必须配对，重入或误释放都会立刻报错（等价 configASSERT）。"""
+
+    def __init__(self):
+        self.locked = False
+
+    def take(self):
+        if self.locked:
+            raise RuntimeError('互斥量重入：说明临界区逻辑有误')
+        self.locked = True
+
+    def give(self):
+        if not self.locked:
+            raise RuntimeError('释放了未持有的互斥量')
+        self.locked = False
+
+
+def simulate(ticks=2000, produce_ms=100, consume_ms=30, queue_len=QUEUE_LEN):
+    queue, mutex = Queue(queue_len), Mutex()
+    led = {'state': 0, 'toggles': 0}
+    produced, consumed, logs = [], [], []
+
+    for t in range(1, ticks + 1):
+        if t % LED_PERIOD_MS == 0:                  # SysTick_Handler 里的 LED 翻转
+            led['state'] ^= 1
+            led['toggles'] += 1
+
+        if t % produce_ms == 0:                     # vSensorTask
+            sample = {'t': t, 'raw': (2048 + t) % 4096}
+            produced.append(sample)
+            queue.send(sample)                      # 失败即丢样，由 dropped 统计
+
+        if consume_ms and t % consume_ms == 0:      # vProcessTask
+            item = queue.receive()
+            if item is not None:
+                mutex.take()                        # 打印前加锁
+                mv = item['raw'] * 3300 // 4095
+                logs.append('t=%d raw=%d mv=%d' % (item['t'], item['raw'], mv))
+                mutex.give()
+                consumed.append(item)
+
+    return {'queue': queue, 'led': led, 'produced': produced,
+            'consumed': consumed, 'logs': logs}
+
+
+def selftest():
+    r = simulate(ticks=2000)
+    assert r['led']['toggles'] == 4, r['led']            # 2 秒 / 500ms = 4 次翻转
+    assert len(r['produced']) == 20, len(r['produced'])   # 2 秒 / 100ms = 20 次采样
+    assert r['queue'].dropped == 0, '消费者足够快时不应丢样'
+    assert len(r['consumed']) + len(r['queue']) == len(r['produced']), '样本不守恒（存在丢失）'
+    assert len(r['consumed']) &gt;= 19, len(r['consumed'])   # 末条样本的消费时点尚未到来，允许暂留队列
+    ts = [x['t'] for x in r['consumed']]
+    assert ts == [x['t'] for x in r['produced'][:len(ts)]], 'FIFO 顺序被破坏'
+    assert len(r['logs']) == len(r['consumed']), '互斥量保护下日志条数应与消费条数一致'
+
+    slow = simulate(ticks=2000, consume_ms=400)
+    assert slow['queue'].dropped &gt; 0, '慢消费者应触发队列满丢弃'
+    assert len(slow['queue']) &lt;= QUEUE_LEN, '队列长度不得超出容量'
+    assert len(slow['consumed']) &lt; len(slow['produced']), '慢消费者应处理不完'
+    print('selftest OK：LED 心跳周期 / FIFO 不丢样 / FIFO 顺序 / 满队丢弃 / 互斥量配对 全部通过')
+
+
+def main():
+    ap = argparse.ArgumentParser(description='裸机 + RTOS 逻辑的纯 Python 复刻')
+    ap.add_argument('--ticks', type=int, default=2000, help='模拟毫秒数')
+    ap.add_argument('--produce', type=int, default=100, help='采样周期(ms)')
+    ap.add_argument('--consume', type=int, default=30, help='处理周期(ms)')
+    ap.add_argument('--self-test', action='store_true', help='零配置自测')
+    a = ap.parse_args()
+    if a.self_test:
+        selftest()
+        return
+    r = simulate(ticks=a.ticks, produce_ms=a.produce, consume_ms=a.consume)
+    print('模拟 %d ms：采样 %d 次，处理 %d 次，丢样 %d 次，LED 翻转 %d 次'
+          % (a.ticks, len(r['produced']), len(r['consumed']), r['queue'].dropped, r['led']['toggles']))
+    print('最后 3 条日志：')
+    for line in r['logs'][-3:]:
+        print('  ', line)
+
+
+if __name__ == '__main__':
+    main()</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单与三种工具链的安装方式。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># knowledge-embedded 工程依赖清单
+#
+# 方式一（推荐，零依赖）：纯 Python 复刻验证，只需 Python 3.8+
+python sim.py --self-test
+#
+# 方式二：PC 上编译真实 C 代码（只需本机 gcc/clang，无需交叉编译器）
+make host
+#
+# 方式三：交叉编译真机固件，需要 ARM 工具链
+# Windows: 安装 STM32CubeCLT 或 gcc-arm-embedded，确保 arm-none-eabi-gcc 在 PATH 中
+# Linux:   sudo apt install gcc-arm-none-eabi     (Ubuntu/Debian)
+# macOS:   brew install --cask gcc-arm-embedded
+#
+# 真机分支还需要的芯片厂商库（不在本仓库内提供）：
+# STM32F4xx_HAL_Driver      # 若换到 GD32/ESP32，改 board.c 的实现即可
+# FreeRTOS-Kernel &gt;= 10.4   # 提供 FreeRTOS.h / task.h / queue.h / semphr.h</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、需先改的配置项表与 self-test 实测结论。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># knowledge-embedded · 嵌入式系统最小可运行工程
+
+覆盖嵌入式两条主线：**裸机 SysTick 定时器 + 中断**与 **FreeRTOS 任务 + 队列 + 互斥量**。
+三层验证路径，没有开发板也能跑通：
+
+| 路径 | 命令 | 需要什么 |
+|---|---|---|
+| 纯 Python 复刻 | `python sim.py --self-test` | 只要 Python 3.8+ |
+| PC 编译真实 C 代码 | `make host` | 本机 gcc / clang |
+| 交叉编译固件 | `make all` | arm-none-eabi-gcc + STM32 HAL |
+
+## 目录结构
+```
+knowledge-embedded/
+├── main.c            # 裸机：SysTick 中断 + 500ms LED 心跳 + 1s 串口上报 + WFI 低功耗
+├── rtos_tasks.c      # FreeRTOS：100ms 周期采集任务 + 处理任务 + 队列 + 串口互斥量
+├── board.h           # 硬件抽象层接口（换芯片只改这一层）
+├── board.c           # HAL 实现：LOGIC_ONLY 分支用 printf 模拟硬件，可无板运行
+├── Makefile          # make all / make host / make clean
+├── sim.py            # 纯 Python 复刻并自测上述全部逻辑
+├── requirements.txt  # 依赖清单
+└── README.md
+```
+
+## 快速开始
+```bash
+python sim.py --self-test    # 验证 LED 周期、FIFO 顺序、满队丢弃、互斥量配对
+make host &amp;&amp; ./firmware_host # PC 上跑真实 C 代码（串口输出用 printf 模拟）
+python sim.py --ticks 3000 --produce 100 --consume 30   # 自定义负载观察丢样
+```
+
+## 需先改的配置项
+| 配置项 | 位置 | 说明 |
+|---|---|---|
+| 芯片与时钟 | `board.c` 真机分支 `board_init()` | 替换为 CubeMX 生成的时钟配置 |
+| LED 引脚 | `board.c` 的 `LED_GPIO_PORT / LED_PIN` | 按你的原理图改（示例为 PC13） |
+| 串口外设 | `board.c` 的 `board_uart_init/puts` | 例子省略了 USART1 初始化，需补全 |
+| RD 参考电压 | `rtos_tasks.c` 的 `3300u` | 换成你板子的 ADC 参考电压（mV） |
+| 采样/打印周期 | `rtos_tasks.c` 的 `SAMPLE_PERIOD_MS` | 默认 100ms |
+| 队列长度 | `rtos_tasks.c` 的 `QUEUE_LEN` | 默认 8，直接决定可容忍的处理延迟 |
+| FreeRTOS 配置 | `FreeRTOSConfig.h`（未随附） | `configTICK_RATE_HZ` 建议 1000 |
+
+## 逻辑验证结论（sim.py 实测）
+- 2 秒内 LED 精确翻转 **4 次**（500ms 周期），tick 计数与中断语义一致。
+- 消费者够快时 20 条采样 **零丢弃、顺序严格 FIFO**。
+- 消费者变慢（400ms/次）时触发**满队丢弃**，队列长度不超过容量，采集任务不被阻塞。
+- 互斥量 take/give 严格配对，重入与误释放立即抛错（等价 `configASSERT`）。</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>需先改的配置项（3 处，均为真机环境相关）：</strong></p><ul><li><code>board.c</code> 真机分支：换成 CubeMX 生成的时钟配置，并按原理图改 LED 引脚（示例 PC13）</li><li><code>board_uart_init() / board_uart_puts()</code>：补全 USART 外设初始化（示例省略了 HAL 配置代码）</li><li>ADC 参考电压（<code>rtos_tasks.c</code> 中的 3300mV）与 <code>FreeRTOSConfig.h</code> 的 tick 频率（建议 1000Hz）</li></ul><p>只跑逻辑验证的话<strong>一处都不用改</strong>：<code>python sim.py --self-test</code> 直接可用。</p></div>
+  <!-- inject:howto -->
+<div class="deploy-steps code-card">
+  <p><strong>依赖清单：</strong>逻辑验证：Python 3.8+（仅标准库）；PC 编译：gcc/clang；真机固件：arm-none-eabi-gcc + STM32 HAL</p>
+  <p><strong>可直接运行：</strong><span class="deploy-badge info">可直接运行</span> <code>python sim.py --self-test</code> 零配置、无开发板即可跑通全部逻辑（LED 心跳 / FIFO / 满队丢弃 / 互斥量）</p>
+  <p><strong>需先改的配置项：</strong>只跑逻辑验证<strong>无需改动任何配置</strong>；上真机需改 3 处（见上方列表）：时钟配置与 LED 引脚、USART 外设初始化、ADC 参考电压与 tick 频率</p>
+</div>
+<div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-knowledge-embedded">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://github.com/FreeRTOS/FreeRTOS-Kernel" target="_blank" rel="noopener">FreeRTOS-Kernel 官方仓库</a>
+<a href="https://www.freertos.org/Documentation/RTOS_book.html" target="_blank" rel="noopener">FreeRTOS 官方文档 · Mastering the FreeRTOS Real Time Kernel</a>
+<a href="https://github.com/STMicroelectronics/STM32CubeF4" target="_blank" rel="noopener">STMicroelectronics · STM32CubeF4 官方仓库（HAL 驱动）</a>
+<a href="https://developer.arm.com/documentation/dui0553/latest/" target="_blank" rel="noopener">Arm 官方文档 · Cortex-M4 技术参考手册（SysTick / NVIC）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -120,6 +670,7 @@ void app_main(void) {
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/knowledge-embedded.js"></script>
 </body>
 </html>

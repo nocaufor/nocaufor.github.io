@@ -65,10 +65,10 @@ class TinyNet(torch.nn.Module):
         return torch.softmax(self.fc(x), dim=-1)
 
 model = TinyNet().eval()
-dummy = torch.randn(1, 8)
+example_input = torch.randn(1, 8)
 
 torch.onnx.export(
-    model, dummy,
+    model, example_input,
     "tinynet.onnx",
     input_names=["input"], output_names=["output"],
     dynamic_axes={"input": {0: "batch"}, "output": {0: "batch"}}
@@ -93,7 +93,373 @@ quantize_dynamic(model_fp32, model_int8, weight_type=QuantType.QInt8)
 
 import os
 print("size fp32:", os.path.getsize(model_fp32))
-print("size int8:", os.path.getsize(model_int8))</code></pre></div></section><section class="code-section"><h2>待完成方向</h2><div class="code-card"><ul><li>接入真实视觉模型（YOLO/分类），验证端侧帧率与功耗。</li><li>尝试静态量化 + 校准集，精度损失更小。</li><li>在树莓派 4 / Jetson Nano 上做部署对比实验。</li><li>结合摄像头实现实时目标检测 Demo。</li></ul></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li><code>pip install onnx onnxruntime</code> 后运行导出脚本。</li><li>推理脚本确认输出正确，再执行量化对比文件体积。</li><li>拷贝 ONNX + 推理脚本到开发板，验证跨平台运行。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>onnxruntime-examples</code>、<code>edge-ai-deploy</code>、<code>model-quantization-demo</code>（链接可替换为实际仓库地址）。</p></div></section>
+print("size int8:", os.path.getsize(model_int8))</code></pre></div></section><section class="code-section"><h2>待完成方向</h2><div class="code-card"><ul><li>接入真实视觉模型（YOLO/分类），验证端侧帧率与功耗。</li><li>尝试静态量化 + 校准集，精度损失更小。</li><li>在树莓派 4 / Jetson Nano 上做部署对比实验。</li><li>结合摄像头实现实时目标检测 Demo。</li></ul></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li><code>pip install onnx onnxruntime</code> 后运行导出脚本。</li><li>推理脚本确认输出正确，再执行量化对比文件体积。</li><li>拷贝 ONNX + 推理脚本到开发板，验证跨平台运行。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-github-edge-ai">
+  <div class="deploy-summary"><span class="deploy-badge info">可直接运行</span><span class="deploy-badge">零第三方依赖</span><span class="deploy-badge">可导出 MCU 权重</span></div>
+  <div class="code-card"><p>运行环境：Python 3.8+，<strong>仅标准库</strong>。先执行 <code>python quantize.py --self-test</code>（量化误差 &lt; 1%、空间 4:1）与 <code>python model.py --self-test</code>（int8 与 float 分类完全一致，50 组随机输入）；再执行 <code>python model.py --export-c out/weights.h</code> 生成可直接烧进 MCU 的 int8 权重。</p></div>
+  <div class="deploy-tree">github-edge-ai/
+├── quantize.py        对称量化 + int8 矩阵乘内核 + 精度/空间对比
+├── model.py           两层 MLP（float / int8 双路径）+ C 头文件导出
+├── requirements.txt   依赖清单（核心零依赖）
+└── README.md          运行步骤、量化结论与上机指引</div>
+  <div class="deploy-file">
+    <h3>quantize.py</h3>
+    <p class="file-note">量化内核：float32 → int8 对称量化，整数累加后统一反量化，附误差与空间对比。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="quantize.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""quantize.py —— 边缘端 int8 量化推理最小实现（纯 Python，零依赖）。
+
+做三件事：
+1) 对称量化：float32 权重 -&gt; int8 + 每张量 scale
+2) int8 矩阵乘：整数累加，最后统一乘一次 scale（这正是 TFLite / ONNX Runtime 内核的思路）
+3) 精度与空间对比：float 与 int8 的最大相对误差、权重大小
+
+用法：
+    python quantize.py --self-test      # 零配置自测
+    python quantize.py --n 128          # 自定义矩阵规模跑一遍对比
+"""
+import argparse
+import random
+import sys
+import time
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+
+def quantize_symmetric(tensor):
+    """对称量化：scale = max|w| / 127，零点固定在 0，值域 [-127, 127]。"""
+    peak = max((abs(x) for x in tensor), default=0.0)
+    scale = peak / 127.0 if peak else 1.0
+    q = [max(-127, min(127, int(round(x / scale)))) for x in tensor]
+    return q, scale
+
+
+def dequantize(q, scale):
+    return [x * scale for x in q]
+
+
+def matmul_float(a, b, n):
+    """a、b 均为 n x n 的 float 矩阵（三重循环，便于与 int8 版本对照）。"""
+    out = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        ri, oi = a[i], out[i]
+        for k in range(n):
+            aik = ri[k]
+            if aik == 0.0:
+                continue
+            bk = b[k]
+            for j in range(n):
+                oi[j] += aik * bk[j]
+    return out
+
+
+def matmul_int8(aq, bq, n, scale):
+    """int8 内核：全程整数累加，只在最后乘一次 scale（scale = scale_a * scale_b）。"""
+    out = [[0] * n for _ in range(n)]
+    for i in range(n):
+        ri, oi = aq[i], out[i]
+        for k in range(n):
+            aik = ri[k]
+            if aik == 0:
+                continue
+            bk = bq[k]
+            for j in range(n):
+                oi[j] += aik * bk[j]
+    return [[v * scale for v in row] for row in out]
+
+
+def make_matrix(n, seed):
+    rnd = random.Random(seed)
+    return [[rnd.uniform(-1, 1) for _ in range(n)] for _ in range(n)]
+
+
+def flatten(matrix):
+    return [x for row in matrix for x in row]
+
+
+def reshape(flat, n):
+    return [flat[i * n:(i + 1) * n] for i in range(n)]
+
+
+def compare(n=64, seed=7):
+    a, b = make_matrix(n, seed), make_matrix(n, seed + 1)
+    qa, sa = quantize_symmetric(flatten(a))
+    qb, sb = quantize_symmetric(flatten(b))
+    aq, bq = reshape(qa, n), reshape(qb, n)
+
+    t0 = time.perf_counter()
+    ref = matmul_float(a, b, n)
+    t_float = time.perf_counter() - t0
+    t0 = time.perf_counter()
+    got = matmul_int8(aq, bq, n, sa * sb)
+    t_int8 = time.perf_counter() - t0
+
+    peak = max((abs(v) for row in ref for v in row), default=1.0) or 1.0
+    err = max(abs(x - y) for r1, r2 in zip(ref, got) for x, y in zip(r1, r2)) / peak
+    return {'n': n, 'max_rel_err': err, 't_float': t_float, 't_int8': t_int8,
+            'bytes_float': n * n * 4 * 2, 'bytes_int8': n * n * 1 * 2}
+
+
+def selftest():
+    q, scale = quantize_symmetric([0.5, -1.0, 0.0, 0.25])
+    assert q == [64, -127, 0, 32], q
+    assert max(abs(x) for x in q) &lt;= 127
+    back = dequantize(q, scale)
+    assert max(abs(x - y) for x, y in zip([0.5, -1.0, 0.0, 0.25], back)) &lt; 0.01
+
+    r = compare(48, seed=11)
+    assert r['max_rel_err'] &lt; 0.01, '量化误差过大：%s' % r['max_rel_err']
+    assert r['bytes_int8'] * 4 == r['bytes_float'], 'int8 应比 float32 省 4 倍空间'
+    print('selftest OK：对称量化 / int8 内核 / 相对误差 &lt; 1% / 空间 4:1 全部通过')
+    print('  参考：n=%d 时最大相对误差 %.5f，float %.3fs vs int8 %.3fs' %
+          (r['n'], r['max_rel_err'], r['t_float'], r['t_int8']))
+
+
+def main():
+    ap = argparse.ArgumentParser(description='int8 对称量化 + 整数矩阵乘对比')
+    ap.add_argument('--n', type=int, default=64, help='矩阵规模（n x n）')
+    ap.add_argument('--self-test', action='store_true', help='零配置自测')
+    a = ap.parse_args()
+    if a.self_test:
+        selftest()
+        return
+    r = compare(a.n)
+    print('矩阵规模 n=%d' % r['n'])
+    print('最大相对误差 : %.5f' % r['max_rel_err'])
+    print('耗时         : float %.3fs / int8 %.3fs（纯 Python 演示，真实加速来自 SIMD 内核）'
+          % (r['t_float'], r['t_int8']))
+    print('权重占用     : float32 %d B / int8 %d B' % (r['bytes_float'], r['bytes_int8']))
+
+
+if __name__ == '__main__':
+    main()</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>model.py</h3>
+    <p class="file-note">演示模型：8→16→3 的 MLP，float 与 int8 两条前向路径，可导出 C 权重头文件。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="model.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""model.py —— 可在边缘设备上跑的两层 MLP（float 与 int8 两条前向路径）。
+
+结构：输入 8 维 -&gt; 隐藏 16 维 (ReLU) -&gt; 输出 3 维 (Softmax)，参数量约 200，适合 MCU/树莓派级别设备。
+
+用法：
+    python model.py --self-test                     # 零配置自测：两条路径结果一致
+    python model.py --input 0.1 0.9 0.3 0.4 0.5 0.2 0.8 0.6
+    python model.py --export-c out/weights.h        # 导出 C 头文件，可直接烧进 MCU
+"""
+import argparse
+import os
+import random
+import sys
+
+from quantize import quantize_symmetric
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+IN_DIM, HID_DIM, OUT_DIM = 8, 16, 3
+E = 2.718281828459045
+
+
+def init_weights(seed=3):
+    """固定种子生成权重；上线时替换为训练好的权重即可。"""
+    rnd = random.Random(seed)
+    return {
+        'w1': [[rnd.uniform(-1, 1) for _ in range(IN_DIM)] for _ in range(HID_DIM)],
+        'b1': [rnd.uniform(-0.2, 0.2) for _ in range(HID_DIM)],
+        'w2': [[rnd.uniform(-1, 1) for _ in range(HID_DIM)] for _ in range(OUT_DIM)],
+        'b2': [rnd.uniform(-0.2, 0.2) for _ in range(OUT_DIM)],
+    }
+
+
+def relu(x):
+    return x if x &gt; 0.0 else 0.0
+
+
+def softmax(xs):
+    m = max(xs)
+    es = [E ** (x - m) for x in xs]
+    s = sum(es) or 1.0
+    return [e / s for e in es]
+
+
+def forward_float(x, p):
+    h = [relu(sum(w * v for w, v in zip(row, x)) + b) for row, b in zip(p['w1'], p['b1'])]
+    o = [sum(w * v for w, v in zip(row, h)) + b for row, b in zip(p['w2'], p['b2'])]
+    return o, h
+
+
+def quantize_params(p):
+    """只量化权重，激活保持 float32（混合精度，边缘端最常见的折中）。"""
+    q = {'b1': p['b1'], 'b2': p['b2']}
+    for key in ('w1', 'w2'):
+        flat = [v for row in p[key] for v in row]
+        qflat, scale = quantize_symmetric(flat)
+        width = len(p[key][0])
+        q[key] = [qflat[i * width:(i + 1) * width] for i in range(len(p[key]))]
+        q[key + '_scale'] = scale
+    return q
+
+
+def forward_int8(x, q):
+    h = [relu(sum(w * v for w, v in zip(row, x)) * q['w1_scale'] + b)
+         for row, b in zip(q['w1'], q['b1'])]
+    o = [sum(w * v for w, v in zip(row, h)) * q['w2_scale'] + b
+         for row, b in zip(q['w2'], q['b2'])]
+    return o, h
+
+
+def export_c(path, p):
+    """把量化权重导出成 C 头文件，MCU 侧直接 include 即可。"""
+    q = quantize_params(p)
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    lines = ['/* 自动生成：int8 权重与 scale，可直接编译进固件 */',
+             '#ifndef EDGE_MODEL_WEIGHTS_H', '#define EDGE_MODEL_WEIGHTS_H', '#include &lt;stdint.h&gt;', '']
+    for key in ('w1', 'w2'):
+        n_rows, n_cols = len(q[key]), len(q[key][0])
+        lines.append('#define %s_ROWS %d' % (key.upper(), n_rows))
+        lines.append('#define %s_COLS %d' % (key.upper(), n_cols))
+        lines.append('static const int8_t %s[%d][%d] = {' % (key, n_rows, n_cols))
+        for row in q[key]:
+            lines.append('    {%s},' % ', '.join(str(v) for v in row))
+        lines.append('};')
+        lines.append('static const float %s_scale = %.8ff;' % (key, q[key + '_scale']))
+        lines.append('')
+    lines += ['#endif /* EDGE_MODEL_WEIGHTS_H */', '']
+    with open(path, 'w', encoding='utf-8', newline='\n') as fh:
+        fh.write('\n'.join(lines))
+    return path
+
+
+def selftest():
+    p = init_weights()
+    q = quantize_params(p)
+    rnd = random.Random(99)
+    same_top1 = True
+    worst = 0.0
+    for _ in range(50):
+        x = [rnd.uniform(-1, 1) for _ in range(IN_DIM)]
+        of, hf = forward_float(x, p)
+        oq, hq = forward_int8(x, q)
+        same_top1 = same_top1 and (of.index(max(of)) == oq.index(max(oq)))
+        span = max((abs(v) for v in of), default=1.0) or 1.0
+        worst = max(worst, max(abs(a - b) for a, b in zip(of, oq)) / span)
+    assert same_top1, 'int8 与 float 的 top-1 分类结果不一致'
+    assert worst &lt; 0.05, 'logits 偏差占输出幅度的比例过大：%.4f' % worst
+    probs = softmax(forward_float([0.1] * IN_DIM, p)[0])
+    assert abs(sum(probs) - 1.0) &lt; 1e-9, 'softmax 未归一化'
+
+    tmp = os.path.join(os.path.dirname(os.path.abspath(__file__)), '_selftest_weights.h')
+    export_c(tmp, p)
+    text = open(tmp, encoding='utf-8').read()
+    assert 'static const int8_t w1[16][8]' in text, '导出内容不正确'
+    os.remove(tmp)
+    print('selftest OK：float/int8 分类一致（50 组随机输入）/ softmax 归一化 / C 头导出 全部通过')
+    print('  int8 与 float 的最大 logits 偏差（相对输出幅度）：%.4f' % worst)
+
+
+def main():
+    ap = argparse.ArgumentParser(description='边缘端两层 MLP（float / int8）')
+    ap.add_argument('--input', nargs=IN_DIM, type=float, help='%d 个输入特征' % IN_DIM)
+    ap.add_argument('--export-c', metavar='PATH', help='导出量化权重为 C 头文件')
+    ap.add_argument('--self-test', action='store_true', help='零配置自测')
+    a = ap.parse_args()
+    if a.self_test:
+        selftest()
+        return
+    p = init_weights()
+    if a.export_c:
+        print('已导出：', export_c(a.export_c, p))
+        return
+    x = a.input or [0.1, 0.9, 0.3, 0.4, 0.5, 0.2, 0.8, 0.6]
+    logits, _ = forward_float(x, p)
+    probs = softmax(logits)
+    print('logits :', ['%.4f' % v for v in logits])
+    print('probs  :', ['%.4f' % v for v in probs])
+    print('预测类别:', probs.index(max(probs)))
+    if not a.input:
+        print('（未传 --input，以上为默认示例输入）')
+
+
+if __name__ == '__main__':
+    main()</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：核心仅标准库；numpy / onnxruntime / tflite-runtime 为可选加速项。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># github-edge-ai 工程依赖清单
+# 核心功能只用 Python 标准库（random / time / argparse），零安装即可运行：
+#     python quantize.py --self-test
+#     python model.py --self-test
+# 要求 Python 3.8+。
+#
+# 可选增强（想在 PC 上复现真实推理/部署到真机时再装）：
+numpy&gt;=1.26.0            # 用向量化替换纯 Python 循环，速度提升数百倍
+onnxruntime&gt;=1.17.0      # 直接跑 .onnx 量化模型
+tflite-runtime&gt;=2.14.0   # 树莓派 / 安卓端的 TFLite 推理
+# 安装：pip install -r requirements.txt</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、自测实测结论与「需先改的配置项」表。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># github-edge-ai · 边缘 AI 量化推理（可运行工程）
+
+把「模型怎么变小、怎么在 MCU/边缘设备上跑」讲清楚并能真跑的最小工程：
+**float32 → int8 对称量化 → 整数矩阵乘内核 → 导出 C 头文件**。
+
+## 目录结构
+```
+github-edge-ai/
+├── quantize.py        # 对称量化 + int8 矩阵乘内核 + 精度/空间对比
+├── model.py           # 两层 MLP（float 与 int8 双路径）+ 导出 C 权重头文件
+├── requirements.txt   # 依赖清单（核心零依赖）
+└── README.md
+```
+
+## 运行环境
+- Python 3.8+；核心零第三方依赖。
+
+## 快速开始
+```bash
+python quantize.py --self-test        # 量化误差 &lt; 1%、空间 4:1
+python model.py --self-test           # int8 与 float 的 top-1 分类完全一致
+python model.py --input 0.1 0.9 0.3 0.4 0.5 0.2 0.8 0.6
+python model.py --export-c out/weights.h   # 生成可烧进 MCU 的 int8 权重
+```
+
+## 需先改的配置项
+| 配置项 | 位置 | 说明 |
+|---|---|---|
+| 权重来源 | `model.py` 的 `init_weights()` | 现在是固定种子随机权重，替换为你的训练结果 |
+| 网络尺寸 | `model.py` 顶部 `IN_DIM / HID_DIM / OUT_DIM` | 按任务调整（MCU 上建议 ≤ 64 维隐藏层） |
+| 量化位宽 | `quantize.py` 的 `quantize_symmetric()` | 现为 int8；改成 31 即为 int4 方案 |
+| MCU 侧重构 | `export-c` 导出的头文件 | 在 `main.c` 里用同一套整数累加逻辑复现前向 |
+
+## 关键结论（自测实测）
+- int8 对称量化后，与 float32 的最大相对误差 **&lt; 1%**，50 组随机输入的分类结果**完全一致**。
+- 权重占用从 4 字节/参数降到 1 字节/参数，**省 75% 空间**。
+- 纯 Python 下 int8 不会更快（没有 SIMD），真实加速来自 TFLite/ONNX Runtime 的整数内核；
+  本工程的价值是让你看清量化算法本身，并直接产出可上机的权重数组。</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>需先改的配置项（4 处）：</strong></p><ul><li><code>model.py</code> 的 <code>init_weights()</code>：当前是固定种子随机权重，替换为你的训练结果</li><li><code>IN_DIM / HID_DIM / OUT_DIM</code>：按任务调整（MCU 上建议隐藏层 ≤ 64 维）</li><li>上机侧：把 <code>--export-c</code> 生成的头文件引入固件，用同一套整数累加复现前向</li><li>要真实速度提升：装 <code>onnxruntime</code> / <code>tflite-runtime</code> 并用其整数内核替换 Python 循环</li></ul></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-github-edge-ai">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html" target="_blank" rel="noopener">ONNX Runtime 官方文档 · 量化（Quantize ONNX models）</a>
+<a href="https://github.com/microsoft/onnxruntime" target="_blank" rel="noopener">ONNX Runtime 官方仓库</a>
+<a href="https://pytorch.org/docs/stable/quantization.html" target="_blank" rel="noopener">PyTorch 官方文档 · 量化（含 int8 原理）</a>
+<a href="https://ai.google.dev/edge/litert" target="_blank" rel="noopener">Google LiteRT（原 TensorFlow Lite）官方站 · 边缘端部署</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -116,6 +482,7 @@ print("size int8:", os.path.getsize(model_int8))</code></pre></div></section><se
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/github-edge-ai.js"></script>
 </body>
 </html>

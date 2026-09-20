@@ -6,7 +6,7 @@
   <title>二维码扫码（jsQR） · nocau Fun</title>
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
-  <meta name="description" content="摄像头实时扫码 + 图片扫码，基于开源 jsQR 库（CDN 加载），本地解码不上传。" />
+  <meta name="description" content="摄像头实时扫码 + 图片扫码，基于开源 jsQR 库（本地引入），本地解码不上传。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:" />
@@ -41,19 +41,19 @@
   <main class="fun-main">
     <div class="fun-intro">
       <h1>二维码扫码 · jsQR</h1>
-      <p>开源 <a href="https://github.com/cozmo/jsQR" target="_blank" rel="noopener">jsQR</a> 纯前端解码：摄像头实时扫或上传图片，数据不出本机。库来自 CDN，离线时按钮会给出提示。</p>
+      <p>开源 <a href="https://github.com/cozmo/jsQR" target="_blank" rel="noopener">jsQR</a> 纯前端解码：摄像头实时扫或上传图片，数据不出本机。库文件随站点本地加载，缺失时按钮会给出提示。</p>
     </div>
     <div class="fun-box">
       <style>
         .qr-wrap{display:flex;flex-direction:column;gap:16px;align-items:center;width:100%;max-width:760px;padding:18px}
         .qr-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
         .qr-stage{position:relative;width:100%;max-width:680px}
-        .qr-stage canvas,#qr-video{width:100%;height:auto;display:block;background:#05070c;border:1px solid var(--color-border,#28303c);border-radius:14px}
+        .qr-stage canvas,#qr-video{width:100%;height:auto;display:block;background:#05070c;border:1px solid var(--color-border);border-radius:14px}
         .qr-stage video{object-fit:cover;min-height:220px}
-        .qr-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;color:var(--color-muted,#9aa3b2);font-size:0.9rem}
-        .qr-result{min-height:2.4em;max-width:680px;word-break:break-all;text-align:center;font-size:0.9rem;color:var(--color-brand,#7aa2f7);font-family:"SF Mono",Consolas,monospace}
-        .qr-tip{font-size:0.78rem;color:var(--color-muted,#9aa3b2)}
-        .qr-tip a{color:var(--color-brand,#7aa2f7)}
+        .qr-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;color:var(--color-muted);font-size:0.9rem}
+        .qr-result{min-height:2.4em;max-width:680px;word-break:break-all;text-align:center;font-size:0.9rem;color:var(--color-brand);font-family:"SF Mono",Consolas,monospace}
+        .qr-tip{font-size:0.78rem;color:var(--color-muted)}
+        .qr-tip a{color:var(--color-brand)}
       </style>
       <div class="qr-wrap">
         <div class="qr-bar">
@@ -68,7 +68,7 @@
           <video id="qr-video" playsinline muted hidden></video>
         </div>
         <p class="qr-result" id="qr-status">加载 jsQR 库中…</p>
-        <p class="qr-tip">依赖开源库：<a href="https://github.com/cozmo/jsQR" target="_blank" rel="noopener">jsQR</a> 与 <a href="https://github.com/soldair/node-qrcode" target="_blank" rel="noopener">qrcode</a>（生成示例用），需能访问 cdn.jsdelivr.net（两个开源库静态资源均在此托管）；摄像头需在 https 或 localhost 下使用。</p>
+        <p class="qr-tip">依赖开源库：<a href="https://github.com/cozmo/jsQR" target="_blank" rel="noopener">jsQR</a> 与 <a href="https://github.com/soldair/node-qrcode" target="_blank" rel="noopener">qrcode</a>（生成示例用），两个库的静态资源已随站点本地内置；摄像头需在 https 或 localhost 下使用。</p>
       </div>
     </div>
     <div class="fun-footer">
@@ -87,8 +87,8 @@
       </nav>
     </div>
   </footer>
-  <script src="../../assets/vendor/jsqr.js"></script>
-  <script src="../../assets/vendor/qrcode.min.js"></script>
+  <script src="../assets/vendor/jsqr.js"></script>
+  <script src="../assets/vendor/qrcode.min.js"></script>
   <script src="js/fun-common.js"></script>
   <script src="js/qr-scanner.js"></script>
 </body>

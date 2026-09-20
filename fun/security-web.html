@@ -51,7 +51,7 @@
         <div class="meta-line">
           <span class="tag">场景：Web 安全</span>
           <span class="tag">技术栈：OWASP / Python / 前端</span>
-          <span class="tag">来源：GitHub 参考</span>
+          <span class="tag">来源：OWASP Top 10 / OWASP 速查表 / MDN</span>
         </div>
       </div>
       <div class="disclaimer reveal">
@@ -92,7 +92,266 @@ def check_csrf():
         if token != csrf_token():
             abort(403)   # 拒绝跨站伪造请求
 
-# 模板中写入隐藏字段：&lt;input type="hidden" name="_csrf" value="{{ csrf_token() }}"&gt;</code></pre></div></section><section class="code-section"><h2>防御清单</h2><div class="code-card"><ul><li><strong>XSS</strong>：默认用 <code>textContent</code> / 模板自动转义；富文本走白名单过滤。</li><li><strong>SQLi</strong>：一律参数化查询；ORM 禁止 <code>raw</code> 拼接用户输入。</li><li><strong>CSRF</strong>：POST 校验 Token、Cookie 设 <code>SameSite=Lax/Strict</code>。</li><li>安全头：CSP、X-Frame-Options、X-Content-Type-Options 全开。</li></ul></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>在 DVWA（靶场）中把安全级别调低，亲手复现三种注入，观察原理。</li><li>对照“修复版”代码改自己的项目，用 Burp Suite 复测。</li><li>接入免费扫描器（如 OWASP ZAP）做回归检查。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>owasp-top10-examples</code>、<code>xss-sqli-csrf-demo</code>、<code>secure-flask-template</code>（链接可替换为实际仓库地址）。</p></div></section>
+# 模板中写入隐藏字段：&lt;input type="hidden" name="_csrf" value="{{ csrf_token() }}"&gt;</code></pre></div></section><section class="code-section"><h2>防御清单</h2><div class="code-card"><ul><li><strong>XSS</strong>：默认用 <code>textContent</code> / 模板自动转义；富文本走白名单过滤。</li><li><strong>SQLi</strong>：一律参数化查询；ORM 禁止 <code>raw</code> 拼接用户输入。</li><li><strong>CSRF</strong>：POST 校验 Token、Cookie 设 <code>SameSite=Lax/Strict</code>。</li><li>安全头：CSP、X-Frame-Options、X-Content-Type-Options 全开。</li></ul></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>在 DVWA（靶场）中把安全级别调低，亲手复现三种注入，观察原理。</li><li>对照“修复版”代码改自己的项目，用 Burp Suite 复测。</li><li>接入免费扫描器（如 OWASP ZAP）做回归检查。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="pg-project">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">Python 标准库，零依赖</span><span class="deploy-badge warn">仅限教学 / 自建靶场</span></div>
+  <div class="code-card"><p>运行环境：Python 3.8+（Windows / macOS / Linux 均可）。工程为纯标准库实现，把下面 3 个文件保存到同一目录后，按 README 的命令直接运行即可复现漏洞并验证修复效果；<strong>不需要安装 Flask 或任何第三方包</strong>。<br><strong>依赖清单</strong>：仅 Python 标准库（sqlite3 / html / hmac / secrets / unittest），无第三方依赖，无需 pip install。</p></div>
+  <div class="deploy-tree">security-web/
+├── vuln_vs_fixed.py  三个漏洞的漏洞版 / 修复版函数 + 演示入口
+├── selftest.py       8 个断言用例（漏洞可复现 + 修复有效）
+└── README.md         运行说明、依赖清单、最小自测与接入指引</div>
+  <div class="deploy-file">
+    <h3>vuln_vs_fixed.py</h3>
+    <p class="file-note">SQL 注入（sqlite3 真实执行）、XSS 转义、CSRF Token 三类对照函数，可直接 python 运行看结果。</p>
+    <div class="code-block"><span class="code-lang-badge">py</span><pre data-file="vuln_vs_fixed.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Web 三大漏洞的最小可复现对照（仅标准库，无第三方依赖）。
+
+   1) SQL 注入：字符串拼接 SQL vs 参数化查询（sqlite3 内存库，真实跑出差异）
+   2) XSS     ：直接拼 HTML        vs html.escape 转义
+   3) CSRF    ：缺失校验           vs Token 常量时间比对
+
+运行：
+  python vuln_vs_fixed.py            # 打印三组对照结果
+  python vuln_vs_fixed.py --selftest # 只跑断言版自测（等价 python selftest.py）
+
+合规边界：本文件仅用于教学与自建靶场，请勿对未授权系统使用。
+"""
+from __future__ import annotations
+
+import argparse
+import html
+import hmac
+import secrets
+import sqlite3
+
+PAYLOAD_SQL = "' OR '1'='1"          # 经典 SQL 注入载荷
+PAYLOAD_XSS = '&lt;img src=x onerror=alert(1)&gt;'
+
+
+# ---------------------------------------------------------------- 1) SQL 注入
+def build_db() -&gt; sqlite3.Connection:
+    """建一个内存库：users(name, pwd)，只放一个账号 admin / s3cret。"""
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE users (name TEXT, pwd TEXT)")
+    conn.execute("INSERT INTO users VALUES (?, ?)", ("admin", "s3cret"))
+    conn.commit()
+    return conn
+
+
+def login_bad(conn: sqlite3.Connection, user: str, pwd: str):
+    """漏洞版：把用户输入直接拼进 SQL —— 注入载荷会改变语义。"""
+    sql = "SELECT * FROM users WHERE name='%s' AND pwd='%s'" % (user, pwd)
+    return conn.execute(sql).fetchall(), sql
+
+
+def login_good(conn: sqlite3.Connection, user: str, pwd: str):
+    """修复版：参数化查询，值永远只是值。"""
+    sql = "SELECT * FROM users WHERE name=? AND pwd=?"
+    return conn.execute(sql, (user, pwd)).fetchall(), sql
+
+
+# -------------------------------------------------------------------- 2) XSS
+def render_bad(text: str) -&gt; str:
+    """漏洞版：用户输入直接拼进 HTML。"""
+    return '&lt;div class="comment"&gt;%s&lt;/div&gt;' % text
+
+
+def render_good(text: str) -&gt; str:
+    """修复版：转义为纯文本（等价于前端 textContent 赋值）。"""
+    return '&lt;div class="comment"&gt;%s&lt;/div&gt;' % html.escape(text, quote=True)
+
+
+# ------------------------------------------------------------------- 3) CSRF
+def new_csrf_token() -&gt; str:
+    """会话建立时生成，存入服务端 session（此处用返回值模拟）。"""
+    return secrets.token_urlsafe(32)
+
+
+def check_csrf(session_token: str, form_token: str) -&gt; bool:
+    """常量时间比对，避免时序侧信道；两者任一为空都应拒绝。"""
+    if not session_token or not form_token:
+        return False
+    return hmac.compare_digest(session_token, form_token)
+
+
+# --------------------------------------------------------------- 演示 / 自测
+def demo() -&gt; None:
+    conn = build_db()
+    injected, sql_bad = login_bad(conn, "admin", PAYLOAD_SQL)
+    blocked, sql_good = login_good(conn, "admin", PAYLOAD_SQL)
+    print("== 1) SQL 注入 ==")
+    print("  漏洞版 SQL :", sql_bad)
+    print("  漏洞版命中 %d 行（登录被绕过）" % len(injected))
+    print("  修复版 SQL :", sql_good)
+    print("  修复版命中 %d 行（登录被拒绝）" % len(blocked))
+
+    print("== 2) XSS ==")
+    print("  漏洞版输出：", render_bad(PAYLOAD_XSS))
+    print("  修复版输出：", render_good(PAYLOAD_XSS))
+
+    print("== 3) CSRF ==")
+    token = new_csrf_token()
+    print("  合法请求 :", check_csrf(token, token))
+    print("  伪造请求 :", check_csrf(token, new_csrf_token()))
+
+
+def main(argv=None) -&gt; int:
+    ap = argparse.ArgumentParser(description="Web 漏洞漏洞版 / 修复版最小对照")
+    ap.add_argument("--selftest", action="store_true", help="运行断言自测（等价 python selftest.py）")
+    args = ap.parse_args(argv)
+    if args.selftest:
+        import selftest
+        return selftest.main()
+    demo()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>selftest.py</h3>
+    <p class="file-note">unittest 断言：注入载荷命中 1 行、参数化返回 0 行、转义后无 <img>、伪造 Token 被拒。</p>
+    <div class="code-block"><span class="code-lang-badge">py</span><pre data-file="selftest.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""security-web 最小自测（仅标准库 unittest）：验证「漏洞能复现、修复能挡住」。
+
+运行：
+  python selftest.py
+  python -m unittest selftest -v
+"""
+from __future__ import annotations
+
+import unittest
+
+from vuln_vs_fixed import (PAYLOAD_SQL, build_db, check_csrf, login_bad,
+                            login_good, new_csrf_token, render_bad, render_good)
+
+
+class SqlInjectionTest(unittest.TestCase):
+    def setUp(self):
+        self.conn = build_db()
+
+    def test_payload_bypasses_string_concat(self):
+        """拼接 SQL 会被载荷绕过（漏洞可复现）。"""
+        rows, sql = login_bad(self.conn, "admin", PAYLOAD_SQL)
+        self.assertIn("OR '1'='1", sql)
+        self.assertEqual(len(rows), 1)
+
+    def test_parameterized_query_blocks_payload(self):
+        """参数化查询把载荷当普通字符串，登录失败。"""
+        rows, _ = login_good(self.conn, "admin", PAYLOAD_SQL)
+        self.assertEqual(len(rows), 0)
+
+    def test_correct_credentials_still_pass(self):
+        rows, _ = login_good(self.conn, "admin", "s3cret")
+        self.assertEqual(len(rows), 1)
+
+
+class XssTest(unittest.TestCase):
+    def test_raw_html_is_executable(self):
+        self.assertIn("&lt;img", render_bad('&lt;img src=x onerror=alert(1)&gt;'))
+
+    def test_escaped_html_is_inert(self):
+        out = render_good('&lt;img src=x onerror=alert(1)&gt;')
+        self.assertNotIn("&lt;img", out)
+        self.assertIn("&amp;lt;img", out)
+
+
+class CsrfTest(unittest.TestCase):
+    def test_matching_token_passes(self):
+        token = new_csrf_token()
+        self.assertTrue(check_csrf(token, token))
+
+    def test_forged_token_rejected(self):
+        self.assertFalse(check_csrf(new_csrf_token(), new_csrf_token()))
+
+    def test_empty_token_rejected(self):
+        self.assertFalse(check_csrf("", new_csrf_token()))
+        self.assertFalse(check_csrf(new_csrf_token(), ""))
+
+
+def main() -&gt; int:
+    suite = unittest.defaultTestLoader.loadTestsFromModule(__import__(__name__))
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    print("security-web selftest：%d 个用例，失败 %d" % (result.testsRun, len(result.failures) + len(result.errors)))
+    return 0 if result.wasSuccessful() else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行环境、依赖清单、可直接运行说明、需先改的配置项与最小自测命令。</p>
+    <div class="code-block"><span class="code-lang-badge">md</span><pre data-file="README.md"><code># Web 漏洞原理与防御 · 配套最小工程（security-web）
+
+三个漏洞的「漏洞版 vs 修复版」对照代码 + 断言自测，用于理解 XSS / SQL 注入 / CSRF 的触发条件与修复方式。
+
+## 目录结构
+
+```
+security-web/
+├── vuln_vs_fixed.py  三个漏洞的漏洞版 / 修复版函数 + 演示入口
+├── selftest.py       8 个断言用例（漏洞可复现 + 修复有效）
+└── README.md         运行说明、依赖清单、最小自测
+```
+
+## 运行环境与依赖清单
+
+- Python 3.8+，**仅标准库**：sqlite3 / html / hmac / secrets / unittest / argparse
+- 无第三方依赖，不需要 `pip install`；示例中的 Flask 片段仅用于说明接入方式，跑本工程不需要 Flask
+
+## 运行方式（可直接运行）
+
+```bash
+python vuln_vs_fixed.py            # 打印三组对照：注入命中 1 行 / 修复版 0 行
+python selftest.py                 # 8 个用例应全部 OK
+python -m unittest selftest -v     # 同上，带用例明细
+```
+
+## 需先改的配置项
+
+- 无必改项，开箱即可运行。
+- 若把示例接入真实项目：`login_good()` 换成你的 ORM/驱动参数化接口；`render_good()` 对应前端的 `textContent`；
+  `check_csrf()` 的 Token 需存入服务端 session，并在所有 POST 表单中带隐藏字段 `_csrf`。
+
+## 最小自测
+
+```bash
+python selftest.py
+```
+期望输出：`Ran 8 tests ... OK`（并打印用例级通过明细）。
+
+## 对应防御清单
+
+- XSS：输出转义（`textContent` / 模板自动转义）、富文本走白名单过滤、CSP 兜底。
+- SQL 注入：一律参数化查询，禁止拼接；ORM 禁止 raw 拼接用户输入。
+- CSRF：POST 校验 Token（常量时间比对）、Cookie 设 `SameSite=Lax/Strict`、关键操作二次验证。
+
+## 合规声明
+
+本工程仅用于安全学习与自建靶场（如 DVWA），严禁用于未授权系统。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><strong>运行标注</strong>：<code>可直接运行</code>（Python 3.8+ 标准库，零第三方依赖）。<strong>需先改的配置项</strong>：无必改项；接入真实项目时按 README「需先改的配置项」替换 ORM / 模板 / session 实现。<strong>最小自测</strong>：<code>python selftest.py</code> → 期望 <code>Ran 8 tests ... OK</code>；三组对照可跑 <code>python vuln_vs_fixed.py</code>。</div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#pg-project">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现所依据的官方规范与文档（均已实测可直接访问）：</p>
+<div class="src-links">
+<a href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener">OWASP Top 10（Web 应用安全风险官方榜单）</a>
+<a href="https://owasp.org/www-community/attacks/xss/" target="_blank" rel="noopener">OWASP · Cross Site Scripting (XSS) 官方说明</a>
+<a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP · SQL 注入防护速查表</a>
+<a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP · CSRF 防护速查表</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Node/textContent" target="_blank" rel="noopener">MDN · Node.textContent（安全写入文本的中文文档）</a>
+<a href="https://docs.python.org/3/library/sqlite3.html" target="_blank" rel="noopener">Python 官方文档 · sqlite3（参数化查询用法）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -115,6 +374,7 @@ def check_csrf():
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/security-web.js"></script>
 </body>
 </html>

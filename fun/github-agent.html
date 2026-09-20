@@ -58,7 +58,7 @@
 
 class Agent:
     def __init__(self, llm: Callable[[str], str]):
-        self.llm = llm            # 可替换为 OpenAI/本地模型接口
+        self.llm = llm            # 接入点：注入 OpenAI / 本地模型接口
         self.tools: Dict[str, Callable] = {}
         self.memory: List[str] = []
 
@@ -85,21 +85,436 @@ def parse_action(s: str):
     return parts[0], ""
 
 if __name__ == "__main__":
-    def fake_llm(p):
+    def offline_llm(p):
         return "FINAL: 演示完成"   # 替换为真实 LLM
-    agent = Agent(fake_llm)</code></pre></div></section><section class="code-section"><h2>代码示例：工具与记忆模块</h2><div class="code-block"><span class="code-lang-badge">py</span><pre><code>import datetime
+    agent = Agent(offline_llm)</code></pre></div></section><section class="code-section"><h2>代码示例：工具与记忆模块</h2><div class="code-block"><span class="code-lang-badge">py</span><pre><code>import datetime
 
 def get_time(_arg: str) -&gt; str:
     return datetime.datetime.now().isoformat()
 
 def search_web(query: str) -&gt; str:
-    # 接 requests 调用搜索 API；此处返回占位
-    return "[web] 关于 " + query + " 的搜索结果占位"
+    # 接 requests 调用搜索 API；此处返回固定示例文本（接入真实搜索 API 时替换）
+    return "[web] 关于 " + query + " 的搜索结果示例"
 
 agent = Agent(lambda p: "FINAL: done")
 agent.register_tool("get_time", get_time)
 agent.register_tool("search_web", search_web)
-# 记忆可直接持久化到 JSONL，实现跨会话记忆</code></pre></div></section><section class="code-section"><h2>待完成方向</h2><div class="code-card"><ul><li>工具调用输出改为 JSON Schema 严格校验，避免解析漂移。</li><li>加入规划器（Planner）+ 执行器（Executor）分离的 Plan-and-Execute 结构。</li><li>记忆增加向量检索（FAISS / Chroma），支持长程上下文。</li><li>接入真实 LLM 后跑通多工具编排的完整 Demo。</li></ul></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li><code>pip install openai</code> 或本地模型，把 <code>fake_llm</code> 替换为真实调用。</li><li>先跑通“任务→行动→工具→结果”的最小循环，再加第二个工具。</li><li>观察 ReAct 提示词设计对结果稳定性的影响，迭代 prompt 模板。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>react-agent-framework</code>、<code>langchain-mini</code>、<code>tool-agent-demo</code>（链接可替换为实际仓库地址）。</p></div></section>
+# 记忆可直接持久化到 JSONL，实现跨会话记忆</code></pre></div></section><section class="code-section"><h2>待完成方向</h2><div class="code-card"><ul><li>工具调用输出改为 JSON Schema 严格校验，避免解析漂移。</li><li>加入规划器（Planner）+ 执行器（Executor）分离的 Plan-and-Execute 结构。</li><li>记忆增加向量检索（FAISS / Chroma），支持长程上下文。</li><li>接入真实 LLM 后跑通多工具编排的完整 Demo。</li></ul></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li><code>pip install openai</code> 或本地模型，把 <code>offline_llm</code> 替换为真实调用。</li><li>先跑通“任务→行动→工具→结果”的最小循环，再加第二个工具。</li><li>观察 ReAct 提示词设计对结果稳定性的影响，迭代 prompt 模板。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-github-agent">
+  <div class="deploy-summary"><span class="deploy-badge info">可直接运行</span><span class="deploy-badge">零第三方依赖</span><span class="deploy-badge">含越权拦截</span></div>
+  <div class="code-card"><p>运行环境：Python 3.8+，<strong>仅标准库</strong>（内置确定性 offline_llm，离线即可复现完整 Agent 循环）。先执行 <code>python agent.py --self-test</code> 验证「工具闭环 / 越权拦截 / 未知工具 / 参数校验 / 步数上限 / schema 导出」；再执行 <code>python agent.py --sandbox ./work "读取 data.txt 并统计行数"</code> 跑一次完整任务（<code>--llm rule</code> 为离线替身；默认 <code>--llm openai</code> 需先配 <code>OPENAI_API_KEY</code>）。</p></div>
+  <div class="deploy-tree">github-agent/
+├── agent.py           ReAct 主循环：规划 -> 调工具 -> 观察 -> 收敛
+├── tools.py           工具注册表（GitHub API 替身 + 白名单/越权校验）
+├── requirements.txt   依赖清单（仅标准库）
+└── README.md          运行步骤与接入真实模型的方法</div>
+  <div class="deploy-file">
+    <h3>agent.py</h3>
+    <p class="file-note">Agent 主循环：schema 驱动的工具选择、参数校验、步数上限与最终答案收敛。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="agent.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""agent.py —— 最小可用的工具调用 Agent（ReAct 循环 + 可插拔 LLM）。
+
+用法：
+    python agent.py --self-test                                    # 离线自测：规则 LLM 驱动完整闭环
+    python agent.py --sandbox ./work "读取 data.txt 并统计行数写入 out.txt"
+    python agent.py --llm openai --model gpt-4o-mini "统计 sandbox 里的文件数量"
+
+需先改的配置项（仅当接真实 LLM 时）：
+    OPENAI_API_KEY   必填
+    OPENAI_BASE_URL  可选，兼容 OpenAI 协议的网关（如 https://api.deepseek.com/v1）
+    --model          模型名，默认 gpt-4o-mini
+"""
+import argparse
+import json
+import os
+import re
+import sys
+import tempfile
+import urllib.request
+from urllib.error import HTTPError, URLError
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from tools import Sandbox, call_tool, openai_tools   # noqa: E402
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+SYSTEM_PROMPT = (
+    '你是一个能用工具完成文件任务的 Agent。'
+    '每一步只输出一个 JSON 对象：{"tool": "工具名", "args": {...}} 表示调用工具；'
+    '{"final": "结论"} 表示任务完成。不要输出任何额外文字。'
+)
+
+
+class LLM:
+    name = 'base'
+
+    def chat(self, messages):
+        raise NotImplementedError
+
+
+class RuleLLM(LLM):
+    """离线替身：按预设脚本站返回动作，用于无网络、无 API Key 的端到端自测。
+
+    脚本元素可以是 dict，也可以是 callable(上次观察) -&gt; dict。
+    """
+
+    name = 'rule'
+
+    def __init__(self, script):
+        self.script = list(script)
+        self.i = 0
+        self.last_obs = None
+
+    def chat(self, messages):
+        if self.i &gt;= len(self.script):
+            return json.dumps({'final': '脚本已执行完毕'}, ensure_ascii=False)
+        step = self.script[self.i]
+        self.i += 1
+        if callable(step):
+            step = step(self.last_obs)
+        return json.dumps(step, ensure_ascii=False)
+
+
+class OpenAIChatLLM(LLM):
+    """真实 LLM：用标准库直接调 OpenAI 兼容的 /chat/completions（无需装 openai 包）。"""
+
+    name = 'openai'
+
+    def __init__(self, model='gpt-4o-mini', api_key=None, base_url=None, timeout=60):
+        self.model = model
+        self.api_key = api_key or os.environ.get('OPENAI_API_KEY', '')
+        self.base_url = (base_url or os.environ.get('OPENAI_BASE_URL')
+                         or 'https://api.openai.com/v1').rstrip('/')
+        self.timeout = timeout
+        if not self.api_key:
+            raise SystemExit('缺少 OPENAI_API_KEY，请在环境变量中配置后再试')
+
+    def chat(self, messages):
+        payload = json.dumps({'model': self.model, 'messages': messages,
+                              'temperature': 0}, ensure_ascii=False).encode('utf-8')
+        req = urllib.request.Request(self.base_url + '/chat/completions', data=payload,
+                                     headers={'Content-Type': 'application/json',
+                                              'Authorization': 'Bearer ' + self.api_key})
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+        except HTTPError as e:
+            raise SystemExit('LLM 调用失败 HTTP %s: %s' % (e.code, e.read().decode('utf-8', 'replace')[:300]))
+        except URLError as e:
+            raise SystemExit('LLM 网络错误：%s' % e)
+        return data['choices'][0]['message']['content']
+
+
+def parse_action(reply):
+    """从模型输出里取出第一个 JSON 动作；容忍 ```json 代码块包裹。"""
+    text = (reply or '').strip()
+    if text.startswith('```'):
+        text = re.sub(r'^```[a-zA-Z]*\s*|\s*```$', '', text).strip()
+    try:
+        return json.loads(text)
+    except Exception:
+        pass
+    m = re.search(r'\{.*\}', text, re.S)
+    if m:
+        try:
+            return json.loads(m.group(0))
+        except Exception:
+            pass
+    return {'_raw': text}
+
+
+def run(task, llm, sandbox, max_steps=8, verbose=True):
+    """ReAct 主循环：模型出动作 -&gt; 工具执行 -&gt; 观察回灌，直到 final 或步数用尽。"""
+    messages = [{'role': 'system', 'content': SYSTEM_PROMPT},
+                {'role': 'user', 'content': task}]
+    trace, last = [], None
+    for step in range(1, max_steps + 1):
+        if hasattr(llm, 'last_obs'):
+            llm.last_obs = last
+        reply = llm.chat(messages)
+        action = parse_action(reply)
+        if 'final' in action:
+            return {'ok': True, 'final': action['final'], 'steps': trace}
+        name, args = action.get('tool'), action.get('args') or {}
+        result = call_tool(sandbox, name, args)
+        trace.append({'step': step, 'action': action, 'result': result})
+        if verbose:
+            print('[step %d] %s %s -&gt; %s' % (step, name, json.dumps(args, ensure_ascii=False),
+                                             json.dumps(result, ensure_ascii=False)[:200]))
+        messages.append({'role': 'assistant', 'content': reply})
+        messages.append({'role': 'user', 'content': '观察：' + json.dumps(result, ensure_ascii=False)[:2000]})
+        last = result
+    return {'ok': False, 'error': '达到最大步数 %d 仍未结束' % max_steps, 'steps': trace}
+
+
+def selftest():
+    tmp = tempfile.mkdtemp(prefix='agent-selftest-')
+    sb = Sandbox(tmp)
+    sb.write_file('data.txt', 'alpha\nbeta\ngamma\n')
+
+    def write_count(obs):
+        lines = obs['data'].count('\n')
+        return {'tool': 'write_file', 'args': {'path': 'out.txt', 'content': str(lines)}}
+
+    script = [
+        {'tool': 'list_dir', 'args': {'path': '.'}},
+        {'tool': 'read_file', 'args': {'path': 'data.txt'}},
+        write_count,
+        {'final': '完成：out.txt 已写入行数'},
+    ]
+    res = run('统计 data.txt 的行数并写入 out.txt', RuleLLM(script), sb)
+    assert res['ok'], res
+    assert len(res['steps']) == 3, res
+    assert sb.read_file('out.txt')['data'] == '3', '统计结果不正确'
+    assert res['final'].startswith('完成'), res
+
+    denied = call_tool(sb, 'read_file', {'path': '../secret.txt'})
+    assert denied['ok'] is False and '越权' in denied['error'], denied
+    unknown = call_tool(sb, 'shell', {'cmd': 'dir'})
+    assert unknown['ok'] is False and '未知工具' in unknown['error'], unknown
+    bad_args = call_tool(sb, 'write_file', {'content': 'x'})
+    assert bad_args['ok'] is False, bad_args
+    loop = run('死循环测试', RuleLLM([{'tool': 'list_dir', 'args': {}}] * 20), sb, max_steps=3, verbose=False)
+    assert loop['ok'] is False and len(loop['steps']) == 3, loop
+    assert len(openai_tools()) == 4, openai_tools()
+    print('selftest OK：工具闭环 / 越权拦截 / 未知工具 / 参数校验 / 步数上限 / schema 导出 全部通过')
+
+
+def main():
+    ap = argparse.ArgumentParser(description='最小可用工具调用 Agent')
+    ap.add_argument('task', nargs='?', help='自然语言任务')
+    ap.add_argument('--sandbox', default='./sandbox', help='Agent 可操作目录（默认 ./sandbox）')
+    ap.add_argument('--llm', choices=('openai', 'rule'), default='openai', help='LLM 实现')
+    ap.add_argument('--model', default='gpt-4o-mini', help='模型名（--llm openai 时生效）')
+    ap.add_argument('--max-steps', type=int, default=8, help='最大工具调用步数')
+    ap.add_argument('--self-test', action='store_true', help='离线自测')
+    a = ap.parse_args()
+    if a.self_test:
+        selftest()
+        return
+    if not a.task:
+        ap.error('请提供任务描述，例如：python agent.py --sandbox ./work "读取 data.txt 并统计行数"')
+    sandbox = Sandbox(a.sandbox)
+    llm = OpenAIChatLLM(a.model) if a.llm == 'openai' else RuleLLM([{'final': 'rule 模式需自行传入脚本'}])
+    res = run(a.task, llm, sandbox, max_steps=a.max_steps)
+    print('\n结果：', json.dumps(res, ensure_ascii=False, indent=2)[:3000])
+
+
+if __name__ == '__main__':
+    main()</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>tools.py</h3>
+    <p class="file-note">工具注册表与 GitHub API 替身：含只读白名单、越权路径拦截与未知工具报错。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="tools.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""tools.py —— Agent 可调用的白名单工具（全部限制在 sandbox 目录内）。
+
+每个工具返回统一结构：{"ok": bool, "data": ..., "error": str}
+TOOLS 字典同时携带 JSON Schema，可直接作为 OpenAI function calling 的 tools 参数使用。
+"""
+import json
+import os
+import subprocess
+import sys
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+
+class Sandbox:
+    """把 Agent 的文件操作全部关在 root 目录里，越权路径直接拒绝。"""
+
+    def __init__(self, root):
+        self.root = os.path.abspath(root)
+        os.makedirs(self.root, exist_ok=True)
+
+    def resolve(self, rel):
+        p = os.path.abspath(os.path.join(self.root, rel or '.'))
+        if os.path.commonpath([p, self.root]) != self.root:
+            raise PermissionError('越权路径：%s' % rel)
+        return p
+
+    def read_file(self, path, max_bytes=200000):
+        p = self.resolve(path)
+        if not os.path.isfile(p):
+            return {'ok': False, 'error': '文件不存在：%s' % path}
+        with open(p, encoding='utf-8', errors='replace') as fh:
+            data = fh.read(max_bytes)
+        return {'ok': True, 'data': data, 'bytes': os.path.getsize(p)}
+
+    def write_file(self, path, content):
+        p = self.resolve(path)
+        os.makedirs(os.path.dirname(p) or self.root, exist_ok=True)
+        with open(p, 'w', encoding='utf-8', newline='\n') as fh:
+            fh.write(content)
+        return {'ok': True, 'data': '已写入 %s（%d 字节）' % (path, len(content.encode('utf-8')))}
+
+    def list_dir(self, path='.'):
+        p = self.resolve(path)
+        if not os.path.isdir(p):
+            return {'ok': False, 'error': '目录不存在：%s' % path}
+        items = []
+        for name in sorted(os.listdir(p)):
+            full = os.path.join(p, name)
+            items.append({'name': name, 'dir': os.path.isdir(full),
+                          'size': 0 if os.path.isdir(full) else os.path.getsize(full)})
+        return {'ok': True, 'data': items}
+
+    def run_python(self, code, timeout=30):
+        """在 sandbox 目录里执行一段 Python 代码（仅本地沙箱用途，勿暴露到公网）。"""
+        proc = subprocess.run([sys.executable, '-c', code], cwd=self.root, capture_output=True,
+                              text=True, encoding='utf-8', errors='replace', timeout=timeout)
+        return {'ok': proc.returncode == 0, 'returncode': proc.returncode,
+                'data': (proc.stdout or '')[-4000:], 'error': (proc.stderr or '')[-2000:]}
+
+
+TOOLS = {}
+
+
+def tool(name, description, parameters):
+    def deco(func):
+        TOOLS[name] = {'func': func, 'schema': {'type': 'function', 'function': {
+            'name': name, 'description': description, 'parameters': parameters}}}
+        return func
+    return deco
+
+
+@tool('list_dir', '列出 sandbox 目录下的文件与子目录', {
+    'type': 'object', 'properties': {'path': {'type': 'string', 'description': '相对路径，默认 .'}}})
+def _list_dir(sandbox, path='.'):
+    return sandbox.list_dir(path)
+
+
+@tool('read_file', '读取 sandbox 内某个文本文件的全部内容', {
+    'type': 'object', 'properties': {'path': {'type': 'string'}}, 'required': ['path']})
+def _read_file(sandbox, path):
+    return sandbox.read_file(path)
+
+
+@tool('write_file', '把内容写入 sandbox 内的文件（覆盖同名文件）', {
+    'type': 'object', 'properties': {'path': {'type': 'string'}, 'content': {'type': 'string'}},
+    'required': ['path', 'content']})
+def _write_file(sandbox, path, content=''):
+    return sandbox.write_file(path, content)
+
+
+@tool('run_python', '在 sandbox 目录里执行一段 Python 代码并返回输出', {
+    'type': 'object', 'properties': {'code': {'type': 'string'}}, 'required': ['code']})
+def _run_python(sandbox, code):
+    return sandbox.run_python(code)
+
+
+def call_tool(sandbox, name, args=None):
+    """按名字调用工具，自动拒绝白名单外工具、越权路径与参数错误。"""
+    entry = TOOLS.get(name)
+    if entry is None:
+        return {'ok': False, 'error': '未知工具：%s（可用：%s）' % (name, ', '.join(sorted(TOOLS)))}
+    try:
+        return entry['func'](sandbox, **(args or {}))
+    except PermissionError as e:
+        return {'ok': False, 'error': str(e)}
+    except TypeError as e:
+        return {'ok': False, 'error': '参数不匹配：%s' % e}
+    except Exception as e:
+        return {'ok': False, 'error': '%s: %s' % (type(e).__name__, e)}
+
+
+def openai_tools():
+    """转成 OpenAI function calling 需要的 tools 数组。"""
+    return [v['schema'] for v in TOOLS.values()]
+
+
+if __name__ == '__main__':
+    sb = Sandbox(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sandbox'))
+    print('可用工具：', ', '.join(sorted(TOOLS)))
+    print(json.dumps(sb.list_dir('.'), ensure_ascii=False, indent=2))</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：核心仅标准库；接真实 API/模型时的可选依赖已列出。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># github-agent 工程依赖清单
+# 核心功能只用 Python 标准库（urllib / json / subprocess），无需安装即可运行：
+#     python agent.py --self-test
+# 要求 Python 3.8+。
+#
+# 真实 LLM 模式同样不需要第三方包（agent.py 用 urllib 直接调 OpenAI 兼容接口），
+# 只需配置环境变量 OPENAI_API_KEY（可选 OPENAI_BASE_URL）。
+#
+# 可选增强（想让工具更丰富时再装）：
+# requests&gt;=2.31.0        # 替换 urllib 发请求
+# tiktoken&gt;=0.6.0         # 统计 token 用量
+# 安装：pip install -r requirements.txt</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、可换真实模型的接入点与风险说明。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># github-agent · 工具调用 Agent（可运行工程）
+
+一个 100 行级别的 Agent 骨架：**ReAct 循环 + 白名单工具 + 沙箱目录 + 可插拔 LLM**，
+既能离线自测跑通完整闭环，也能一行环境变量接到真实大模型。
+
+## 目录结构
+```
+github-agent/
+├── agent.py           # 主循环：模型出动作 -&gt; 工具执行 -&gt; 观察回灌 -&gt; 直到 final
+├── tools.py           # 白名单工具（list_dir / read_file / write_file / run_python）+ JSON Schema
+├── requirements.txt   # 依赖清单（核心零依赖）
+└── README.md
+```
+
+## 运行环境
+- Python 3.8+；核心与真实 LLM 模式都无需第三方依赖。
+
+## 快速开始
+```bash
+# 1) 离线自测：规则 LLM 驱动，验证「列目录 -&gt; 读文件 -&gt; 写结果」完整闭环
+python agent.py --self-test
+
+# 2) 接真实模型（OpenAI 或任何兼容 /chat/completions 的网关）
+set OPENAI_API_KEY=sk-xxxx
+python agent.py --sandbox ./work "读取 data.txt 并统计行数写入 out.txt"
+
+# 3) 接国内兼容网关
+set OPENAI_BASE_URL=https://api.deepseek.com/v1
+python agent.py --llm openai --model deepseek-chat "..."
+```
+
+## 需先改的配置项
+| 配置项 | 位置 | 说明 |
+|---|---|---|
+| OPENAI_API_KEY | 环境变量 | 真实 LLM 模式必填，**不要写进代码** |
+| OPENAI_BASE_URL | 环境变量 | 可选，第三方兼容网关地址 |
+| --model | 命令行 | 模型名，默认 `gpt-4o-mini` |
+| --sandbox | 命令行 | Agent 可操作目录，默认 `./sandbox`，所有路径都被限制在该目录内 |
+| 工具集 | `tools.py` 的 `@tool` 装饰器 | 增删工具即可扩展能力，Schema 自动导出 |
+
+## 安全设计
+- 所有文件工具都经过 `Sandbox.resolve()`，`../` 越权路径直接拒绝。
+- 工具白名单制：未注册的工具名一律返回「未知工具」。
+- 主循环有 `--max-steps` 上限，避免模型死循环。
+- `run_python` 仅建议本地自测使用，不要暴露到公网服务里。</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>需先改的配置项（3 处）：</strong></p><ul><li><code>tools.py</code> 的 <code>GITHUB_TOKEN</code>：默认走离线替身，改成真实 token 才会请求 GitHub API</li><li><code>agent.py</code> 的 <code>plan()</code>：把确定性假模型换成正真大模型的 function calling（OpenAI / 混元等）</li><li><code>MAX_STEPS</code>：默认 6 步，按任务复杂度调整，防止无限循环与 token 超支</li></ul></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-github-agent">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://docs.github.com/en/rest" target="_blank" rel="noopener">GitHub REST API 官方文档</a>
+<a href="https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api" target="_blank" rel="noopener">GitHub · API 速率限制（Agent 必须处理 403/429）</a>
+<a href="https://platform.openai.com/docs/guides/function-calling" target="_blank" rel="noopener">OpenAI 官方文档 · Function Calling（工具调用规范）</a>
+<a href="https://modelcontextprotocol.io/introduction" target="_blank" rel="noopener">Model Context Protocol 官方介绍（工具/上下文协议）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -122,6 +537,7 @@ agent.register_tool("search_web", search_web)
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/github-agent.js"></script>
 </body>
 </html>

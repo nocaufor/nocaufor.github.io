@@ -7,7 +7,7 @@
   var statusEl = document.getElementById("cf-status");
   var srcData = null, mode = "cartoon", imgW = 0, imgH = 0;
 
-  function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#e06c75" : "var(--color-muted,#9aa3b2)"; }
+  function setStatus(m, err) { statusEl.textContent = m; statusEl.style.color = err ? "#e06c75" : "var(--color-muted)"; }
   function quantize(v, level) {
     return Math.round(v / 255 * (level - 1)) * (255 / (level - 1));
   }

@@ -9,7 +9,7 @@
   <meta name="description" content="TensorFlow.js COCO-SSD 对上传图片做常见物体检测，标注类别与置信度。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
@@ -41,17 +41,17 @@
   <main class="fun-main">
     <div class="fun-intro">
       <h1>目标检测</h1>
-      <p>基于 TensorFlow.js + COCO-SSD（jsdelivr CDN）的常见物体检测：上传图片，自动标注类别与置信度。</p>
+      <p>基于 TensorFlow.js + COCO-SSD（本地模型）的常见物体检测：上传图片，自动标注类别与置信度。</p>
     </div>
     <div class="fun-box">
       <style>
         .od-wrap{display:flex;flex-direction:column;gap:14px;align-items:center;width:100%;max-width:760px}
         .od-bar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
         .od-canvasbox{width:100%;max-width:720px;min-height:80px;text-align:center}
-        .od-canvasbox canvas{max-width:100%;border:1px solid var(--color-border,#28303c);border-radius:12px;background:#0c0f14}
-        .od-status{font-size:0.86rem;color:var(--color-muted,#9aa3b2);min-height:1.3em;text-align:center}
-        .od-status.od-err{color:#e06c75}
-        .od-hint{font-size:0.8rem;color:var(--color-muted,#7c8798);text-align:center}
+        .od-canvasbox canvas{max-width:100%;border:1px solid var(--color-border);border-radius:12px;background:#0c0f14}
+        .od-status{font-size:0.86rem;color:var(--color-muted);min-height:1.3em;text-align:center}
+        .od-status.od-err{color:var(--danger,#e06c75)}
+        .od-hint{font-size:0.8rem;color:var(--color-muted);text-align:center}
       </style>
       <div class="od-wrap">
         <div class="od-bar">
@@ -62,8 +62,8 @@
           <label class="btn btn-outline" style="cursor:pointer">阈值 <input id="od-threshold" type="range" min="0.3" max="0.9" step="0.05" value="0.5" style="width:120px;vertical-align:middle"></label>
         </div>
         <div class="od-canvasbox"><canvas id="od-canvas" width="720" height="480" aria-label="目标检测结果画布"></canvas></div>
-        <p id="od-status" class="od-status">加载 COCO-SSD 模型中，首次需从 CDN 下载权重（约 4~6MB），请稍候…</p>
-        <p class="od-hint">识别在浏览器本地进行，图片不上传服务器；离线或 CDN 不可用时将提示加载失败。</p>
+        <p id="od-status" class="od-status">加载 COCO-SSD 本地模型中，首次需读取权重（约 4~6MB），请稍候…</p>
+        <p class="od-hint">识别在浏览器本地进行，图片不上传服务器；本地模型文件缺失时将提示加载失败。</p>
       </div>
     </div>
     <div class="fun-footer">
@@ -82,8 +82,8 @@
       </nav>
     </div>
   </footer>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+  <script src="../assets/vendor/tf.min.js"></script>
+  <script src="../assets/vendor/coco-ssd.min.js"></script>
   <script src="js/fun-common.js"></script>
   <script src="js/object-detect.js"></script>
 </body>

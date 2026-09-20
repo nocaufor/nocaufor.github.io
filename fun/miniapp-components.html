@@ -103,7 +103,721 @@ Component({
 <li>页面 <code>usingComponents</code> 注册后即可 <code>&lt;rating value="4"&gt;</code> 使用。</li>
 <li>评分变化通过 <code>triggerEvent("change")</code> 通知父页面。</li>
 <li>防抖按钮组件避免支付/提交被重复点击。</li>
-</ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>weapp-components</code>、<code>miniprogram-custom-component</code>、<code>weui-miniprogram</code>。</p></div></section>
+</ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-miniapp-components">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行（node 自测）</span><span class="deploy-badge info">需微信开发者工具导入</span><span class="deploy-badge">纯逻辑层零第三方依赖</span></div>
+  <div class="code-card"><p>运行环境：Node.js 14+ 跑逻辑自测（<strong>零 npm 依赖</strong>）；小程序端需「微信开发者工具」导入工程目录（已含 <code>project.config.json</code> / <code>app.json</code>，AppID 用测试号即可）。组件逻辑抽成 <code>*-core.js</code>（UMD），同一份代码既可被小程序引用，也能在 Node 下自测。</p><p>先执行 <code>node tools/selftest.js</code> 验证评分与防抖逻辑，再用开发者工具打开工程看真实交互。</p></div>
+  <div class="deploy-tree">miniapp-components/
+├── README.md                    导入步骤、组件用法与配置项说明
+├── project.config.json          开发者工具工程配置（appid 用测试号即可）
+├── app.json / app.js / app.wxss 小程序入口与全局样式
+├── sitemap.json                 索引配置
+├── package.json                 自测脚本入口（node tools/selftest.js）
+├── components/
+│   ├── rating/                  评分组件（wxml / wxss / js / json + rating-core.js）
+│   └── debounce-button/         防抖按钮组件（含 debounce-core.js）
+├── pages/index/                 演示页：引用两个组件并打印事件
+└── tools/selftest.js            Node 自测：评分边界 / 防抖窗口 / throttle 全覆盖</div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">导入步骤、组件属性表、自测命令与需先改的配置项。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># miniapp-components · 微信小程序可复用组件库（可运行工程）
+
+两个开箱即用的自定义组件 + 独立纯逻辑层，**先在电脑上跑通最小用例**，再导入开发者工具即可看到真实 UI。
+
+## 目录结构
+
+```
+miniapp-components/
+├── project.config.json            开发者工具工程配置（appid 为 touristappid 游客模式）
+├── app.json / app.js / app.wxss   小程序入口与全局样式
+├── sitemap.json
+├── package.json                   仅用于电脑端自测（npm test）
+├── pages/index/                   演示页：调用两个组件
+├── components/rating/             星级评分组件
+│   ├── rating.js / .wxml / .wxss / .json
+│   └── rating-core.js             纯逻辑（UMD，可被 Node 直接 require）
+├── components/debounce-button/    防抖按钮组件
+│   ├── debounce-button.js / .wxml / .wxss / .json
+│   └── debounce-core.js           leading+trailing 防抖 / 节流纯逻辑
+└── tools/selftest.js              电脑端最小用例验证
+```
+
+## 可直接运行
+
+**① 电脑端（零依赖，先验证逻辑）**
+
+```bash
+cd miniapp-components
+node tools/selftest.js      # 或 npm test
+```
+
+预期输出末尾为 `ALL CHECKS PASSED`，覆盖：评分 toggle/percent/clamp、防抖窗口内合并、
+尾随执行、cancel 清除、throttle 周期丢弃。
+
+**② 微信开发者工具（看真实 UI）**
+
+1. 打开「微信开发者工具 → 导入项目」，目录选择本工程根目录；
+2. AppID 选择「测试号 / 游客模式」（工程内已填 `touristappid`）；
+3. 编译后首页即可点击星星评分、狂点按钮观察 `点击 N 次 / 实际触发 M 次` 的防抖效果。
+
+## 需先改的配置项
+
+| 位置 | 配置项 | 说明 |
+|---|---|---|
+| `project.config.json` | `appid` | 换成你自己的小程序 AppID；仅本地体验可保留 `touristappid` |
+| `project.config.json` | `libVersion` | 基础库版本，按开发者工具提示调整 |
+| `components/rating/rating.js` | `max` / `size` | 星星总数与尺寸（属性可传，默认 5 / 24） |
+| `components/debounce-button/debounce-button.js` | `wait` | 防抖窗口，演示页传 800ms |
+| `app.wxss` | 颜色令牌 | 演示用深色基底，接入自有设计体系时替换 |
+
+## 依赖清单
+
+- 小程序端：**无任何第三方 npm 依赖**（`package.json` 的 `dependencies` 为空）；
+- 电脑端自测：Node.js ≥ 14，零依赖。
+
+## 组件用法
+
+```xml
+&lt;rating value="{{score}}" max="5" bind:change="onRatingChange" /&gt;
+&lt;debounce-button text="提交" wait="{{800}}" bind:action="onAction" /&gt;
+```
+
+```js
+onRatingChange(e) { this.setData({ score: e.detail.value }); },   // detail: { value, percent }
+onAction(e) { console.log(e.detail.count); }                      // detail: { count, wait }
+```
+
+## 来源参考
+
+- 微信小程序自定义组件官方文档：https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/
+- 组件间通信与事件（triggerEvent）：https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/events.html
+- 开发者工具导入项目说明：https://developers.weixin.qq.com/miniprogram/dev/devtools/importproject.html
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>project.config.json</h3>
+    <p class="file-note">开发者工具工程配置：appid 处填测试号即可编译。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="project.config.json"><code>{
+  "description": "miniapp-components 组件库演示工程（可直接用微信开发者工具导入）",
+  "packOptions": { "ignore": [{ "type": "folder", "value": "tools" }] },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.5.0",
+  "appid": "touristappid",
+  "projectname": "miniapp-components",
+  "miniprogramRoot": "./"
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.json</h3>
+    <p class="file-note">小程序入口配置：注册页面与组件页面依赖。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="app.json"><code>{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "NOCAU 组件库",
+    "navigationBarBackgroundColor": "#0d0f12",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0d0f12",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.js</h3>
+    <p class="file-note">入口逻辑：仅保留最小启动代码，便于直接复用。</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="app.js"><code>// app.js —— 小程序入口
+App({
+  onLaunch() {
+    // 演示工程无远端逻辑；保留生命周期便于扩展
+    console.log('[miniapp-components] launched');
+  },
+  globalData: { version: '1.0.0' }
+});
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.wxss</h3>
+    <p class="file-note">全局样式：使用主题变量占位，不写死颜色。</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="app.wxss"><code>/* app.wxss —— 全局样式（演示工程深色基底，可按需换成浅色） */
+page {
+  background: #0d0f12;
+  color: #e6e8ec;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+.page {
+  padding: 32rpx;
+}
+
+.card {
+  margin-bottom: 32rpx;
+  padding: 28rpx;
+  border: 1rpx solid #23262c;
+  border-radius: 16rpx;
+  background: #15181d;
+}
+
+.card__title {
+  margin-bottom: 20rpx;
+  color: #6fb3a8;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.tip {
+  color: #8b93a1;
+  font-size: 24rpx;
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>sitemap.json</h3>
+    <p class="file-note">搜索索引配置（默认全部允许索引）。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="sitemap.json"><code>{
+  "desc": "关于本文件的更多信息，请参考文档 https://developers.weixin.qq.com/miniprogram/dev/framework/sitemap.html",
+  "rules": [{ "action": "allow", "page": "*" }]
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>package.json</h3>
+    <p class="file-note">自测脚本入口：npm test -> node tools/selftest.js。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="package.json"><code>{
+  "name": "miniapp-components",
+  "version": "1.0.0",
+  "private": true,
+  "description": "微信小程序可复用组件库演示工程（rating 星级评分 / debounce-button 防抖按钮）",
+  "scripts": {
+    "test": "node tools/selftest.js"
+  },
+  "engines": { "node": "&gt;=14" },
+  "dependencies": {}
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/rating/rating.js</h3>
+    <p class="file-note">评分组件：属性、事件与逻辑层的桥接。</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="components/rating/rating.js"><code>// components/rating/rating.js —— 可复用评分组件
+// 纯逻辑放在同目录 rating-core.js，便于在电脑上用 node 直接单测（tools/selftest.js）
+const core = require('./rating-core.js');
+
+Component({
+  properties: {
+    value: { type: Number, value: 0, observer(v) { this.setData({ list: core.starList(this.data.max), percent: core.percent(v, this.data.max) }); } },
+    max: { type: Number, value: 5, observer(v) { this.setData({ list: core.starList(v), percent: core.percent(this.data.value, v) }); } },
+    size: { type: Number, value: 24 },          // 星号尺寸（rpx 基准 ×2）
+    readonly: { type: Boolean, value: false }
+  },
+
+  data: {
+    list: [1, 2, 3, 4, 5],
+    percent: 0
+  },
+
+  lifetimes: {
+    attached() {
+      this.setData({ list: core.starList(this.data.max), percent: core.percent(this.data.value, this.data.max) });
+    }
+  },
+
+  methods: {
+    onTap(e) {
+      if (this.data.readonly) return;
+      const n = Number(e.currentTarget.dataset.n);
+      const next = core.toggle(this.data.value, n, this.data.max);
+      this.setData({ value: next, percent: core.percent(next, this.data.max) });
+      this.triggerEvent('change', { value: next, percent: this.data.percent });
+    }
+  }
+});
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/rating/rating-core.js</h3>
+    <p class="file-note">评分的纯逻辑层（UMD）：toggle / percent / starList，含边界与除零保护。</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="components/rating/rating-core.js"><code>/**
+ * rating-core.js —— 评分组件的纯逻辑层（UMD）
+ * 之所以拆出纯逻辑：小程序端 require 使用，电脑端可用 node 直接 require 做单元测试，
+ * 无需启动微信开发者工具即可验证“最小用例”。
+ */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' &amp;&amp; module.exports) {
+    module.exports = api;            // Node.js / 小程序 CommonJS
+  } else {
+    root.RatingCore = api;           // 浏览器/其他环境兜底
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  function clamp(v, lo, hi) {
+    v = Number(v);
+    if (isNaN(v)) return lo;
+    return v &lt; lo ? lo : (v &gt; hi ? hi : v);
+  }
+
+  /** 点击第 index 颗星（1-based）：点当前值则清零，否则设为该值 */
+  function toggle(current, index, max) {
+    var cur = clamp(current, 0, max);
+    var idx = clamp(index, 0, max);
+    return idx === cur ? 0 : idx;
+  }
+
+  /** 评分百分比，用于宽度类样式（如进度条） */
+  function percent(value, max) {
+    if (!max || max &lt;= 0) return 0;
+    return Math.round(clamp(value, 0, max) / max * 100);
+  }
+
+  /** 生成星星列表（视图层 wx:for 使用） */
+  function starList(max) {
+    var list = [];
+    for (var i = 1; i &lt;= max; i++) list.push(i);
+    return list;
+  }
+
+  return { clamp: clamp, toggle: toggle, percent: percent, starList: starList };
+});
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/rating/rating.wxml</h3>
+    <p class="file-note">评分组件结构：按 starList 渲染星星。</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="components/rating/rating.wxml"><code>&lt;!-- components/rating/rating.wxml —— 评分组件视图 --&gt;
+&lt;view class="rating" role="radiogroup" aria-label="评分"&gt;
+  &lt;view
+    wx:for="{{list}}"
+    wx:key="*this"
+    class="star {{item &lt;= value ? 'on' : ''}}"
+    style="font-size: {{size * 2}}rpx;"
+    data-n="{{item}}"
+    bindtap="onTap"
+  &gt;★&lt;/view&gt;
+  &lt;text class="rating__text"&gt;{{value}} / {{max}}（{{percent}}%）&lt;/text&gt;
+&lt;/view&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/rating/rating.wxss</h3>
+    <p class="file-note">评分组件样式：尺寸随 rpx 自适应。</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="components/rating/rating.wxss"><code>/* components/rating/rating.wxss */
+.rating {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.star {
+  padding: 0 6rpx;
+  color: #3a3f47;
+  line-height: 1;
+  transition: color .15s ease, transform .15s ease;
+}
+
+.star.on {
+  color: #e0af68;
+  transform: scale(1.06);
+}
+
+.rating__text {
+  margin-left: 16rpx;
+  color: #8b93a1;
+  font-size: 24rpx;
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/rating/rating.json</h3>
+    <p class="file-note">评分组件声明：component 为 true。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="components/rating/rating.json"><code>{
+  "component": true,
+  "usingComponents": {}
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/debounce-button/debounce-button.js</h3>
+    <p class="file-note">防抖按钮：leading + trailing 合并、可选 throttle。</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="components/debounce-button/debounce-button.js"><code>// components/debounce-button/debounce-button.js —— 防抖按钮组件
+// 逻辑复用 debounce-core.js（可被 node 单测），组件只负责 UI 与事件派发。
+const { createDebouncer } = require('./debounce-core.js');
+
+Component({
+  properties: {
+    text: { type: String, value: '提交' },
+    wait: { type: Number, value: 800 },        // 防抖窗口（ms）
+    size: { type: String, value: 'normal' },   // normal | small
+    disabled: { type: Boolean, value: false }
+  },
+
+  data: {
+    pressed: 0,      // 实际触发次数（被合并的点击不计数）
+    tapped: 0,       // 用户点击次数（含被合并的）
+    hint: ''
+  },
+
+  lifetimes: {
+    attached() {
+      this._deb = createDebouncer(this.properties.wait, () =&gt; this._emit(), {});
+      this._count = 0;
+    },
+    detached() {
+      if (this._deb) this._deb.cancel();
+    }
+  },
+
+  methods: {
+    _emit() {
+      this._count += 1;
+      this.setData({ pressed: this._count, hint: '已触发 ' + this._count + ' 次' });
+      this.triggerEvent('action', { count: this._count, wait: this.properties.wait });
+    },
+
+    onTap() {
+      if (this.properties.disabled) return;
+      const fired = this._deb.call();
+      this.setData({
+        tapped: this.data.tapped + 1,
+        hint: fired ? '立即触发' : '窗口内合并，等待尾随触发'
+      });
+    }
+  }
+});
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/debounce-button/debounce-core.js</h3>
+    <p class="file-note">防抖纯逻辑层（UMD）：可注入定时器，便于 Node 下逐帧自测。</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="components/debounce-button/debounce-core.js"><code>/**
+ * debounce-core.js —— 防抖/节流纯逻辑层（UMD）
+ * 采用「leading + trailing」策略：窗口内首次点击立即生效，窗口内的后续点击被合并为
+ * 最后一次尾随执行，避免用户狂点导致重复提交。
+ *
+ * 时间与定时器均支持注入（opts.now / opts.setTimeout / opts.clearTimeout），
+ * 因此可以在 node 中用假时钟做确定性单元测试，无需真实等待。
+ */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' &amp;&amp; module.exports) {
+    module.exports = api;
+  } else {
+    root.DebounceCore = api;
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  function createDebouncer(wait, fn, opts) {
+    opts = opts || {};
+    var now = opts.now || function () { return Date.now(); };
+    var setT = opts.setTimeout || function (cb, ms) { return setTimeout(cb, ms); };
+    var clearT = opts.clearTimeout || function (id) { clearTimeout(id); };
+
+    var timer = null;
+    var last = -Infinity;      // 上次真正执行的时间
+    var pendingArgs = null;
+
+    function invoke(args) {
+      last = now();
+      timer = null;
+      pendingArgs = null;
+      fn.apply(null, args || []);
+    }
+
+    return {
+      /** 返回 true 表示本次调用立即执行，false 表示被合并等待尾随执行 */
+      call: function () {
+        var args = Array.prototype.slice.call(arguments);
+        var t = now();
+        if (t - last &gt;= wait) {
+          invoke(args);                   // leading：窗口外的点击直接生效
+          return true;
+        }
+        pendingArgs = args;               // 窗口内：记录最后一次参数
+        if (timer) clearT(timer);
+        timer = setT(function () { if (pendingArgs) invoke(pendingArgs); }, wait - (t - last));
+        return false;
+      },
+      /** 取消未决的尾随执行（组件销毁时调用） */
+      cancel: function () {
+        if (timer) clearT(timer);
+        timer = null;
+        pendingArgs = null;
+      },
+      get pending() { return !!timer; }
+    };
+  }
+
+  /** 节流：固定周期首调用立即执行，周期内其余调用直接丢弃（不做尾随） */
+  function throttle(wait, fn, now) {
+    now = now || function () { return Date.now(); };
+    var last = -Infinity;
+    return function () {
+      var t = now();
+      if (t - last &lt; wait) return false;
+      last = t;
+      fn.apply(null, arguments);
+      return true;
+    };
+  }
+
+  return { createDebouncer: createDebouncer, throttle: throttle };
+});
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/debounce-button/debounce-button.wxml</h3>
+    <p class="file-note">防抖按钮结构：禁用态与 loading 态。</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="components/debounce-button/debounce-button.wxml"><code>&lt;!-- components/debounce-button/debounce-button.wxml --&gt;
+&lt;view class="dbtn-wrap"&gt;
+  &lt;button
+    class="dbtn dbtn--{{size}}"
+    type="primary"
+    disabled="{{disabled}}"
+    bindtap="onTap"
+  &gt;{{text}}&lt;/button&gt;
+  &lt;text class="dbtn__hint"&gt;点击 {{tapped}} 次 / 实际触发 {{pressed}} 次 · {{hint}}&lt;/text&gt;
+&lt;/view&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/debounce-button/debounce-button.wxss</h3>
+    <p class="file-note">防抖按钮样式。</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="components/debounce-button/debounce-button.wxss"><code>/* components/debounce-button/debounce-button.wxss */
+.dbtn-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.dbtn {
+  margin: 0;
+  border-radius: 12rpx;
+  background: #2f6f63;
+  color: #eaf2f0;
+  font-size: 28rpx;
+}
+
+.dbtn--small {
+  width: 200rpx;
+  font-size: 24rpx;
+}
+
+.dbtn[disabled] {
+  background: #2a2f36;
+  color: #6b7280;
+}
+
+.dbtn__hint {
+  margin-top: 12rpx;
+  color: #8b93a1;
+  font-size: 24rpx;
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>components/debounce-button/debounce-button.json</h3>
+    <p class="file-note">防抖按钮组件声明。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="components/debounce-button/debounce-button.json"><code>{
+  "component": true,
+  "usingComponents": {}
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>pages/index/index.js</h3>
+    <p class="file-note">演示页逻辑：接收组件事件并写入日志数组。</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="pages/index/index.js"><code>// pages/index/index.js —— 组件库演示页：评分 + 防抖按钮
+Page({
+  data: {
+    score: 3,
+    wait: 800,
+    events: []
+  },
+
+  onRatingChange(e) {
+    this.setData({ score: e.detail.value });
+    this._log('rating:change -&gt; ' + e.detail.value + '（' + e.detail.percent + '%）');
+  },
+
+  onDebounceAction(e) {
+    this._log('debounce:action -&gt; 第 ' + e.detail.count + ' 次（窗口 ' + e.detail.wait + 'ms）');
+  },
+
+  _log(text) {
+    const events = this.data.events.slice(0, 5);
+    events.unshift(text);
+    this.setData({ events });
+  }
+});
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>pages/index/index.wxml</h3>
+    <p class="file-note">演示页结构：两个组件各来一组示例。</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="pages/index/index.wxml"><code>&lt;!-- pages/index/index.wxml —— 演示页 --&gt;
+&lt;view class="page"&gt;
+  &lt;view class="card"&gt;
+    &lt;view class="card__title"&gt;评分组件 rating&lt;/view&gt;
+    &lt;rating value="{{score}}" max="5" bind:change="onRatingChange" /&gt;
+    &lt;view class="tip"&gt;当前分值 {{score}}；点击已选中的星号可清零。&lt;/view&gt;
+  &lt;/view&gt;
+
+  &lt;view class="card"&gt;
+    &lt;view class="card__title"&gt;防抖按钮 debounce-button&lt;/view&gt;
+    &lt;debounce-button text="提交（狂点试试）" wait="{{wait}}" bind:action="onDebounceAction" /&gt;
+    &lt;view class="tip"&gt;窗口 800ms：窗口外首次点击立即生效，窗口内连点合并为一次尾随触发。&lt;/view&gt;
+  &lt;/view&gt;
+
+  &lt;view class="card"&gt;
+    &lt;view class="card__title"&gt;事件日志&lt;/view&gt;
+    &lt;view wx:if="{{events.length === 0}}" class="tip"&gt;暂无事件，交互后在此显示。&lt;/view&gt;
+    &lt;view wx:for="{{events}}" wx:key="index" class="tip"&gt;· {{item}}&lt;/view&gt;
+  &lt;/view&gt;
+&lt;/view&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>pages/index/index.wxss</h3>
+    <p class="file-note">演示页样式。</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="pages/index/index.wxss"><code>/* pages/index/index.wxss */
+.activity-log {
+  margin-top: 8rpx;
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>pages/index/index.json</h3>
+    <p class="file-note">演示页配置：usingComponents 注册两个组件。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="pages/index/index.json"><code>{
+  "navigationBarTitleText": "组件库演示",
+  "usingComponents": {
+    "rating": "/components/rating/rating",
+    "debounce-button": "/components/debounce-button/debounce-button"
+  }
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>tools/selftest.js</h3>
+    <p class="file-note">Node 自测脚本：15 项断言覆盖评分边界、防抖窗口与 cancel/throttle。</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="tools/selftest.js"><code>#!/usr/bin/env node
+/**
+ * tools/selftest.js —— 电脑端最小用例验证（无需微信开发者工具）
+ * 运行：node tools/selftest.js   （或 npm test）
+ *
+ * 覆盖：评分逻辑（toggle/percent/starList/clamp）与防抖逻辑（leading+trailing、
+ * 窗口内合并、cancel、throttle），全部通过输出 ALL CHECKS PASSED。
+ */
+'use strict';
+
+const rating = require('../components/rating/rating-core.js');
+const { createDebouncer, throttle } = require('../components/debounce-button/debounce-core.js');
+
+let failed = 0;
+function check(name, cond, extra) {
+  console.log('  [' + (cond ? 'OK' : 'FAIL') + '] ' + name + (cond ? '' : '  =&gt; ' + JSON.stringify(extra)));
+  if (!cond) failed++;
+}
+
+/** 可注入的假时钟，让防抖测试不依赖真实等待 */
+function makeClock() {
+  let t = 0, seq = 0;
+  const timers = new Map();
+  return {
+    now: () =&gt; t,
+    setTimeout: (fn, ms) =&gt; { const id = ++seq; timers.set(id, { fn, at: t + ms }); return id; },
+    clearTimeout: (id) =&gt; { timers.delete(id); },
+    tick: (ms) =&gt; {
+      t += ms;
+      Array.from(timers.entries()).forEach(([id, o]) =&gt; {
+        if (o.at &lt;= t) { timers.delete(id); o.fn(); }
+      });
+    },
+    get size() { return timers.size; }
+  };
+}
+
+console.log('rating-core：');
+check('toggle(3,3,5) 点击当前值应清零', rating.toggle(3, 3, 5) === 0, rating.toggle(3, 3, 5));
+check('toggle(0,4,5) 应设为 4', rating.toggle(0, 4, 5) === 4, rating.toggle(0, 4, 5));
+check('toggle(3,9,5) 越界应被 clamp 到 5', rating.toggle(3, 9, 5) === 5, rating.toggle(3, 9, 5));
+check('percent(3,5) = 60', rating.percent(3, 5) === 60, rating.percent(3, 5));
+check('percent(5,0) 除零保护 = 0', rating.percent(5, 0) === 0, rating.percent(5, 0));
+check('starList(5) 长度 5', rating.starList(5).length === 5, rating.starList(5));
+check('clamp(NaN,0,5) 回退下界 0', rating.clamp(NaN, 0, 5) === 0, rating.clamp(NaN, 0, 5));
+
+console.log('debounce-core（leading + trailing）：');
+{
+  const c = makeClock();
+  let n = 0;
+  const deb = createDebouncer(100, () =&gt; n++, c);
+  const r1 = deb.call();
+  const r2 = deb.call();
+  const r3 = deb.call();
+  check('窗口外首击立即执行', r1 === true &amp;&amp; n === 1, { r1, n });
+  check('窗口内连击被合并（未立即执行）', r2 === false &amp;&amp; r3 === false &amp;&amp; n === 1, { r2, r3, n });
+  c.tick(100);
+  check('尾随执行合并为 1 次', n === 2, { n });
+  c.tick(50);
+  check('尾随执行后无残留定时器', c.size === 0, c.size);
+  c.tick(100);
+  const r4 = deb.call();
+  check('超过窗口后再次立即执行', r4 === true &amp;&amp; n === 3, { r4, n });
+}
+
+console.log('debounce-core（cancel / throttle）：');
+{
+  const c = makeClock();
+  let n = 0;
+  const deb = createDebouncer(100, () =&gt; n++, c);
+  deb.call(); deb.call();
+  deb.cancel();
+  c.tick(500);
+  check('cancel 后尾随不再执行', n === 1 &amp;&amp; c.size === 0, { n, size: c.size });
+}
+{
+  const c = makeClock();
+  let n = 0;
+  const th = throttle(100, () =&gt; n++, c.now);
+  const a = th(), b = th();
+  c.tick(120);
+  const d = th();
+  check('throttle 周期内丢弃、周期后放行', a === true &amp;&amp; b === false &amp;&amp; d === true &amp;&amp; n === 2, { a, b, d, n });
+}
+
+console.log(failed === 0 ? 'ALL CHECKS PASSED' : 'SELF TEST FAILED (' + failed + ')');
+process.exit(failed === 0 ? 0 : 1);
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>可直接运行 / 需先改的配置项：</strong></p><ul><li><strong>可直接运行</strong>：<code>node tools/selftest.js</code> 或 <code>npm test</code>（零依赖，全部断言应有 [OK]）。</li><li><strong>需先改</strong>·<code>project.config.json</code> 的 <code>appid</code>：换成你自己的 AppID，或直接用「测试号」导入。</li><li><strong>需先改</strong>·组件属性：<code>rating</code> 的 <code>max</code>/<code>value</code>、<code>debounce-button</code> 的 <code>wait</code>（默认 500ms）按业务调整。</li><li>导入方式：微信开发者工具 → 导入项目 → 选择本工程目录（无需 npm install）。</li></ul></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-miniapp-components">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section>
+<section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/" target="_blank" rel="noopener">微信官方文档 · 自定义组件总览</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/wxml-wxss.html" target="_blank" rel="noopener">微信官方文档 · 组件模板与样式（WXML/WXSS）</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/events.html" target="_blank" rel="noopener">微信官方文档 · 组件事件与 triggerEvent</a>
+<a href="https://github.com/Tencent/weui-wxss" target="_blank" rel="noopener">WeUI for 小程序（GitHub 官方仓库）</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/devtools/projectconfig.html" target="_blank" rel="noopener">微信官方文档 · project.config.json 工程配置字段</a>
+</div></div></section>
+
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -126,6 +840,7 @@ Component({
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/miniapp-components.js"></script>
 </body>
 </html>

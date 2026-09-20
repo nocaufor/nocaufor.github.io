@@ -98,7 +98,220 @@ function step() {
   requestAnimationFrame(step);
 }</code></pre></div></section>
     </div>
-    <div class="fun-footer">
+<section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-star-trail">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">纯前端 · 零依赖</span><span class="deploy-badge info">支持鼠标与触屏</span></div>
+  <div class="code-card"><p>把演示区的「星轨涂鸦」抽成独立工程：粒子上限、阻尼推进、色相流动与拖尾残影，参数全部集中在 app.js 顶部。<br><strong>依赖清单</strong>：零第三方依赖（Canvas 2D + requestAnimationFrame + Pointer/Touch 事件），无需 npm install。</p></div>
+  <div class="deploy-tree">star-trail/
+├─ index.html      画布 + 控制
+├─ app.js          粒子生成 / 推进 / 渲染
+├─ styles.css      样式（跟随系统深浅色）
+└─ README.md       运行方式与扩展点
+</div>
+  <div class="deploy-file">
+    <h3>index.html</h3>
+    <p class="file-note">画布 + 配色 / 清空控制</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="index.html"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;星轨涂鸦 · 独立工程版&lt;/title&gt;
+  &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;main class="wrap"&gt;
+    &lt;h1&gt;星轨涂鸦&lt;/h1&gt;
+    &lt;p class="sub"&gt;鼠标 / 触屏拖拽留下渐变星轨，颜色沿色相环流动，粒子逐渐消散。&lt;/p&gt;
+    &lt;section class="panel"&gt;
+      &lt;div class="row"&gt;
+        &lt;button id="clear" type="button" class="btn ghost"&gt;清空画布&lt;/button&gt;
+        &lt;select id="hue"&gt;
+          &lt;option value="flow"&gt;配色：流动&lt;/option&gt;
+          &lt;option value="warm"&gt;配色：暖色&lt;/option&gt;
+          &lt;option value="cool"&gt;配色：冷色&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;span class="msg" id="stat" style="margin:0"&gt;粒子 0&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+    &lt;h2&gt;画布&lt;/h2&gt;
+    &lt;div class="panel"&gt;&lt;canvas id="board" height="340"&gt;&lt;/canvas&gt;&lt;/div&gt;
+  &lt;/main&gt;
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.js</h3>
+    <p class="file-note">粒子生成 / 推进 / 渲染（纯函数可测）</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="app.js"><code>/* app.js —— 星轨粒子涂鸦（粒子推进为纯函数，node 可测） */
+var HUES = { flow: 0, warm: 30, cool: 190 };
+
+/* makeParticle：生成一个粒子 */
+function makeParticle(x, y, hueBase, rand) {
+  rand = rand || Math.random;
+  return {
+    x: x, y: y,
+    vx: (rand() - 0.5) * 1.1,
+    vy: (rand() - 0.5) * 1.1,
+    life: 100,
+    hue: (hueBase + rand() * 60) % 360,
+    size: 1.4 + rand() * 2.4
+  };
+}
+
+/* stepParticles：推进一帧并剔除消亡粒子 */
+function stepParticles(list) {
+  for (var i = list.length - 1; i &gt;= 0; i--) {
+    var p = list[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.985; p.vy *= 0.985;
+    p.life -= 1.1;
+    if (p.life &lt;= 0) list.splice(i, 1);
+  }
+  return list;
+}
+
+if (typeof module !== "undefined" &amp;&amp; module.exports) {
+  module.exports = { HUES: HUES, makeParticle: makeParticle, stepParticles: stepParticles };
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    var canvas = document.getElementById("board"), ctx = canvas.getContext("2d");
+    var clearBtn = document.getElementById("clear"), hueSel = document.getElementById("hue"),
+        statEl = document.getElementById("stat");
+    var W = 0, H = 340, parts = [], drawing = false, drift = 0;
+
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = canvas.clientWidth;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = "#080b10";
+      ctx.fillRect(0, 0, W, H);
+    }
+    function pos(e) {
+      var r = canvas.getBoundingClientRect();
+      var t = e.touches ? e.touches[0] : e;
+      return { x: t.clientX - r.left, y: t.clientY - r.top };
+    }
+    function emit(e) {
+      if (!drawing) return;
+      var p = pos(e);
+      var base = HUES[hueSel.value] + drift;
+      for (var i = 0; i &lt; 3; i++) parts.push(makeParticle(p.x, p.y, base, Math.random));
+      statEl.textContent = "粒子 " + parts.length;
+    }
+    function loop() {
+      stepParticles(parts);
+      drift = (drift + 0.6) % 360;
+      ctx.fillStyle = "rgba(8, 11, 16, 0.16)";
+      ctx.fillRect(0, 0, W, H);
+      parts.forEach(function (p) {
+        ctx.beginPath();
+        ctx.fillStyle = "hsla(" + p.hue + ", 85%, 68%, " + Math.max(0, p.life / 100) + ")";
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      statEl.textContent = "粒子 " + parts.length;
+      requestAnimationFrame(loop);
+    }
+    canvas.addEventListener("mousedown", function (e) { drawing = true; emit(e); });
+    canvas.addEventListener("mousemove", emit);
+    window.addEventListener("mouseup", function () { drawing = false; });
+    canvas.addEventListener("touchstart", function (e) { e.preventDefault(); drawing = true; emit(e); });
+    canvas.addEventListener("touchmove", function (e) { e.preventDefault(); emit(e); });
+    canvas.addEventListener("touchend", function () { drawing = false; });
+    clearBtn.addEventListener("click", function () {
+      parts = [];
+      ctx.fillStyle = "#080b10";
+      ctx.fillRect(0, 0, W, H);
+      statEl.textContent = "粒子 0";
+    });
+    window.addEventListener("resize", resize);
+    resize();
+    loop();
+  });
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>styles.css</h3>
+    <p class="file-note">样式：跟随系统深浅色</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="styles.css"><code>:root {
+  --bg: #0e1014; --panel: #171a20; --ink: #e8ecf1; --muted: #9aa4b2; --line: #262b33; --brand: #6fb3a8;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f6f7f8; --panel: #ffffff; --ink: #1a1d21; --muted: #5b636e; --line: #e3e6ea; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 6px; }
+h2 { font-size: 1.05rem; margin: 22px 0 10px; }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--brand);
+  background: var(--brand); color: #0b0f12; cursor: pointer; font-size: .92rem;
+}
+.btn.ghost { background: transparent; color: var(--brand); }
+.msg { color: var(--muted); margin: 12px 0 0; font-size: .92rem; }
+.bars { display: grid; gap: 6px; margin-top: 10px; }
+.bar { display: grid; grid-template-columns: 64px 1fr 44px; gap: 8px; align-items: center; font-size: .88rem; }
+.bar i { display: block; height: 8px; border-radius: 6px; background: var(--brand); }
+.bar span:first-child { color: var(--muted); }
+input, select {
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); font: inherit;
+}
+textarea { width: 100%; min-height: 90px; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; }
+canvas { width: 100%; display: block; border-radius: 10px; }
+.chat { max-height: 260px; overflow: auto; display: grid; gap: 10px; }
+.chat .me, .chat .pet { padding: 9px 12px; border-radius: 12px; max-width: 82%; font-size: .93rem; }
+.chat .me { background: rgba(111,179,168,.16); justify-self: end; }
+.chat .pet { background: rgba(255,255,255,.06); justify-self: start; }
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行方式与扩展点</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 星轨涂鸦（独立可运行工程）
+
+作品站 fun 区「星轨涂鸦」的独立工程版：纯前端、零依赖。
+
+## 文件
+- `index.html`：画布 + 配色 / 清空控制
+- `app.js`：粒子生成、阻尼推进、色相流动、拖尾残影
+- `styles.css`：样式
+
+## 运行
+1. 双击 `index.html`，按住鼠标在画布上拖动
+2. 逻辑自测：`node -e "const m=require('./app.js');const a=[m.makeParticle(0,0,0,()=&gt;0.5)];m.stepParticles(a);console.log(a[0].life&lt;100)"` → 期望 `true`
+
+## 扩展点
+- 换手感：调 `makeParticle` 的初速范围与 `stepParticles` 的阻尼系数
+- 加背景音乐律动：用 AnalyserNode 取低频能量驱动粒子大小
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行方式</h3><ol><li>新建一个目录，把上面全部文件按文件名分别保存（用「一键复制整份工程」可一次拿全）。</li><li>前端部分：直接双击 <code>index.html</code> 即可运行；若浏览器限制本地文件读取，执行 <code>python -m http.server 8000</code> 后访问 <code>http://localhost:8000/</code>。</li><li>逻辑自测：各文件 <code>README.md</code> 中给出了对应的 Node / Python 自测命令（均为真实可跑的最小用例）。</li></ol><p class="file-note">标注：可直接运行、无需构建；要改造只需动 <code>app.js</code> 顶部常量与 <code>styles.css</code> 里的变量。</p></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-star-trail">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现涉及的官方文档（可直接访问）：</p>
+<div class="src-links">
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas" target="_blank" rel="noopener">MDN · Canvas 性能优化</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Touch_events" target="_blank" rel="noopener">MDN · Touch events（触屏支持）</a>
+</div></div></section>    <div class="fun-footer">
       <a href="index.html" class="btn btn-outline">← 返回代码开发合集</a>
     </div>
   </main>
@@ -116,6 +329,7 @@ function step() {
     </div>
   </footer>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/star-trail.js"></script>
 </body>
 </html>

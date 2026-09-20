@@ -54,6 +54,41 @@
           <span class="tag">来源：GitHub 参考</span>
         </div>
       </div>
+<section class="code-section"><h2>在线演示</h2>
+<div class="demo-panel" id="ws-demo">
+  <div class="demo-grid">
+    <div class="demo-field">
+      <label for="ws-name">你的昵称（同源标签页之间广播）</label>
+      <input id="ws-name" class="demo-input" type="text" value="user-a" />
+    </div>
+    <div class="demo-field">
+      <label for="ws-url">真实 WebSocket 地址（本页 CSP 为 <code>connect-src 'self'</code>，跨源会被拦截）</label>
+      <input id="ws-url" class="demo-input" type="text" value="ws://127.0.0.1:8765" />
+    </div>
+    <div class="demo-field" style="grid-column:1/-1">
+      <label for="ws-msg">消息内容</label>
+      <input id="ws-msg" class="demo-input" type="text" value="hello websocket" />
+    </div>
+  </div>
+  <div class="demo-actions">
+    <button type="button" class="btn" id="ws-connect">连接</button>
+    <button type="button" class="btn" id="ws-send">发送</button>
+    <button type="button" class="btn btn-outline" id="ws-ping">发送 Ping 心跳</button>
+    <button type="button" class="btn btn-outline" id="ws-sim">模拟断线重连</button>
+    <button type="button" class="btn btn-outline" id="ws-close">关闭</button>
+    <button type="button" class="btn btn-outline" id="ws-clear">清空</button>
+  </div>
+  <div class="demo-kpis" style="margin-top:16px">
+    <div class="demo-kpi"><b id="ws-k-state">未连接</b><span>连接状态</span></div>
+    <div class="demo-kpi"><b id="ws-k-frames">0</b><span>已处理帧数</span></div>
+    <div class="demo-kpi"><b id="ws-k-retry">0</b><span>重连尝试</span></div>
+    <div class="demo-kpi"><b id="ws-k-rtt">- ms</b><span>最近一次往返</span></div>
+  </div>
+  <div class="demo-output" id="ws-out"></div>
+  <div id="ws-tblwrap" style="display:none;margin-top:14px"></div>
+  <p class="demo-status" id="ws-status">等待操作：点“连接”后即可“发送”。发送的文本会按 RFC6455 编码成真实帧（带掩码），并展示字节结构。</p>
+</div>
+</section>
 <section class="code-section"><h2>项目简介</h2><div class="code-card"><p>聊天、协作白板、实时推送，底层大多是 WebSocket。本页给出<strong>最小可运行闭环</strong>：Node 端用 <code>ws</code> 库维护连接并广播消息，浏览器端封装了心跳保活与断线自动重连，覆盖实时应用最常见的工程要点。</p></div></section><section class="code-section"><h2>代码示例：Node 服务端</h2><div class="code-block"><span class="code-lang-badge">js</span><pre><code>const { WebSocketServer } = require("ws");
 
 const wss = new WebSocketServer({ port: 8080 });
@@ -107,7 +142,410 @@ setInterval(() =&gt; {
     send: (data) =&gt; ws &amp;&amp; ws.readyState === 1 &amp;&amp; ws.send(data),
     close: () =&gt; { clearInterval(beat); ws.close(); }
   };
-}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>服务端 <code>npm i ws</code> 后运行 <code>node server.js</code>，监听 8080 端口。</li><li>浏览器端打开页面即可连接：输入消息点击发送，其他页面实时收到广播。</li><li>断网后客户端按指数退避自动重连；服务端心跳 30s 清理僵尸连接。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>ws-chat-demo</code>、<code>websocket-reconnect</code>、<code>socket-heartbeat</code>（链接可替换为实际仓库地址）。</p></div></section>
+}</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>服务端 <code>npm i ws</code> 后运行 <code>node server.js</code>，监听 8080 端口。</li><li>浏览器端打开页面即可连接：输入消息点击发送，其他页面实时收到广播。</li><li>断网后客户端按指数退避自动重连；服务端心跳 30s 清理僵尸连接。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-websocket-demo">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">零第三方依赖</span><span class="deploy-badge info">Python 3.8+</span></div>
+  <div class="code-card"><p>运行环境：Python 3.8+，零第三方依赖。把 4 个文件放进同一目录后，先跑 <code>python ws_min.py --selftest</code> 零配置验证帧编解码；再开两个终端分别执行 <code>python ws_min.py --port 8765</code> 与 <code>python ws_min.py --client --port 8765 --text "hello"</code>，应看到 PONG 与 <code>echo: hello</code>。</p></div>
+  <div class="deploy-tree">websocket-demo/
+├── ws_min.py            帧编解码 + 服务端 + 客户端 + selftest（标准库实现 RFC6455）
+├── test_ws_min.py       unittest 回归：握手向量 / 掩码往返 / 半包 / 真实 echo
+├── requirements.txt     依赖清单（仅标准库，无第三方包）
+└── README.md            运行步骤 / 协议要点 / 与网页演示的对应关系</div>
+  <div class="deploy-file">
+    <h3>ws_min.py</h3>
+    <p class="file-note">完整实现：握手 → 帧编解码（掩码 / 长短帧 / 半包）→ 多客户端广播 → PING/PONG → CLOSE，并提供客户端模式与 selftest。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="ws_min.py"><code>#!/usr/bin/env python3
+"""极简 WebSocket 服务端与客户端（零第三方依赖，仅标准库）
+
+用法：
+    python ws_min.py                                       # 启动服务端（默认 127.0.0.1:8765）
+    python ws_min.py --port 9000 --heartbeat 15
+    python ws_min.py --client --port 8765 --text "hello"   # 以客户端身份连一次并收到 echo
+    python ws_min.py --selftest                            # 帧编解码 / 握手单测
+"""
+import argparse
+import base64
+import hashlib
+import os
+import socket
+import struct
+import sys
+import threading
+import time
+
+GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+OP_CONT, OP_TEXT, OP_BIN, OP_CLOSE, OP_PING, OP_PONG = 0x0, 0x1, 0x2, 0x8, 0x9, 0xA
+
+
+# ---------------- 帧编解码（与网页演示同一套规则） ----------------
+def build_frame(opcode, payload=b"", mask=False, fin=True):
+    """客户端发往服务端必须掩码；服务端发往客户端不得掩码。"""
+    b0 = (0x80 if fin else 0) | (opcode &amp; 0x0F)
+    n = len(payload)
+    if n &lt; 126:
+        head = bytes([b0, (0x80 if mask else 0) | n])
+    elif n &lt; 65536:
+        head = bytes([b0, (0x80 if mask else 0) | 126]) + struct.pack("!H", n)
+    else:
+        head = bytes([b0, (0x80 if mask else 0) | 127]) + struct.pack("!Q", n)
+    if not mask:
+        return head + payload
+    key = os.urandom(4)
+    masked = bytes(payload[i] ^ key[i % 4] for i in range(n))
+    return head + key + masked
+
+
+def parse_frame(data):
+    """返回 (fin, opcode, masked, payload, consumed)；数据不足时返回 None。"""
+    if len(data) &lt; 2:
+        return None
+    b0, b1 = data[0], data[1]
+    fin, opcode, masked, n = bool(b0 &amp; 0x80), b0 &amp; 0x0F, bool(b1 &amp; 0x80), b1 &amp; 0x7F
+    i = 2
+    if n == 126:
+        if len(data) &lt; 4:
+            return None
+        n = struct.unpack("!H", data[2:4])[0]
+        i = 4
+    elif n == 127:
+        if len(data) &lt; 10:
+            return None
+        n = struct.unpack("!Q", data[2:10])[0]
+        i = 10
+    key = b""
+    if masked:
+        if len(data) &lt; i + 4:
+            return None
+        key = data[i:i + 4]
+        i += 4
+    if len(data) &lt; i + n:
+        return None
+    payload = data[i:i + n]
+    if masked:
+        payload = bytes(payload[j] ^ key[j % 4] for j in range(n))
+    return fin, opcode, masked, payload, i + n
+
+
+def accept_key(client_key):
+    """RFC6455 握手：Sec-WebSocket-Accept = base64(sha1(key + GUID))"""
+    return base64.b64encode(hashlib.sha1((client_key + GUID).encode()).digest()).decode()
+
+
+# ---------------- 服务端 ----------------
+class Server:
+    def __init__(self, host="127.0.0.1", port=8765, heartbeat=30, max_clients=16):
+        self.host, self.port, self.heartbeat, self.max_clients = host, port, heartbeat, max_clients
+        self.clients = []
+        self.lock = threading.Lock()
+
+    def handshake(self, conn):
+        conn.settimeout(5)
+        data = b""
+        while b"\r\n\r\n" not in data:
+            chunk = conn.recv(1024)
+            if not chunk:
+                return None
+            data += chunk
+            if len(data) &gt; 65536:
+                return None
+        headers = {}
+        for line in data.decode("latin-1").split("\r\n")[1:]:
+            if ":" in line:
+                k, v = line.split(":", 1)
+                headers[k.strip().lower()] = v.strip()
+        key = headers.get("sec-websocket-key")
+        if not key:
+            return None
+        resp = ("HTTP/1.1 101 Switching Protocols\r\n"
+                "Upgrade: websocket\r\nConnection: Upgrade\r\n"
+                "Sec-WebSocket-Accept: %s\r\n\r\n" % accept_key(key))
+        conn.sendall(resp.encode())
+        conn.settimeout(self.heartbeat * 2)
+        return key
+
+    def broadcast(self, payload, opcode=OP_TEXT, exclude=None):
+        frame = build_frame(opcode, payload, mask=False)
+        with self.lock:
+            peers = list(self.clients)
+        for c in peers:
+            if c is exclude:
+                continue
+            try:
+                c.sendall(frame)
+            except OSError:
+                self.drop(c)
+
+    def drop(self, conn):
+        with self.lock:
+            if conn in self.clients:
+                self.clients.remove(conn)
+        try:
+            conn.close()
+        except OSError:
+            pass
+        print("[server] 客户端断开，剩余 %d" % len(self.clients))
+
+    def serve_client(self, conn, addr):
+        try:
+            if not self.handshake(conn):
+                self.drop(conn)
+                return
+            print("[server] %s:%d 握手完成" % addr)
+            self.broadcast(("系统：%s:%d 加入（在线 %d）" % (addr[0], addr[1], len(self.clients))).encode())
+            buf = b""
+            while True:
+                chunk = conn.recv(4096)
+                if not chunk:
+                    break
+                buf += chunk
+                while True:
+                    parsed = parse_frame(buf)
+                    if not parsed:
+                        break
+                    fin, opcode, masked, payload, used = parsed
+                    buf = buf[used:]
+                    if opcode == OP_CLOSE:
+                        conn.sendall(build_frame(OP_CLOSE, payload, mask=False))
+                        return
+                    if opcode == OP_PING:
+                        conn.sendall(build_frame(OP_PONG, payload, mask=False))
+                        continue
+                    if opcode == OP_PONG:
+                        continue
+                    text = payload.decode("utf-8", "replace")
+                    print("[server] %s:%d 收到（掩码=%s）：%s" % (addr[0], addr[1], masked, text))
+                    conn.sendall(build_frame(OP_TEXT, ("echo: " + text).encode(), mask=False))
+                    self.broadcast(("%s:%d 说：%s" % (addr[0], addr[1], text)).encode(), exclude=conn)
+        except (OSError, socket.timeout):
+            pass
+        finally:
+            self.drop(conn)
+
+    def start(self):
+        srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        srv.bind((self.host, self.port))
+        srv.listen(8)
+        print("[server] 已监听 ws://%s:%d  （Ctrl+C 退出；空闲清理阈值 %ds）" % (self.host, self.port, self.heartbeat * 2))
+        try:
+            while True:
+                conn, addr = srv.accept()
+                with self.lock:
+                    if len(self.clients) &gt;= self.max_clients:
+                        conn.sendall(b"HTTP/1.1 503 Service Unavailable\r\n\r\n")
+                        conn.close()
+                        continue
+                    self.clients.append(conn)
+                threading.Thread(target=self.serve_client, args=(conn, addr), daemon=True).start()
+        except KeyboardInterrupt:
+            print("\n[server] 退出")
+        finally:
+            srv.close()
+
+
+# ---------------- 客户端（用于本机自测服务端） ----------------
+def run_client(host, port, text, timeout=5.0):
+    key = base64.b64encode(os.urandom(16)).decode()
+    req = ("GET / HTTP/1.1\r\nHost: %s:%d\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
+           "Sec-WebSocket-Key: %s\r\nSec-WebSocket-Version: 13\r\n\r\n" % (host, port, key))
+    with socket.create_connection((host, port), timeout=timeout) as s:
+        s.sendall(req.encode())
+        resp = s.recv(4096)
+        if b"101" not in resp.split(b"\r\n")[0]:
+            raise SystemExit("握手失败：%s" % resp.split(b"\r\n")[0].decode("latin-1"))
+        s.sendall(build_frame(OP_PING, b"hb", mask=True))       # 客户端帧必须掩码
+        s.sendall(build_frame(OP_TEXT, text.encode(), mask=True))
+        s.settimeout(timeout)
+        got, buf, deadline = [], b"", time.time() + timeout
+        while time.time() &lt; deadline and len(got) &lt; 3:
+            chunk = s.recv(4096)
+            if not chunk:
+                break
+            buf += chunk
+            while True:
+                parsed = parse_frame(buf)
+                if not parsed:
+                    break
+                fin, opcode, masked, payload, used = parsed
+                buf = buf[used:]
+                got.append((opcode, payload.decode("utf-8", "replace")))
+        for opcode, payload in got:
+            print("[client] 收到 opcode=%d：%s" % (opcode, payload))
+        if not any(o == OP_PONG for o, _ in got):
+            raise SystemExit("未收到 PONG")
+        if not any(o == OP_TEXT for o, _ in got):
+            raise SystemExit("未收到 echo")
+    print("[client] 往返成功（PING→PONG、TEXT→echo）")
+    return 0
+
+
+def selftest():
+    assert accept_key("dGhlIHNhbXBsZSBub25jZQ==") == "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=", "RFC6455 握手向量不符"
+    for op, payload in [(OP_TEXT, b"hello"), (OP_PING, b""), (OP_BIN, bytes(range(200))), (OP_TEXT, b"x" * 70000)]:
+        for mask in (True, False):
+            f = build_frame(op, payload, mask=mask)
+            fin, got_op, got_mask, got_payload, used = parse_frame(f)
+            assert (fin, got_op, got_mask, got_payload) == (True, op, mask, payload), (op, mask)
+            assert used == len(f)
+    assert parse_frame(b"\x81") is None
+    assert parse_frame(build_frame(OP_TEXT, b"ab")[:3]) is None
+    print("selftest OK：握手向量 / 长短帧掩码往返 / 半包处理 用例通过")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="极简 WebSocket 服务端 / 客户端（标准库实现）")
+    ap.add_argument("--host", default="127.0.0.1")
+    ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--heartbeat", type=int, default=30, help="空闲超时秒数，默认 30")
+    ap.add_argument("--max-clients", type=int, default=16)
+    ap.add_argument("--client", action="store_true", help="以客户端身份连一次（自测用）")
+    ap.add_argument("--text", default="hello from ws_min client")
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args(argv)
+
+    if a.selftest:
+        selftest()
+        return 0
+    if a.client:
+        return run_client(a.host, a.port, a.text)
+    Server(a.host, a.port, a.heartbeat, a.max_clients).start()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>test_ws_min.py</h3>
+    <p class="file-note">unittest 回归：RFC6455 握手向量、掩码/非掩码往返、半包返回 None、对真实服务端做一次 PING/PONG + echo 往返。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="test_ws_min.py"><code># -*- coding: utf-8 -*-
+"""ws_min.py 最小用例回归（标准库 unittest）"""
+import socket
+import threading
+import unittest
+
+import ws_min
+from ws_min import OP_PING, OP_PONG, OP_TEXT, Server, accept_key, build_frame, parse_frame
+
+
+class TestFrames(unittest.TestCase):
+    def test_handshake_vector(self):
+        self.assertEqual(accept_key("dGhlIHNhbXBsZSBub25jZQ=="), "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=")
+
+    def test_roundtrip_masked_and_unmasked(self):
+        for payload in (b"", b"hi", b"x" * 125, b"y" * 126, b"z" * 70000):
+            for mask in (True, False):
+                data = build_frame(OP_TEXT, payload, mask=mask)
+                fin, op, masked, got, used = parse_frame(data)
+                self.assertTrue(fin)
+                self.assertEqual((op, masked, got), (OP_TEXT, mask, payload))
+                self.assertEqual(used, len(data))
+
+    def test_partial_frame_returns_none(self):
+        self.assertIsNone(parse_frame(b"\x81"))
+        self.assertIsNone(parse_frame(build_frame(OP_TEXT, b"abcd")[:5]))
+
+    def test_ping_pong(self):
+        self.assertEqual(parse_frame(build_frame(OP_PING, b"hb", mask=True))[1], OP_PING)
+        self.assertEqual(parse_frame(build_frame(OP_PONG, b"hb"))[1], OP_PONG)
+
+
+class TestServerRoundTrip(unittest.TestCase):
+    def test_echo_and_pong_against_real_server(self):
+        srv = Server(port=0, heartbeat=5)
+        listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", 0))
+        listener.listen(4)
+        port = listener.getsockname()[1]
+        self.addCleanup(listener.close)
+
+        def worker():
+            conn, addr = listener.accept()
+            with srv.lock:
+                srv.clients.append(conn)
+            srv.serve_client(conn, addr)
+
+        threading.Thread(target=worker, daemon=True).start()
+        self.assertEqual(ws_min.run_client("127.0.0.1", port, "ping-text", timeout=6), 0)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：仅标准库，无第三方包。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># 本工程仅使用 Python 标准库（socket / hashlib / base64 / struct / threading / os / time）。
+# 不需要安装任何第三方包；此文件保留是为了统一 pip install -r requirements.txt 流程。
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、协议要点表，以及与网页在线演示的对应关系。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 极简 WebSocket 服务端 / 客户端（websocket-demo）
+
+用 Python 标准库从零实现 RFC6455：握手、掩码、长帧、PING/PONG、CLOSE、多客户端广播。
+零第三方依赖，既能当内网小工具的通信层，也适合对照学习协议细节。
+
+## 文件说明
+
+| 文件 | 作用 |
+|---|---|
+| ws_min.py | 帧编解码 + 服务端 + 客户端 + selftest |
+| test_ws_min.py | unittest 回归（握手向量 / 掩码往返 / 半包 / 真实 echo） |
+| requirements.txt | 依赖清单（仅标准库） |
+| README.md | 本文件 |
+
+## 运行
+
+```bash
+python -m pip install -r requirements.txt          # 无第三方依赖，可跳过
+
+# 终端 1：启动服务端
+python ws_min.py --port 8765
+
+# 终端 2：以客户端身份连一次（验证 PING 到 PONG 与 echo）
+python ws_min.py --client --port 8765 --text "hello"
+
+# 自测
+python ws_min.py --selftest
+python test_ws_min.py
+```
+
+## 协议要点（已在代码中实现）
+
+| 项 | 规则 |
+|---|---|
+| 握手 | Sec-WebSocket-Accept = base64(sha1(Sec-WebSocket-Key + GUID)) |
+| 掩码 | 客户端到服务端必须掩码（4 字节随机 key，按字节循环异或）；服务端到客户端不得掩码 |
+| 长度 | 7 位（小于 126）、16 位（小于 65536）、64 位（更大）三档 |
+| 控制帧 | PING(0x9) / PONG(0xA) / CLOSE(0x8)，载荷大小不超过 125 字节 |
+| 半包 | parse_frame() 数据不足时返回 None，调用方保留缓冲继续收 |
+
+## 与网页演示的关系
+
+网页上的 websocket-demo 在线演示与本工程使用同一套帧规则：演示里展示的 opcode、掩码开关、
+载荷长度、前 24 字节 hex，都能在 ws_min.py 的 build_frame() / parse_frame() 中找到对应实现。
+若要在浏览器里连本服务端，注意站点 CSP 为 connect-src 'self'，需要自行放开该策略或改用同源部署。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>运行标注</strong>：①<strong>可直接运行</strong>——复制 4 个文件后 <code>python ws_min.py --selftest</code> 即可零配置自测，<code>python test_ws_min.py</code> 跑 5 个用例；②<strong>需按需修改</strong>——监听端口 / 地址用 <code>--port</code> / <code>--host</code> 传参，空闲超时用 <code>--heartbeat</code>，不改代码即可运行；③<strong>接入浏览器时</strong>——本站 CSP 为 <code>connect-src 'self'</code>，跨源 <code>ws://</code> 会被拦截，需自行放开或同源部署；页面上的“连接”按钮走同源 BroadcastChannel，不受该限制。</p></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-websocket-demo">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现所依据的官方规范与文档（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://datatracker.ietf.org/doc/html/rfc6455" target="_blank" rel="noopener">RFC6455 官方规范 · WebSocket 协议全文（帧结构 / 掩码 / 握手）</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/WebSockets_API" target="_blank" rel="noopener">MDN · WebSocket API（浏览器端用法与状态机）</a>
+<a href="https://docs.python.org/zh-cn/3/library/socket.html" target="_blank" rel="noopener">Python 官方文档 · socket（本工程服务端所用的标准库）</a>
+<a href="https://docs.python.org/zh-cn/3/library/hashlib.html" target="_blank" rel="noopener">Python 官方文档 · hashlib（Sec-WebSocket-Accept 计算）</a>
+<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/BroadcastChannel" target="_blank" rel="noopener">MDN · BroadcastChannel（页面演示所用的同源广播通道）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -130,6 +568,7 @@ setInterval(() =&gt; {
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/websocket-demo.js"></script>
 </body>
 </html>

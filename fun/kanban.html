@@ -48,19 +48,19 @@
       <style>
         .k-wrap{display:flex;flex-direction:column;gap:12px;width:100%;max-width:1020px}
         .k-add{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-        .k-add input{background:var(--color-card,#1e1e24);color:var(--color-text,#e8e8ea);border:1px solid var(--color-border,#333);border-radius:8px;padding:8px 12px;font-size:0.85rem;flex:1 1 260px}
-        .k-add input:focus{outline:none;border-color:var(--color-accent,#7aa2f7)}
-        .k-add select{background:var(--color-card,#1e1e24);color:var(--color-text,#e8e8ea);border:1px solid var(--color-border,#333);border-radius:8px;padding:8px 10px}
+        .k-add input{background:var(--color-card);color:var(--color-text);border:1px solid var(--color-border);border-radius:8px;padding:8px 12px;font-size:0.85rem;flex:1 1 260px}
+        .k-add input:focus{outline:none;border-color:var(--color-accent)}
+        .k-add select{background:var(--color-card);color:var(--color-text);border:1px solid var(--color-border);border-radius:8px;padding:8px 10px}
         .k-board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-        .k-col{background:var(--color-card,#1e1e24);border-radius:12px;padding:10px;min-height:200px;display:flex;flex-direction:column;gap:8px}
+        .k-col{background:var(--color-card);border-radius:12px;padding:10px;min-height:200px;display:flex;flex-direction:column;gap:8px}
         .k-col h2{font-size:0.95rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
         .k-col h2 .cnt{font-size:0.75rem;opacity:.7}
-        .k-card{background:var(--color-bg,#121216);border:1px solid var(--color-border,#333);border-radius:8px;padding:8px 10px;font-size:0.85rem;cursor:grab;display:flex;justify-content:space-between;gap:6px;align-items:center;user-select:none}
+        .k-card{background:var(--color-bg);border:1px solid var(--color-border);border-radius:8px;padding:8px 10px;font-size:0.85rem;cursor:grab;display:flex;justify-content:space-between;gap:6px;align-items:center;user-select:none}
         .k-card.dragging{opacity:.4}
         .k-card .owner{font-size:0.72rem;opacity:.7;white-space:nowrap}
         .k-card .del{cursor:pointer;opacity:.5;font-size:0.9rem;padding:0 2px}
-        .k-card .del:hover{opacity:1;color:#e06c75}
-        .k-col.hover{border:1px dashed var(--color-accent,#7aa2f7)}
+        .k-card .del:hover{opacity:1;color:var(--danger,#e06c75)}
+        .k-col.hover{border:1px dashed var(--color-accent)}
         .k-hint{font-size:0.8rem;opacity:.75;text-align:center}
       </style>
       <div class="k-wrap">

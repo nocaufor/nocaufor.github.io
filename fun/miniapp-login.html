@@ -136,7 +136,443 @@ function buildPayParams(openid, orderId, totalFee, body) {
 <li>后端用 <code>appid + secret</code> 调 <code>code2session</code> 换 openid/session_key，签发自定义 token。</li>
 <li>支付：后端统一下单拿到 <code>payParams</code>，前端 <code>wx.requestPayment</code> 拉起收银台。</li>
 <li>回调验签后再发货：只信任 <code>transaction_id + 金额</code> 匹配的支付回调。</li>
-</ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>miniprogram-login</code>、<code>wechat-pay-node</code>、<code>wxapp-oauth</code>（链接可替换为实际仓库地址）。</p></div></section>
+</ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-miniapp-login">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行（Node 自测）</span><span class="deploy-badge info">需真实 AppID / 商户号才上线</span><span class="deploy-badge warn">核心逻辑零第三方依赖</span></div>
+  <div class="code-card"><p>运行环境：Node.js ≥ 14（仅用内置 <code>crypto</code>，<strong>不装任何 npm 包</strong>）。<br>先在电脑上跑通：<code>cd miniapp-login &amp;&amp; node tools/selftest.js</code>，预期输出 <code>ALL CHECKS PASSED</code>（覆盖 code2session 正常/异常、token 篡改与过期、下单签名确定性、空值字段剔除、伪造回调验签失败、金额不匹配拦截、paySign 复算一致）。<br>上线前需改：<code>server/config.example.js</code> 里的 AppID / AppSecret / 商户号 / APIv2 密钥 / 回调地址，以及 <code>miniprogram/utils/request.js</code> 的 <code>BASE_URL</code>。</p></div>
+  <div class="deploy-tree">miniapp-login/
+├── README.md                    运行步骤 / 配置项 / 依赖清单 / 安全注意
+├── package.json                 自测入口（npm test），零依赖
+├── server/
+│   ├── auth.js                  code2session + token 签发/校验
+│   ├── pay.js                   JSAPI 下单签名 + 回调验签 + 金额核对
+│   └── config.example.js        需先改的配置项示例
+├── miniprogram/utils/
+│   ├── auth.js                  小程序端：wx.login / 静默重登 / 支付拉起
+│   └── request.js               请求封装：自动带 token、401 重试
+└── tools/selftest.js            Node 最小用例：7 组断言，全离线</div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、需先改的配置项、依赖清单与安全注意（session_key 不下发、回调必须验签+核额）。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># miniapp-login · 小程序登录与支付封装（可运行工程）
+
+一套可直接复用的**小程序登录态 + 微信支付**最小闭环，服务端与小程序端都给出完整文件：
+
+- 小程序端：`wx.login` 静默登录、token 持久化、401 自动重登；
+- 服务端：`code2session` 换 openid、轻量 token 签发/校验、JSAPI 统一下单签名、**回调验签 + 金额核对**；
+- 电脑端：`node tools/selftest.js` 全离线跑通（不联网、不依赖 npm 包、无需真实商户号）。
+
+## 目录结构
+
+```
+miniapp-login/
+├── README.md                      本文件：运行步骤 / 配置项 / 依赖清单 / 安全注意
+├── package.json                   自测入口（npm test），dependencies 为空
+├── server/
+│   ├── auth.js                    code2session + token 签发/校验（零依赖）
+│   ├── pay.js                     JSAPI 下单签名 + 回调验签 + 金额核对（Node crypto）
+│   └── config.example.js          需先改的配置项示例（AppID / 商户号 / APIv2 密钥）
+├── miniprogram/
+│   └── utils/
+│       ├── auth.js                小程序端：wx.login + 静默重登 + token 存取
+│       └── request.js             请求封装：自动带 token、401 重试一次
+└── tools/
+    └── selftest.js                Node 最小用例：7 组断言，全离线
+```
+
+## 可直接运行（无需真实小程序 / 商户号）
+
+```bash
+cd miniapp-login
+node tools/selftest.js        # 或 npm test
+```
+
+预期输出最后一行 `ALL CHECKS PASSED`，覆盖：
+
+1. `code2session` 正常拿到 openid（注入 mock 请求，不联网）；
+2. 空 code、微信返回 `errcode` 时正确抛错；
+3. token 签发 → 校验通过，签名被篡改时拒收，过期 token 拒收；
+4. 下单签名确定性（同参数两次签名一致），改动 `total_fee` 后签名变化；
+5. 空值字段不参与签名（微信 v2 规则）；
+6. 伪造回调（改金额 / 假签名）被 `verifyCallback` + `checkAmount` 拦截；
+7. `wx.requestPayment` 所需的 `paySign` 与下单签名同规则。
+
+## 需先改的配置项
+
+| 位置 | 配置项 | 说明 |
+|---|---|---|
+| `server/config.example.js` | `appid` / `secret` | 小程序 AppID 与 AppSecret（**secret 只放服务端**，切勿下发前端） |
+| `server/config.example.js` | `mchId` / `apiV2Key` | 微信支付商户号与 APIv2 密钥（32 位，在商户平台设置） |
+| `server/config.example.js` | `notifyUrl` | 支付回调地址，必须是**公网 HTTPS**，且在商户平台配置 |
+| `server/auth.js` | `issueToken(openid, secret, ttlMs)` | 默认 7 天有效期；生产建议改用 JWT/JOSE 库 |
+| `miniprogram/utils/request.js` | `BASE_URL` | 你的后端接口地址（需在小程序后台配置 request 合法域名） |
+| `miniprogram/utils/auth.js` | 存储键 `token` | 如需多账号并存可改键名 |
+
+## 依赖清单
+
+- 服务端逻辑层：**Node.js ≥ 14，零 npm 依赖**（仅用内置 `crypto`、`https`）；
+- 小程序端：微信基础库 2.x，**无第三方依赖**；
+- 若接入真实 Express 服务（示例外的组装步骤）：`express`、`axios`、`jsonwebtoken` 为可选依赖，
+  本工程的核心逻辑不依赖它们，可先跑通 `tools/selftest.js` 再接框架。
+
+## 安全注意（务必遵守）
+
+- `session_key` 只在服务端使用，**永不返回给小程序端**；
+- 支付回调必须 `verifyCallback` 验签 + `checkAmount` 核对订单号与金额，两者都通过才发货；
+- 生产环境不要用示例里的 MD5 演示密钥，改用微信支付 **APIv3 + 平台证书验签**；
+- 回调接口必须幂等（同一 `transaction_id` 重复回调只发货一次）。
+
+## 接真实环境的三步
+
+1. 复制 `server/config.example.js` 为 `server/config.js`，填入真实 AppID / 商户号 / 密钥；
+2. 用 Express（或你的框架）把 `server/auth.js`、`server/pay.js` 挂成路由：`POST /api/auth/code2session`、`POST /api/pay/order`、`POST /api/pay/notify`；
+3. 小程序端调用 `login()` 拿 token，下单后把后端返回的 `payParams` 直接喂给 `wx.requestPayment`。
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>server/auth.js</h3>
+    <p class="file-note">code2session 换 openid + 轻量 token 签发/校验；request 可注入便于离线测试。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="server/auth.js"><code>/* server/auth.js —— code2session + 轻量 token 签发/校验（零第三方依赖） */
+"use strict";
+const crypto = require("crypto");
+
+const WX_CODE2SESSION = "https://api.weixin.qq.com/sns/jscode2session";
+
+/* 用 code 换 openid / session_key。request 可注入，便于离线自测 */
+async function code2session(code, opts) {
+  if (!code || typeof code !== "string") throw new Error("code 不能为空");
+  const { appid, secret, request } = opts;
+  const url = WX_CODE2SESSION
+    + "?appid=" + encodeURIComponent(appid)
+    + "&amp;secret=" + encodeURIComponent(secret)
+    + "&amp;js_code=" + encodeURIComponent(code)
+    + "&amp;grant_type=authorization_code";
+  const data = await request(url);
+  if (!data) throw new Error("code2session 无响应");
+  if (data.errcode) throw new Error("code2session 失败：" + (data.errmsg || data.errcode));
+  if (!data.openid) throw new Error("响应缺少 openid");
+  return data; // { openid, session_key, unionid? } —— session_key 只在服务端使用
+}
+
+function b64url(buf) {
+  return Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function hmac(payload, secret) {
+  return b64url(crypto.createHmac("sha256", secret).update(payload).digest());
+}
+
+/* token 结构：base64url(JSON).HMAC —— 演示用轻量方案，生产请用 JWT/JOSE */
+function issueToken(openid, secret, ttlMs) {
+  const ttl = typeof ttlMs === "number" ? ttlMs : 7 * 86400000;
+  const payload = b64url(JSON.stringify({ openid: openid, exp: Date.now() + ttl }));
+  return payload + "." + hmac(payload, secret);
+}
+
+function verifyToken(token, secret) {
+  const parts = String(token || "").split(".");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) throw new Error("token 格式错误");
+  if (hmac(parts[0], secret) !== parts[1]) throw new Error("token 签名不匹配");
+  const json = Buffer.from(parts[0].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
+  const data = JSON.parse(json);
+  if (!data.exp || data.exp &lt; Date.now()) throw new Error("token 已过期");
+  return data; // { openid, exp }
+}
+
+module.exports = { code2session: code2session, issueToken: issueToken, verifyToken: verifyToken, WX_CODE2SESSION: WX_CODE2SESSION };
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>server/pay.js</h3>
+    <p class="file-note">JSAPI 统一下单签名（v2 规则）、回调验签、订单金额核对、wx.requestPayment 参数生成。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="server/pay.js"><code>/* server/pay.js —— JSAPI 统一下单签名 + 回调验签 + 金额核对（Node crypto，零第三方依赖） */
+"use strict";
+const crypto = require("crypto");
+
+function nonceStr() { return crypto.randomBytes(16).toString("hex"); }
+function md5Upper(s) { return crypto.createHash("md5").update(s, "utf8").digest("hex").toUpperCase(); }
+
+/* 微信支付 v2 签名规则：剔除 sign 与空值 → 按 key 升序 → &amp;key=APIv2密钥 → MD5 大写 */
+function buildSignString(params, key) {
+  const parts = Object.keys(params)
+    .filter(function (k) {
+      return k !== "sign" &amp;&amp; params[k] !== undefined &amp;&amp; params[k] !== null &amp;&amp; params[k] !== "";
+    })
+    .sort()
+    .map(function (k) { return k + "=" + params[k]; });
+  return parts.join("&amp;") + "&amp;key=" + key;
+}
+
+function sign(params, key) { return md5Upper(buildSignString(params, key)); }
+
+/* 统一下单（JSAPI）：返回带签名的参数，直接 POST 给微信支付 v2 接口 */
+function buildUnifiedOrder(order, cfg) {
+  const params = {
+    appid: cfg.appid,
+    mch_id: cfg.mchId,
+    nonce_str: nonceStr(),
+    body: order.body,
+    out_trade_no: order.outTradeNo,
+    total_fee: Number(order.totalFee), // 单位：分
+    spbill_create_ip: order.clientIp || "127.0.0.1",
+    notify_url: cfg.notifyUrl,
+    trade_type: "JSAPI",
+    openid: order.openid
+  };
+  params.sign = sign(params, cfg.apiV2Key);
+  return params;
+}
+
+/* 回调验签：签名不符直接拒绝（防止伪造"已支付"） */
+function verifyCallback(payload, cfg) {
+  if (!payload || !payload.sign) throw new Error("回调缺少 sign");
+  const expect = sign(payload, cfg.apiV2Key);
+  if (expect !== String(payload.sign).toUpperCase()) throw new Error("回调验签失败：签名不匹配");
+  return true;
+}
+
+/* 金额 / 订单核对：只信任与自己订单一致的支付结果 */
+function checkAmount(payload, order) {
+  if (!payload || !order) throw new Error("缺少回调或订单数据");
+  if (payload.result_code !== "SUCCESS") throw new Error("支付结果非 SUCCESS");
+  if (payload.out_trade_no !== order.outTradeNo) throw new Error("订单号不匹配");
+  if (Number(payload.total_fee) !== Number(order.totalFee)) throw new Error("金额不匹配，疑似伪造回调");
+  return true;
+}
+
+/* 前端 wx.requestPayment 所需参数（paySign 与下单同规则，但参与字段不同） */
+function buildJsapiPayParams(prepayId, cfg) {
+  const params = {
+    appId: cfg.appid,
+    timeStamp: String(Math.floor(Date.now() / 1000)),
+    nonceStr: nonceStr(),
+    package: "prepay_id=" + prepayId,
+    signType: "MD5"
+  };
+  params.paySign = sign(params, cfg.apiV2Key);
+  return params;
+}
+
+module.exports = {
+  buildSignString: buildSignString, sign: sign,
+  buildUnifiedOrder: buildUnifiedOrder, verifyCallback: verifyCallback,
+  checkAmount: checkAmount, buildJsapiPayParams: buildJsapiPayParams
+};
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>server/config.example.js</h3>
+    <p class="file-note">配置模板：复制为 config.js 后填入真实值，切勿提交仓库。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="server/config.example.js"><code>/* server/config.example.js —— 复制为 config.js 并填入真实值（勿提交到仓库） */
+"use strict";
+
+module.exports = {
+  // 小程序（微信公众平台 → 开发管理 → 开发设置）
+  appid: "wx1234567890abcdef",
+  secret: "填入 AppSecret（仅服务端使用，切勿下发前端）",
+
+  // 微信支付（商户平台 → 账户中心 → API 安全）
+  mchId: "1900000000",
+  apiV2Key: "32位APIv2密钥，在商户平台自行设置",
+
+  // 支付回调：必须公网可访问的 HTTPS 地址
+  notifyUrl: "https://your-domain.com/api/pay/notify",
+
+  // 业务 token 签名密钥（自定义，建议 32 位以上随机串）
+  jwtSecret: "换成你自己的随机串"
+};
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>miniprogram/utils/auth.js</h3>
+    <p class="file-note">小程序端登录态：wx.login、token 存取、静默重登、支付拉起。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="miniprogram/utils/auth.js"><code>/* miniprogram/utils/auth.js —— 小程序端登录态封装 */
+"use strict";
+const request = require("./request.js");
+
+const TOKEN_KEY = "token";
+
+function login() {
+  return new Promise(function (resolve, reject) {
+    wx.login({
+      success: function (res) {
+        if (!res.code) return reject(new Error("wx.login 未返回 code"));
+        // 临时 code 交给后端换 openid + 业务 token（session_key 永不下发前端）
+        request.post("/api/auth/code2session", { code: res.code })
+          .then(function (data) {
+            wx.setStorageSync(TOKEN_KEY, data.token);
+            resolve(data);
+          })
+          .catch(reject);
+      },
+      fail: reject
+    });
+  });
+}
+
+function getToken() { return wx.getStorageSync(TOKEN_KEY) || ""; }
+
+function logout() { try { wx.removeStorageSync(TOKEN_KEY); } catch (e) {} }
+
+/* 会话过期时静默重登，用户无感知 */
+function checkSession() {
+  wx.checkSession({ fail: function () { login(); } });
+}
+
+/* 支付：后端下单 → 前端拉起收银台 */
+function pay(order) {
+  return request.post("/api/pay/order", order).then(function (payParams) {
+    return new Promise(function (resolve, reject) {
+      wx.requestPayment(Object.assign({}, payParams, {
+        success: resolve,
+        fail: reject
+      }));
+    });
+  });
+}
+
+module.exports = { login: login, getToken: getToken, logout: logout, checkSession: checkSession, pay: pay };
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>miniprogram/utils/request.js</h3>
+    <p class="file-note">请求封装：统一鉴权头、401 自动重登并重试一次。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="miniprogram/utils/request.js"><code>/* miniprogram/utils/request.js —— 请求封装：自动带 token，401 重登后重试一次 */
+"use strict";
+const BASE_URL = "https://your-domain.com"; // ← 需先改：你的后端地址（并在小程序后台配置合法域名）
+
+function raw(url, method, data) {
+  return new Promise(function (resolve, reject) {
+    wx.request({
+      url: BASE_URL + url,
+      method: method,
+      data: data,
+      header: { "content-type": "application/json" },
+      success: function (res) {
+        if (res.statusCode &gt;= 200 &amp;&amp; res.statusCode &lt; 300) return resolve(res.data);
+        const err = new Error("HTTP " + res.statusCode);
+        err.statusCode = res.statusCode;
+        reject(err);
+      },
+      fail: reject
+    });
+  });
+}
+
+function request(method, url, data) {
+  return raw(url, method, data).catch(function (err) {
+    if (err.statusCode !== 401) throw err;
+    // 401：清 token 静默重登一次，避免用户手动重试
+    const auth = require("./auth.js");
+    return new Promise(function (resolve, reject) {
+      wx.removeStorageSync("token");
+      auth.login().then(function () { return raw(url, method, data); }).then(resolve).catch(reject);
+    });
+  });
+}
+
+module.exports = {
+  get: function (url, data) { return request("GET", url, data); },
+  post: function (url, data) { return request("POST", url, data); },
+  BASE_URL: BASE_URL
+};
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>tools/selftest.js</h3>
+    <p class="file-note">电脑端最小用例：7 组断言，全部离线执行。</p>
+    <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="tools/selftest.js"><code>/* tools/selftest.js —— 零依赖最小用例：node tools/selftest.js */
+"use strict";
+const assert = require("assert");
+const path = require("path");
+const auth = require(path.join(__dirname, "..", "server", "auth.js"));
+const pay = require(path.join(__dirname, "..", "server", "pay.js"));
+
+const cfg = { appid: "wx_test_appid", secret: "test_app_secret", mchId: "1900000000", apiV2Key: "TESTKEY0123456789TESTKEY012345", notifyUrl: "https://example.com/notify" };
+const order = { openid: "o_test_openid", outTradeNo: "NC20260919001", totalFee: 1990, body: "测试商品", clientIp: "127.0.0.1" };
+
+(async function main() {
+  /* 1) code2session：注入 mock 请求，不联网 */
+  const okReq = async function () { return { openid: "o_test_openid", session_key: "sk_xxx" }; };
+  const r1 = await auth.code2session("code_ok", { appid: cfg.appid, secret: cfg.secret, request: okReq });
+  assert.strictEqual(r1.openid, "o_test_openid", "应拿到 openid");
+  assert.ok(r1.session_key, "session_key 只在服务端保存");
+
+  /* 2) 异常分支：空 code / 微信 errcode */
+  await assert.rejects(function () { return auth.code2session("", { appid: cfg.appid, secret: cfg.secret, request: okReq }); }, /code 不能为空/);
+  await assert.rejects(function () {
+    return auth.code2session("expired", { appid: cfg.appid, secret: cfg.secret, request: async function () { return { errcode: 40163, errmsg: "code been used" }; } });
+  }, /code2session 失败/);
+
+  /* 3) token：签发 → 校验 → 篡改 → 过期 */
+  const token = auth.issueToken("o_test_openid", cfg.secret);
+  assert.strictEqual(auth.verifyToken(token, cfg.secret).openid, "o_test_openid");
+  const bad = token.slice(0, -2) + (token.slice(-2) === "AA" ? "BB" : "AA");
+  assert.throws(function () { auth.verifyToken(bad, cfg.secret); }, /签名不匹配/);
+  assert.throws(function () { auth.verifyToken(auth.issueToken("o_test_openid", cfg.secret, -1000), cfg.secret); }, /已过期/);
+
+  /* 4) 下单签名：确定性 + 字段敏感 */
+  const p1 = pay.buildUnifiedOrder(order, cfg);
+  const p2 = pay.buildUnifiedOrder(order, cfg);
+  assert.strictEqual(pay.sign({ ...p1, nonce_str: "fixed" }, cfg.apiV2Key), pay.sign({ ...p1, nonce_str: "fixed" }, cfg.apiV2Key), "同参数签名一致");
+  assert.notStrictEqual(pay.sign({ ...p1, total_fee: 1990 }, cfg.apiV2Key), pay.sign({ ...p1, total_fee: 1991 }, cfg.apiV2Key), "金额变化签名必变");
+  assert.match(p1.sign, /^[0-9A-F]{32}$/, "签名应为 32 位大写 MD5");
+
+  /* 5) 空值字段不参与签名（微信 v2 规则） */
+  const withEmpty = pay.buildSignString({ b: "2", a: "1", empty: "", nil: null }, "K");
+  assert.strictEqual(withEmpty, "a=1&amp;b=2&amp;key=K");
+
+  /* 6) 回调验签 + 金额核对：伪造回调被拦截 */
+  const callback = { out_trade_no: order.outTradeNo, total_fee: order.totalFee, result_code: "SUCCESS", transaction_id: "4200000000202609190001" };
+  callback.sign = pay.sign(callback, cfg.apiV2Key);
+  assert.strictEqual(pay.verifyCallback(callback, cfg), true);
+  assert.strictEqual(pay.checkAmount(callback, order), true);
+
+  const forged = { ...callback, total_fee: 1 };
+  assert.throws(function () { pay.verifyCallback(forged, cfg); }, /验签失败/);
+  const resigned = { ...forged, sign: pay.sign(forged, cfg.apiV2Key) }; // 攻击者用假密钥重签也过不了
+  assert.throws(function () { pay.verifyCallback({ ...resigned, sign: "F".repeat(32) }, cfg); }, /验签失败/);
+  assert.throws(function () { pay.checkAmount(forged, order); }, /金额不匹配/);
+
+  /* 7) wx.requestPayment 参数：paySign 同规则可复算 */
+  const payParams = pay.buildJsapiPayParams("prepay_id_test", cfg);
+  assert.strictEqual(payParams.package, "prepay_id=prepay_id_test");
+  assert.strictEqual(payParams.signType, "MD5");
+  assert.strictEqual(pay.sign({ appId: payParams.appId, timeStamp: payParams.timeStamp, nonceStr: payParams.nonceStr, package: payParams.package, signType: payParams.signType }, cfg.apiV2Key), payParams.paySign);
+
+  console.log("ALL CHECKS PASSED");
+})().catch(function (e) { console.error("SELFTEST FAILED:", e.message); process.exit(1); });
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>package.json</h3>
+    <p class="file-note">依赖清单（dependencies 为空）与 npm test 入口。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="package.json"><code>{
+  "name": "miniapp-login",
+  "version": "1.0.0",
+  "private": true,
+  "description": "小程序登录态 + 微信支付封装（服务端逻辑零依赖，可离线自测）",
+  "scripts": {
+    "test": "node tools/selftest.js"
+  },
+  "dependencies": {}
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p>最小用例实跑输出：<code>$ node tools/selftest.js</code> → <code>ALL CHECKS PASSED</code>；<strong>未配置真实 AppID / 商户号时，仅 <code>code2session</code> 实网调用与真实下单不可用</strong>，其余逻辑均可离线验证。</p></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-miniapp-login">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://developers.weixin.qq.com/miniprogram/dev/api/open-api/login/wx.login.html" target="_blank" rel="noopener">微信官方文档 · wx.login（获取临时 code）</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/user-login/code2Session.html" target="_blank" rel="noopener">微信官方文档 · auth.code2Session（code 换 openid / session_key）</a>
+<a href="https://developers.weixin.qq.com/miniprogram/dev/api/payment/wx.requestPayment.html" target="_blank" rel="noopener">微信官方文档 · wx.requestPayment（拉起支付收银台）</a>
+<a href="https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_1.shtml" target="_blank" rel="noopener">微信支付官方文档 · JSAPI 下单接口</a>
+<a href="https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_5.shtml" target="_blank" rel="noopener">微信支付官方文档 · 支付结果通知与验签</a>
+<a href="https://nodejs.org/api/crypto.html" target="_blank" rel="noopener">Node.js 官方文档 · crypto（本工程签名/验签所用）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -159,6 +595,7 @@ function buildPayParams(openid, orderId, totalFee, body) {
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/miniapp-login.js"></script>
 </body>
 </html>

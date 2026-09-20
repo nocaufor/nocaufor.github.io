@@ -252,7 +252,283 @@
 
       <section class="code-section"><h2 data-vc-key="secArch">整体框架</h2><div class="code-card" data-vc-key="archText">角色设定系统（性别/形象/人设/世界观）→ 性格与风格配置（特质权重/语言风格/称呼/中英）→ 对话引擎（关键词规则 + 上下文拼接 + 模板轮换）→ 记忆系统（短期上下文 + 长期重要事项）→ 情绪状态（随对话变化影响语气）→ 关系度/亲密度（随互动积累）→ 情感反馈与开场白 → 本地持久化（localStorage）；可切换 LLM API 增强。</div></section>
 
-      <div class="fun-footer">
+<section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-virtual-companion">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">本地规则引擎 · 零依赖</span><span class="deploy-badge warn">接大模型需 API Key</span></div>
+  <div class="code-card"><p>把演示区的「虚拟对象」抽成独立工程：意图识别 → 性格语料库 → 风格化润色 → 亲密度累计，另附兼容 OpenAI 协议的大模型适配层（不填 Key 也能完整跑通本地规则）。</p></div>
+  <div class="deploy-tree">virtual-companion/
+├─ index.html      配置面板 + 对话区
+├─ app.js          规则引擎 + 意图识别 + 亲密度 + 大模型适配层
+├─ styles.css      样式（跟随系统深浅色）
+└─ README.md       运行方式（含接大模型说明）
+</div>
+  <div class="deploy-file">
+    <h3>index.html</h3>
+    <p class="file-note">性格 / 风格 / 引擎切换 + 对话面板</p>
+    <div class="code-block"><span class="code-lang-badge">html</span><pre data-file="index.html"><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;虚拟对象 · 人味儿对话陪伴 · 独立工程版&lt;/title&gt;
+  &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;main class="wrap"&gt;
+    &lt;h1&gt;虚拟对象 · 人味儿对话&lt;/h1&gt;
+    &lt;p class="sub"&gt;性别、性格、语言风格全部由你设定；内置规则引擎开箱即用，也可切换为大模型接口。&lt;/p&gt;
+    &lt;section class="panel"&gt;
+      &lt;div class="row"&gt;
+        &lt;select id="persona"&gt;
+          &lt;option value="warm"&gt;性格：温柔&lt;/option&gt;
+          &lt;option value="sharp"&gt;性格：毒舌&lt;/option&gt;
+          &lt;option value="calm"&gt;性格：稳重&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;select id="style"&gt;
+          &lt;option value="daily"&gt;风格：日常口语&lt;/option&gt;
+          &lt;option value="literary"&gt;风格：文艺&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;button id="engine" type="button" class="btn ghost"&gt;引擎：本地规则&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class="bars" id="bars" style="margin-top:14px"&gt;&lt;/div&gt;
+    &lt;/section&gt;
+    &lt;h2&gt;对话&lt;/h2&gt;
+    &lt;section class="panel"&gt;
+      &lt;div class="chat" id="chat"&gt;&lt;/div&gt;
+      &lt;div class="row" style="margin-top:12px"&gt;
+        &lt;input id="input" type="text" placeholder="说点什么…" style="flex:1;min-width:180px"&gt;
+        &lt;button id="send" type="button" class="btn"&gt;发送&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;p class="msg" id="hint"&gt;当前为本地规则引擎：无网络、无 API Key 也能跑。&lt;/p&gt;
+    &lt;/section&gt;
+  &lt;/main&gt;
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>app.js</h3>
+    <p class="file-note">规则引擎 + 意图识别 + 亲密度 + 大模型适配层</p>
+    <div class="code-block"><span class="code-lang-badge">javascript</span><pre data-file="app.js"><code>/* app.js —— 虚拟陪伴：规则引擎 + 亲密度（纯逻辑部分可在 node 中自测） */
+var RULES = {
+  warm: {
+    greet: ["你来啦，今天过得怎么样？", "我等你好一会儿了。"],
+    care: ["别太累了，记得喝水。", "你要照顾好自己，我才放心。"],
+    echo: ["嗯，我在听。", "然后呢？我想继续听。"],
+    like: ["和你聊天这件事本身就很值得。", "你说的话我都记着呢。"]
+  },
+  sharp: {
+    greet: ["哟，还知道回来？", "忙完了？我以为你把我删了。"],
+    care: ["少熬夜，别指望我夸你。", "喝口水吧，别硬撑。"],
+    echo: ["就这样？", "行吧，勉强算个话题。"],
+    like: ["勉强承认，你有点意思。", "别得意，我可不是随便夸人。"]
+  },
+  calm: {
+    greet: ["你好，今天还顺利吗？", "在的，慢慢说。"],
+    care: ["注意休息，节奏比速度重要。", "别把弦绷太紧。"],
+    echo: ["我记下了。", "这件事可以再展开说说。"],
+    like: ["和你说话很舒服。", "这种交流很有意义。"]
+  }
+};
+var STYLES = {
+  daily: { tail: "～" },
+  literary: { tail: "。" }
+};
+
+/* classify：极简意图识别（关键词打分） */
+function classify(text) {
+  var t = String(text);
+  if (/^(你好|hi|hello|在吗|嗨)/i.test(t.trim())) return "greet";
+  if (/(累|难过|烦|压力|失眠|加班|生病|难受)/.test(t)) return "care";
+  if (/(喜欢|爱你|想你|喜欢我|陪我)/.test(t)) return "like";
+  return "echo";
+}
+
+/* reply：规则引擎主入口（纯函数，node 可测） */
+function reply(text, opts) {
+  opts = opts || {};
+  var persona = opts.persona || "warm";
+  var style = opts.style || "daily";
+  var intimacy = opts.intimacy == null ? 0 : opts.intimacy;
+  var kind = classify(text);
+  var bank = RULES[persona][kind];
+  var idx = Math.abs(hash(text + persona)) % bank.length;
+  var line = bank[idx];
+  if (style === "literary") line = line.replace(/([^。！？])$/, "$1。");
+  else line = line.replace(/([^。！？～])$/, "$1" + STYLES.daily.tail);
+  if (intimacy &gt;= 8 &amp;&amp; kind === "echo") line += "（我们聊了不少了，我很高兴。）";
+  return { kind: kind, text: line, intimacy: intimacy + (kind === "care" || kind === "like" ? 2 : 1) };
+}
+
+function hash(s) {
+  var h = 2166136261;
+  for (var i = 0; i &lt; s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h;
+}
+
+/* 大模型适配层：填入 API Key 即可切换到真实模型（默认不启用） */
+async function llmReply(text, cfg) {
+  var res = await fetch(cfg.endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + cfg.apiKey },
+    body: JSON.stringify({
+      model: cfg.model,
+      messages: [
+        { role: "system", content: "你的性格：" + cfg.persona + "；语言风格：" + cfg.style },
+        { role: "user", content: text }
+      ]
+    })
+  });
+  if (!res.ok) throw new Error("接口返回 " + res.status);
+  var data = await res.json();
+  return data.choices[0].message.content;
+}
+
+if (typeof module !== "undefined" &amp;&amp; module.exports) {
+  module.exports = { RULES: RULES, classify: classify, reply: reply, llmReply: llmReply };
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    var chat = document.getElementById("chat"), input = document.getElementById("input"),
+        sendBtn = document.getElementById("send"), personaSel = document.getElementById("persona"),
+        styleSel = document.getElementById("style"), engineBtn = document.getElementById("engine"),
+        barsEl = document.getElementById("bars"), hint = document.getElementById("hint");
+    var intimacy = 0, useLLM = false, cfg = { endpoint: "https://api.openai.com/v1/chat/completions", apiKey: "", model: "gpt-4o-mini", persona: "温柔", style: "日常口语" };
+
+    var row = document.createElement("div");
+    row.className = "bar";
+    row.innerHTML = "&lt;span&gt;亲密度&lt;/span&gt;&lt;span&gt;&lt;i id='bar-int'&gt;&lt;/i&gt;&lt;/span&gt;&lt;span id='val-int'&gt;0&lt;/span&gt;";
+    barsEl.appendChild(row);
+
+    function bubble(text, who) {
+      var d = document.createElement("div");
+      d.className = who;
+      d.textContent = text;
+      chat.appendChild(d);
+      chat.scrollTop = chat.scrollHeight;
+    }
+    function paint() {
+      document.getElementById("bar-int").style.width = Math.min(100, intimacy * 6) + "%";
+      document.getElementById("val-int").textContent = intimacy;
+    }
+    async function send() {
+      var text = input.value.trim();
+      if (!text) return;
+      bubble(text, "me");
+      input.value = "";
+      if (useLLM &amp;&amp; cfg.apiKey) {
+        try {
+          var out = await llmReply(text, cfg);
+          bubble(out, "pet");
+        } catch (e) {
+          bubble("（大模型接口调用失败：" + e.message + "，已回落本地规则）", "pet");
+          bubble(reply(text, { persona: personaSel.value, style: styleSel.value, intimacy: intimacy }).text, "pet");
+        }
+      } else {
+        var r = reply(text, { persona: personaSel.value, style: styleSel.value, intimacy: intimacy });
+        intimacy = r.intimacy;
+        bubble(r.text, "pet");
+      }
+      paint();
+    }
+    sendBtn.addEventListener("click", send);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") send(); });
+    engineBtn.addEventListener("click", function () {
+      useLLM = !useLLM;
+      engineBtn.textContent = useLLM ? "引擎：大模型 API" : "引擎：本地规则";
+      hint.textContent = useLLM
+        ? "已切换到大模型引擎：需在 app.js 的 cfg 中填入 endpoint / apiKey / model，否则自动回落本地规则。"
+        : "当前为本地规则引擎：无网络、无 API Key 也能跑。";
+    });
+    personaSel.addEventListener("change", function () { bubble("（性格已切换为：" + personaSel.options[personaSel.selectedIndex].text + "）", "pet"); });
+    styleSel.addEventListener("change", function () { bubble("（风格已切换为：" + styleSel.options[styleSel.selectedIndex].text + "）", "pet"); });
+    bubble(RULES.warm.greet[0], "pet");
+    paint();
+  });
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>styles.css</h3>
+    <p class="file-note">样式：跟随系统深浅色</p>
+    <div class="code-block"><span class="code-lang-badge">css</span><pre data-file="styles.css"><code>:root {
+  --bg: #0e1014; --panel: #171a20; --ink: #e8ecf1; --muted: #9aa4b2; --line: #262b33; --brand: #6fb3a8;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f6f7f8; --panel: #ffffff; --ink: #1a1d21; --muted: #5b636e; --line: #e3e6ea; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 6px; }
+h2 { font-size: 1.05rem; margin: 22px 0 10px; }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--brand);
+  background: var(--brand); color: #0b0f12; cursor: pointer; font-size: .92rem;
+}
+.btn.ghost { background: transparent; color: var(--brand); }
+.msg { color: var(--muted); margin: 12px 0 0; font-size: .92rem; }
+.bars { display: grid; gap: 6px; margin-top: 10px; }
+.bar { display: grid; grid-template-columns: 64px 1fr 44px; gap: 8px; align-items: center; font-size: .88rem; }
+.bar i { display: block; height: 8px; border-radius: 6px; background: var(--brand); }
+.bar span:first-child { color: var(--muted); }
+input, select {
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); font: inherit;
+}
+textarea { width: 100%; min-height: 90px; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; }
+canvas { width: 100%; display: block; border-radius: 10px; }
+.chat { max-height: 260px; overflow: auto; display: grid; gap: 10px; }
+.chat .me, .chat .pet { padding: 9px 12px; border-radius: 12px; max-width: 82%; font-size: .93rem; }
+.chat .me { background: rgba(111,179,168,.16); justify-self: end; }
+.chat .pet { background: rgba(255,255,255,.06); justify-self: start; }
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行方式与接大模型说明</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 虚拟对象 · 人味儿对话陪伴（独立可运行工程）
+
+作品站 fun 区「虚拟对象」的独立工程版：内置规则引擎开箱即用，可选接入大模型 API。
+
+## 文件
+- `index.html`：性格 / 风格 / 引擎切换 + 对话面板
+- `app.js`：意图识别（关键词打分）→ 性格语料库 → 风格化 → 亲密度累计；附大模型适配层
+- `styles.css`：样式
+
+## 运行
+1. 双击 `index.html`，直接开始对话（无需网络、无需 Key）
+2. 逻辑自测：`node -e "const m=require('./app.js');console.log(m.classify('今天好累'), m.reply('今天好累',{persona:'warm'}).kind)"` → 期望 `care care`
+
+## 接大模型（可选）
+在 `app.js` 的 `cfg` 中填入 `endpoint` / `apiKey` / `model`，再点「引擎」按钮切换；接口失败会自动回落本地规则。
+- 兼容 OpenAI Chat Completions 协议的服务均可（如各家云厂商的兼容网关）
+- 注意：浏览器直连会暴露 Key，生产环境应改为由你的后端转发
+
+## 扩展点
+- 换语料：改 `RULES[性格][意图]` 数组即可，意图分类器在 `classify()`
+- 加长期记忆：把对话写入 localStorage，回复前检索相关历史片段拼进 prompt
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行方式</h3><ol><li>新建一个目录，把上面全部文件按文件名分别保存（用「一键复制整份工程」可一次拿全）。</li><li>前端部分：直接双击 <code>index.html</code> 即可运行；若浏览器限制本地文件读取，执行 <code>python -m http.server 8000</code> 后访问 <code>http://localhost:8000/</code>。</li><li>逻辑自测：各文件 <code>README.md</code> 中给出了对应的 Node / Python 自测命令（均为真实可跑的最小用例）。</li></ol><p class="file-note">标注：可直接运行、无需构建；要改造只需动 <code>app.js</code> 顶部常量与 <code>styles.css</code> 里的变量。</p></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-virtual-companion">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>接入大模型时参考的官方文档（可直接访问）：</p>
+<div class="src-links">
+<a href="https://platform.openai.com/docs/api-reference/chat" target="_blank" rel="noopener">OpenAI · Chat Completions 接口文档</a>
+<a href="https://api-docs.deepseek.com/zh-cn/" target="_blank" rel="noopener">DeepSeek · API 文档（兼容 OpenAI 协议）</a>
+</div></div></section>      <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
     </div>
@@ -274,6 +550,7 @@
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/virtual-companion.js"></script>
 </body>
 </html>

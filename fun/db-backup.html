@@ -54,6 +54,34 @@
           <span class="tag">来源：GitHub 参考</span>
         </div>
       </div>
+<section class="code-section"><h2>在线演示：备份轮转模拟器</h2>
+<div class="demo-panel" id="db-backup-demo">
+  <div class="demo-grid">
+    <div class="demo-field"><label for="db-days">模拟备份跨度（天，每天 02:30 一份）</label><input id="db-days" class="demo-input" type="number" min="30" max="400" step="10" value="90" /></div>
+    <div class="demo-field"><label for="db-keep-daily">日保留份数 KEEP_DAILY</label><input id="db-keep-daily" class="demo-input" type="number" min="1" max="60" value="7" /></div>
+    <div class="demo-field"><label for="db-keep-monthly">月归档保留份数 KEEP_MONTHLY</label><input id="db-keep-monthly" class="demo-input" type="number" min="1" max="36" value="12" /></div>
+    <div class="demo-field"><label>演练模式</label><label class="demo-check"><input id="db-dry" type="checkbox" checked /> 只列动作，不标记删除</label></div>
+  </div>
+  <div class="demo-actions">
+    <button type="button" class="btn" id="db-run">生成备份集并执行轮转</button>
+    <button type="button" class="btn btn-outline" id="db-advance">推进 1 天后再次轮转</button>
+    <button type="button" class="btn btn-outline" id="db-reset">重置</button>
+  </div>
+  <div class="demo-kpis" style="margin-top:16px">
+    <div class="demo-kpi"><b id="db-k-total">0</b><span>备份总份数</span></div>
+    <div class="demo-kpi"><b id="db-k-keep">0</b><span>直接保留</span></div>
+    <div class="demo-kpi"><b id="db-k-arch">0</b><span>归档到 monthly</span></div>
+    <div class="demo-kpi"><b id="db-k-del">0</b><span>删除 / 待删除</span></div>
+  </div>
+  <div style="margin-top:16px;max-height:320px;overflow:auto">
+    <table class="demo-table" id="db-table">
+      <thead><tr><th>备份文件</th><th>时间</th><th>大小</th><th>轮转动作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p class="demo-status" id="db-status">等待操作：点击“生成备份集并执行轮转”，按 90 天生成备份文件并套用“日保留 7 份 / 每月 1 号归档、最多留 12 份”的轮转策略。</p>
+</div>
+</section>
 <section class="code-section"><h2>项目简介</h2><div class="code-card"><p>备份永远在“需要的那一刻”才显得重要。本页提供一套<strong>备份与轮转脚本</strong>：定时导出 MySQL 数据库或归档目录，按天保留最近 N 份、按月保留归档，自动清理过期文件；配合系统定时任务即可无人值守。</p></div></section><section class="code-section"><h2>代码示例：备份与轮转</h2><div class="code-block"><span class="code-lang-badge">py</span><pre><code>import os
 import shutil
 import subprocess
@@ -99,7 +127,410 @@ if __name__ == "__main__":
 $action  = New-ScheduledTaskAction -Execute "python" -Argument "C:\scripts\db_backup.py"
 $trigger = New-ScheduledTaskTrigger -Daily -At 02:30
 Register-ScheduledTask -TaskName "nocau-db-backup" `
-  -Action $action -Trigger $trigger -Force</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>把 <code>dump_mysql</code> 的库名、用户名改为实际值，密码通过环境变量 <code>DB_PASS</code> 注入。</li><li>首次手动运行验证备份文件可正常恢复（<code>gunzip &lt; file.sql.gz | mysql -u root db</code>）。</li><li>注册系统定时任务每日执行；Linux 场景改用 crontab。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>mysql-backup-rotate</code>、<code>database-backup-tool</code>（链接可替换为实际仓库地址）。</p></div></section>
+  -Action $action -Trigger $trigger -Force</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>把 <code>dump_mysql</code> 的库名、用户名改为实际值，密码通过环境变量 <code>DB_PASS</code> 注入。</li><li>首次手动运行验证备份文件可正常恢复（<code>gunzip &lt; file.sql.gz | mysql -u root db</code>）。</li><li>注册系统定时任务每日执行；Linux 场景改用 crontab。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="db-backup-project">
+  <div class="deploy-summary"><span class="deploy-badge">可直接运行</span><span class="deploy-badge info">零第三方依赖</span><span class="deploy-badge warn">需先改配置</span></div>
+  <div class="code-card"><p>运行环境：Python 3.9+ 与系统自带 <code>mysqldump</code>（MySQL 客户端）。把 6 个文件放进同一目录后，先跑 <code>python db_backup.py --selftest</code> 零配置验证轮转算法；正式备份只需按 <code>config.example.json</code> 改好数据库连接与备份路径即可无人值守，无需安装任何 pip 包。</p></div>
+  <div class="deploy-tree">db-backup/
+├── db_backup.py        主脚本：mysqldump / 目录归档 → 轮转 → 日志（含 --dry-run）
+├── rotate.py           轮转算法：保留 N 份 + 每月 1 号归档，可独立自测
+├── config.example.json 配置模板（复制为 config.json 后修改）
+├── requirements.txt    依赖清单（仅标准库，无第三方包）
+├── register_task.ps1   Windows 计划任务注册（管理员运行）
+└── README.md           运行步骤 / 配置项 / 轮转规则 / 恢复演练</div>
+  <div class="deploy-file">
+    <h3>db_backup.py</h3>
+    <p class="file-note">主脚本：备份导出、目录归档、轮转调度与日志，支持 --dry-run 与 --selftest。</p>
+    <div class="code-block"><span class="code-lang-badge">py</span><pre data-file="db_backup.py"><code># -*- coding: utf-8 -*-
+"""MySQL / 目录备份 + 轮转：dump → 校验 → 轮转 → 日志，一条命令跑完。
+
+用法：
+    python db_backup.py --config config.json              # 备份并轮转
+    python db_backup.py --config config.json --dry-run    # 只演练（不删除、不移动）
+    python db_backup.py --selftest                        # 不连数据库，验证轮转算法
+"""
+from __future__ import annotations
+
+import argparse
+import gzip
+import json
+import logging
+import os
+import subprocess
+import sys
+import tarfile
+from datetime import datetime
+from pathlib import Path
+
+from rotate import rotate
+
+log = logging.getLogger("db_backup")
+DEFAULTS = {"backup_root": "backups", "db": None, "dirs": [],
+            "keep_daily": 7, "keep_monthly": 12, "log_file": "backup.log"}
+
+
+def load_config(path: str) -&gt; dict:
+    cfg = dict(DEFAULTS)
+    with open(path, encoding="utf-8") as fh:
+        cfg.update(json.load(fh))
+    return cfg
+
+
+def setup_log(cfg: dict) -&gt; None:
+    root = Path(cfg["backup_root"])
+    root.mkdir(parents=True, exist_ok=True)
+    handlers = [logging.StreamHandler(sys.stdout)]
+    if cfg.get("log_file"):
+        handlers.append(logging.FileHandler(root / cfg["log_file"], encoding="utf-8"))
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s",
+                        handlers=handlers, force=True)
+
+
+def dump_mysql(db: dict, root: Path, dry_run: bool) -&gt; Path | None:
+    """mysqldump 导出并 gzip 压缩；失败时删除半成品并抛错。"""
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out = root / f"{db['name']}_{stamp}.sql.gz"
+    cmd = ["mysqldump",
+           f"-h{db.get('host', '127.0.0.1')}", f"-P{db.get('port', 3306)}",
+           f"-u{db['user']}", "--single-transaction", "--quick", "--routines", "--events",
+           db["name"]]
+    log.info("mysqldump %s -&gt; %s", db["name"], out.name)
+    if dry_run:
+        log.info("[dry-run] 跳过实际导出，仅演示轮转")
+        return None
+    env = dict(os.environ, MYSQL_PWD=db.get("password") or os.environ.get("DB_PASS", ""))
+    try:
+        with gzip.open(out, "wb") as fh:
+            proc = subprocess.run(cmd, stdout=fh, stderr=subprocess.PIPE, env=env, check=False)
+    except FileNotFoundError as exc:                      # mysqldump 未安装
+        raise SystemExit("未找到 mysqldump，请先安装 MySQL 客户端并加入 PATH") from exc
+    if proc.returncode != 0:
+        out.unlink(missing_ok=True)
+        raise RuntimeError("mysqldump 失败：" + proc.stderr.decode("utf-8", "ignore")[:400])
+    if out.stat().st_size == 0:
+        out.unlink(missing_ok=True)
+        raise RuntimeError("导出的备份为空文件，已删除，请检查权限与库名")
+    log.info("备份完成：%s（%.1f KB）", out.name, out.stat().st_size / 1024)
+    return out
+
+
+def backup_dirs(dirs: list[str], root: Path, dry_run: bool) -&gt; Path | None:
+    """把若干目录打成一个 .tar.gz，同样按时间戳命名，纳入同一套轮转策略。"""
+    if not dirs:
+        return None
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out = root / f"files_{stamp}.tar.gz"
+    log.info("归档目录 %s -&gt; %s", dirs, out.name)
+    if dry_run:
+        return None
+    with tarfile.open(out, "w:gz") as tar:
+        for d in dirs:
+            p = Path(d)
+            if p.exists():
+                tar.add(p, arcname=p.name)
+            else:
+                log.warning("目录不存在，跳过：%s", d)
+    return out
+
+
+def main() -&gt; int:
+    ap = argparse.ArgumentParser(description="MySQL / 目录备份 + 保留策略轮转")
+    ap.add_argument("--config", default="config.json", help="配置文件路径（见 config.example.json）")
+    ap.add_argument("--dry-run", action="store_true", help="不实际导出/删除，仅演示流程")
+    ap.add_argument("--selftest", action="store_true", help="不连数据库，验证轮转算法")
+    args = ap.parse_args()
+
+    if args.selftest:
+        from rotate import _selftest
+        _selftest()
+        return 0
+
+    if not Path(args.config).exists():
+        print("缺少配置文件：%s（可从 config.example.json 复制并修改）" % args.config)
+        return 2
+
+    cfg = load_config(args.config)
+    setup_log(cfg)
+    root = Path(cfg["backup_root"])
+
+    created = []
+    if cfg.get("db"):
+        created.append(dump_mysql(cfg["db"], root, args.dry_run))
+    created.append(backup_dirs(cfg.get("dirs") or [], root, args.dry_run))
+    created = [p for p in created if p]
+
+    kept, archived, deleted = rotate(root, cfg["keep_daily"], cfg["keep_monthly"], args.dry_run)
+    log.info("本次新增 %d 份；轮转结果：保留 %d，归档 %d，删除 %d",
+             len(created), len(kept), len(archived), len(deleted))
+    for p in deleted:
+        log.info("  删除 %s", p.name)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>rotate.py</h3>
+    <p class="file-note">轮转算法独立成模块，便于单测；--selftest 会用临时目录造 90 天备份验证数量。</p>
+    <div class="code-block"><span class="code-lang-badge">py</span><pre data-file="rotate.py"><code># -*- coding: utf-8 -*-
+"""备份轮转：保留最近 N 份 + 每月 1 号归档、超期删除。
+
+可独立运行自测（不依赖数据库、不触碰真实数据）：
+    python rotate.py --selftest
+"""
+from __future__ import annotations
+
+import argparse
+import logging
+import re
+import shutil
+from datetime import datetime
+from pathlib import Path
+
+log = logging.getLogger("rotate")
+
+STAMP_RE = re.compile(r"^(?P&lt;name&gt;.+)_(?P&lt;stamp&gt;\d{8}_\d{6})\.(?P&lt;ext&gt;[A-Za-z0-9_.]+)$")
+
+
+def parse_stamp(path: Path) -&gt; datetime | None:
+    """从 app_20260901_023000.sql.gz 这类文件名解析出备份时间，解析不出返回 None。"""
+    m = STAMP_RE.match(path.name)
+    if not m:
+        return None
+    try:
+        return datetime.strptime(m.group("stamp"), "%Y%m%d_%H%M%S")
+    except ValueError:
+        return None
+
+
+def rotate(root: str | Path, keep_daily: int = 7, keep_monthly: int = 12,
+           dry_run: bool = False) -&gt; tuple[list[Path], list[Path], list[Path]]:
+    """执行轮转，返回 (保留, 归档, 删除) 三个列表。
+
+    规则：
+      1. root 下按时间排序，最新的 keep_daily 份原地保留（不区分日期）；
+      2. 更早的文件中，每月 1 号的移入 root/monthly/（归档），其余删除；
+      3. monthly/ 内同样只保留最新 keep_monthly 份，更早的删除。
+    """
+    root = Path(root)
+    monthly = root / "monthly"
+    items = [(t, p) for p in root.glob("*.sql.gz") if (t := parse_stamp(p))]
+    items.sort(key=lambda x: x[0])
+
+    split = max(0, len(items) - keep_daily)
+    older, newest = items[:split], items[split:]
+    kept, archived, deleted = [p for _, p in newest], [], []
+
+    for t, p in older:
+        if t.day == 1:
+            archived.append(p)
+            if not dry_run:
+                monthly.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(p), str(monthly / p.name))
+        else:
+            deleted.append(p)
+            if not dry_run:
+                p.unlink()
+
+    if monthly.exists():
+        arch = sorted([(t, p) for p in monthly.glob("*.sql.gz") if (t := parse_stamp(p))],
+                      key=lambda x: x[0])
+        for _, p in arch[:max(0, len(arch) - keep_monthly)]:
+            deleted.append(p)
+            if not dry_run:
+                p.unlink()
+
+    log.info("轮转完成：保留 %d，归档 %d，删除 %d（dry_run=%s）",
+             len(kept), len(archived), len(deleted), dry_run)
+    return kept, archived, deleted
+
+
+def _selftest() -&gt; None:
+    """零依赖自测：造 90 天备份（每天 1 份，含跨月 1 号），验证保留 / 归档 / 删除数量。"""
+    import tempfile
+    from datetime import timedelta
+
+    root = Path(tempfile.mkdtemp(prefix="rotate-selftest-"))
+    day0 = datetime(2026, 6, 1, 2, 30)
+    for i in range(90):
+        t = day0 + timedelta(days=i)
+        (root / f"app_{t.strftime('%Y%m%d_%H%M%S')}.sql.gz").write_bytes(b"x")
+
+    kept, archived, deleted = rotate(root, keep_daily=7, keep_monthly=3)
+    assert len(kept) == 7, kept
+    assert len(archived) == 3, "90 天区间（6/1~8/29）含 3 个「每月 1 号」，应全部归档"
+    assert len(deleted) == 80, deleted
+    assert (root / "monthly").exists()
+    print("selftest OK -&gt;", root)
+    print("  保留 7 / 归档 3 / 删除 80；再跑一次 dry_run 应无变化：")
+    k2, a2, d2 = rotate(root, 7, 3, dry_run=True)
+    print("  dry_run -&gt;", len(k2), len(a2), len(d2))
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    ap = argparse.ArgumentParser(description="备份轮转：保留最近 N 份 + 每月 1 号归档")
+    ap.add_argument("--root", help="备份目录，例如 D:/backups/mysql")
+    ap.add_argument("--keep-daily", type=int, default=7)
+    ap.add_argument("--keep-monthly", type=int, default=12)
+    ap.add_argument("--dry-run", action="store_true", help="只打印动作，不移动/删除文件")
+    ap.add_argument("--selftest", action="store_true", help="用临时目录自测轮转逻辑")
+    args = ap.parse_args()
+    if args.selftest:
+        _selftest()
+    elif args.root:
+        rotate(args.root, args.keep_daily, args.keep_monthly, args.dry_run)
+    else:
+        ap.error("请提供 --root，或使用 --selftest 自测")
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>config.example.json</h3>
+    <p class="file-note">复制为 config.json，改 db.name / db.user / backup_root / dirs 四项即可用。</p>
+    <div class="code-block"><span class="code-lang-badge">json</span><pre data-file="config.example.json"><code>{
+  "backup_root": "D:/backups/mysql",
+  "db": {
+    "name": "app",
+    "user": "backup_user",
+    "password": "",
+    "host": "127.0.0.1",
+    "port": 3306
+  },
+  "dirs": ["D:/data/uploads"],
+  "keep_daily": 7,
+  "keep_monthly": 12,
+  "log_file": "backup.log"
+}
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：仅标准库，无需 pip install；另注明 mysqldump 的安装方式。</p>
+    <div class="code-block"><span class="code-lang-badge">txt</span><pre data-file="requirements.txt"><code># 本工程只使用 Python 标准库（gzip / tarfile / subprocess / pathlib / logging），
+# 无第三方依赖，无需 pip install。
+#
+# 运行前只需保证系统已安装 MySQL 客户端（提供 mysqldump 命令）：
+#   Windows : 安装 MySQL Installer 后把 bin 目录加入 PATH，或使用 winget install Oracle.MySQL
+#   Debian  : sudo apt-get install -y mysql-client
+#   macOS   : brew install mysql-client
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>register_task.ps1</h3>
+    <p class="file-note">Windows 计划任务注册脚本（每日 02:30，错过则尽快补跑）。</p>
+    <div class="code-block"><span class="code-lang-badge">ps1</span><pre data-file="register_task.ps1"><code># register_task.ps1 —— 注册每日 02:30 的备份计划任务（需以管理员身份运行 PowerShell）
+# 运行前请把 $Script 改为本工程的绝对路径，并确认 python 已在 PATH 中。
+$Script = "C:\scripts\db-backup\db_backup.py"
+$Config = "C:\scripts\db-backup\config.json"
+
+$action  = New-ScheduledTaskAction -Execute "python" -Argument "`"$Script`" --config `"$Config`""
+$trigger = New-ScheduledTaskTrigger -Daily -At 02:30
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew `
+             -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+$principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType S4U -RunLevel Highest
+
+Register-ScheduledTask -TaskName "nocau-db-backup" -Description "每日 02:30 备份 MySQL 并轮转" `
+  -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force
+
+# 立即验证一次（不等到 02:30）：
+Start-ScheduledTask -TaskName "nocau-db-backup"
+Get-ScheduledTaskInfo -TaskName "nocau-db-backup"
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、配置项表、轮转规则、cron / 计划任务写法与恢复演练命令。</p>
+    <div class="code-block"><span class="code-lang-badge">md</span><pre data-file="README.md"><code># 数据库备份与归档轮转（db-backup）
+
+mysqldump / 目录归档 + 保留策略轮转，零第三方依赖（含 PowerShell 计划任务注册脚本）。
+
+## 目录结构
+
+```
+db_backup.py        主脚本：dump → 归档 → 轮转 → 日志（支持 --dry-run）
+rotate.py           轮转算法（保留 N 份 + 每月 1 号归档），可独立自测
+config.example.json 配置模板
+requirements.txt    依赖说明（仅标准库）
+register_task.ps1   Windows 计划任务注册
+README.md           本文件
+```
+
+## 快速开始
+
+```bash
+# 0）零配置验证轮转算法（不连数据库、不碰真实文件）
+python db_backup.py --selftest
+
+# 1）准备配置
+cp config.example.json config.json   # Windows: copy config.example.json config.json
+#    修改 db.name / db.user / backup_root / dirs
+
+# 2）演练一次，确认动作符合预期（不会删除任何文件）
+python db_backup.py --config config.json --dry-run
+
+# 3）正式备份 + 轮转
+python db_backup.py --config config.json
+```
+
+## 配置项
+
+| 键 | 说明 | 必填 |
+|---|---|---|
+| `backup_root` | 备份输出目录，轮转只在这个目录内进行 | 是 |
+| `db.name` / `db.user` | 库名与备份账号（建议专用只读账号） | 用数据库备份时必填 |
+| `db.password` | 留空则读环境变量 `DB_PASS`（推荐，避免明文） | 否 |
+| `db.host` / `db.port` | 默认 `127.0.0.1:3306` | 否 |
+| `dirs` | 需一并打包的目录（如上传目录），打为 `files_&lt;时间戳&gt;.tar.gz` | 否 |
+| `keep_daily` | 最近保留份数，超出部分进入「归档 / 删除」判断 | 是 |
+| `keep_monthly` | `monthly/` 目录内最多保留多少份归档 | 是 |
+
+## 轮转规则
+
+1. `backup_root` 内按文件名时间倒序，最新 `keep_daily` 份原地保留；
+2. 更早的文件中，**每月 1 号**的移入 `monthly/` 归档，其余删除；
+3. `monthly/` 内只保留最新 `keep_monthly` 份；
+4. `--dry-run` 只打印动作，不移动、不删除，建议首次上线前先跑一次。
+
+&gt; 说明：页面示例片段里用固定切片 `name[9:15] == "01"` 判断月份，文件名长度变化就会失效；
+&gt; 本工程改用正则解析出时间戳再判断 `datetime.day == 1`，并在 `rotate.py --selftest` 中覆盖了该场景。
+
+## 定时任务
+
+- **Windows**：管理员 PowerShell 执行 `register_task.ps1`，注册每日 02:30 任务；
+- **Linux**：`30 2 * * * cd /opt/db-backup &amp;&amp; /usr/bin/python3 db_backup.py --config config.json &gt;&gt; cron.log 2&gt;&amp;1`
+
+## 恢复演练
+
+```bash
+gunzip -c app_20260918_023000.sql.gz | mysql -u root -p app     # 单库恢复
+tar -xzf files_20260918_023000.tar.gz -C /tmp/restore           # 目录归档恢复
+```
+
+务必定期做一次真实恢复演练：**没有演练过的备份不算备份。**
+
+## 注意
+
+- 备份目录建议放在与数据库不同的物理磁盘上；
+- 备份文件含敏感数据，注意目录权限（`chmod 700`）；
+- 脚本不会触碰 `backup_root` 之外的文件。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>运行标注</strong>：①<strong>可直接运行</strong>——复制全部文件后 <code>python rotate.py --selftest</code> 即可零配置验证轮转逻辑；②<strong>需先改配置</strong>——正式备份前须修改 <code>config.json</code> 中的数据库连接（<code>db.name</code> / <code>db.user</code>）与 <code>backup_root</code>、<code>dirs</code>；③<strong>外部依赖</strong>——数据库导出依赖系统已安装的 <code>mysqldump</code> 命令（安装方式见 requirements.txt）。</p></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#db-backup-project">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html" target="_blank" rel="noopener">MySQL 官方文档 · mysqldump 全参数说明</a>
+<a href="https://docs.python.org/zh-cn/3/library/subprocess.html" target="_blank" rel="noopener">Python 官方文档 · subprocess（外部命令调用与退出码处理）</a>
+<a href="https://docs.python.org/zh-cn/3/library/pathlib.html" target="_blank" rel="noopener">Python 官方文档 · pathlib（路径遍历与文件操作）</a>
+<a href="https://learn.microsoft.com/zh-cn/powershell/module/scheduledtasks/register-scheduledtask" target="_blank" rel="noopener">Microsoft Learn · Register-ScheduledTask（Windows 计划任务）</a>
+<a href="https://man7.org/linux/man-pages/man5/crontab.5.html" target="_blank" rel="noopener">crontab(5) 手册 · Linux 定时任务写法</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -122,6 +553,7 @@ Register-ScheduledTask -TaskName "nocau-db-backup" `
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/db-backup.js"></script>
 </body>
 </html>

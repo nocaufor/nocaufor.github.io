@@ -92,9 +92,11 @@
     // 激光束特效
     var beam = document.createElement("div");
     beam.setAttribute("aria-hidden", "true");
-    beam.style.cssText = "position:absolute;left:" + mouse.x + "px;top:" + mouse.y + "px;width:120px;height:2px;background:linear-gradient(90deg,rgba(255,60,60,0.95),transparent);transform-origin:left center;border-radius:2px;pointer-events:none;z-index:2;animation:confetti-fall 0.35s linear forwards;opacity:0";
+    beam.style.cssText = "position:absolute;left:" + mouse.x + "px;top:" + mouse.y + "px;width:120px;height:2px;background:linear-gradient(90deg,rgba(255,60,60,0.95),transparent);transform-origin:left center;border-radius:2px;pointer-events:none;z-index:2;animation:laser-beam 0.42s ease-out forwards;opacity:0";
     canvas.parentNode.appendChild(beam);
-    setTimeout(function (el) { if (el.parentNode) el.parentNode.removeChild(el); }, 400);
+    setTimeout(function () {
+      if (beam.parentNode) beam.parentNode.removeChild(beam);
+    }, 420);
 
     if (hit !== -1) {
       score++;

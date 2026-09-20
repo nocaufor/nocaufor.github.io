@@ -126,7 +126,7 @@ body {
   font-weight: 650;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--brand) 62%, var(--text-3));
+  color: var(--brand-text, #1c6659);
   margin-bottom: 14px;
 }
 

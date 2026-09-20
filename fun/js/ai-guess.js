@@ -57,7 +57,7 @@
   }
 
   function bestQuestion() {
-    var best = null, bestScore = -1;
+    var best = null, bestScore = -Infinity;
     ALL_PROPS.forEach(function (prop) {
       if (asked.has(prop)) return;
       var yes = candidates.filter(function (it) { return it.props.indexOf(prop) >= 0; }).length;
@@ -70,10 +70,8 @@
 
   function ask(prop) {
     rounds += 1;
-    if (!prop || rounds > 20) {
-      finish(false);
-      return;
-    }
+    if (!prop) { finish(false, "noprop"); return; }
+    if (rounds > 20) { finish(false, "rounds"); return; }
     asked.add(prop);
     qEl.textContent = "第 " + rounds + " 问：" + prop + "？";
     renderButtons(prop);
@@ -96,9 +94,10 @@
     }
   }
 
-  function finish(won) {
+  function finish(won, reason) {
     started = false;
     btnEl.innerHTML = "";
+    var left = candidates.map(function (c) { return c.name; }).join("、");
     if (won) {
       qEl.textContent = "我猜到了：是「" + candidates[0].name + "」！";
       logLine("a", "AI 猜中：" + candidates[0].name);
@@ -106,9 +105,12 @@
     } else if (candidates.length === 0) {
       qEl.textContent = "没有匹配的候选了，我认输。";
       msgEl.textContent = "这个物品不在我的知识库里，换个试试？";
+    } else if (reason === "noprop") {
+      qEl.textContent = "没有更有区分度的问题了，我认输。";
+      msgEl.textContent = "剩余候选：" + left;
     } else {
       qEl.textContent = "超过 20 问，我认输。";
-      msgEl.textContent = "剩余候选：" + candidates.map(function (c) { return c.name; }).join("、");
+      msgEl.textContent = "剩余候选：" + left;
     }
     restartBtn.style.display = "inline-block";
   }

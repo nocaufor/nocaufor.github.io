@@ -97,7 +97,371 @@ def backup_job():
 
 schedule.every().day.at("09:00").do(backup_job)
 while True:
-    schedule.run_pending()</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>把 <code>RULES</code> 扩展名改为你的实际需求，修改目录路径后直接运行 <code>organize()</code>。</li><li>定时任务用 <code>pip install schedule</code> 后即可运行；Windows 场景建议改用任务计划程序。</li><li>邮件密码不要写死在代码里，建议用环境变量或密钥管理服务注入。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>python-auto-organize</code>、<code>schedule-python</code>、<code>dev-workflow-automation</code>（链接可替换为实际仓库地址）。</p></div></section>
+    schedule.run_pending()</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li>把 <code>RULES</code> 扩展名改为你的实际需求，修改目录路径后直接运行 <code>organize()</code>。</li><li>定时任务用 <code>pip install schedule</code> 后即可运行；Windows 场景建议改用任务计划程序。</li><li>邮件密码不要写死在代码里，建议用环境变量或密钥管理服务注入。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="proj-auto-tools">
+  <div class="deploy-summary"><span class="deploy-badge info">可直接运行</span><span class="deploy-badge">零第三方依赖</span><span class="deploy-badge">纯标准库</span></div>
+  <div class="code-card"><p>运行环境：Python 3.8+，<strong>仅标准库，无需 pip 安装</strong>。把 4 个文件放进同一目录，先执行 <code>python organize.py --self-test</code> 与 <code>python notify_job.py --self-test</code> 做零配置自测；再执行 <code>python organize.py &lt;目标目录&gt; --dry-run</code> 预演分类结果，去掉 <code>--dry-run</code> 即真实整理。</p></div>
+  <div class="deploy-tree">auto-tools/
+├── organize.py        按扩展名/规则整理目录（支持预演与幂等重跑）
+├── notify_job.py      任务结束通知（邮件/日志，含离线替身）
+├── requirements.txt   依赖清单（仅标准库）
+└── README.md          运行步骤与配置项说明</div>
+  <div class="deploy-file">
+    <h3>organize.py</h3>
+    <p class="file-note">整理主脚本：规则表驱动的分类搬运，先预演后执行，同名文件自动加序号，隐藏文件跳过。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="organize.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""organize.py —— 批量文件整理：把目录顶层的散落文件按扩展名或年月归档到子目录。
+
+用法：
+    python organize.py --self-test                 # 零配置自测：临时目录里跑完整流程
+    python organize.py "D:/Downloads" --dry-run     # 预演：只打印计划，不动任何文件
+    python organize.py "D:/Downloads"               # 执行归档
+    python organize.py "D:/Downloads" --by-date     # 按修改时间归档为 2026-09 形式
+
+说明：
+- 只依赖标准库；默认只扫顶层文件，子目录整体跳过。
+- 只做移动（shutil.move），绝不删除；目标同名时自动改名（note.txt -&gt; note-1.txt）。
+- 点开头的隐藏文件（含 desktop.ini）一律跳过。
+"""
+import argparse
+import os
+import shutil
+import sys
+import tempfile
+import time
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+RULES = (
+    ('图片', {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.heic'}),
+    ('文档', {'.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.md', '.csv'}),
+    ('压缩包', {'.zip', '.rar', '.7z', '.tar', '.gz'}),
+    ('音视频', {'.mp3', '.wav', '.flac', '.mp4', '.mov', '.mkv', '.avi'}),
+    ('安装包', {'.exe', '.msi', '.dmg', '.pkg', '.apk'}),
+    ('代码', {'.py', '.js', '.ts', '.java', '.go', '.c', '.h', '.cpp', '.sh', '.ps1', '.html', '.css', '.json'}),
+)
+
+
+def bucket(src, by_date=False):
+    """返回文件应归档到的子目录名。"""
+    if by_date:
+        return time.strftime('%Y-%m', time.localtime(os.path.getmtime(src)))
+    ext = os.path.splitext(src)[1].lower()
+    for folder, exts in RULES:
+        if ext in exts:
+            return folder
+    return '其他' if ext else '无扩展名'
+
+
+def unique_path(dst):
+    """目标已存在时生成 name-1.ext / name-2.ext，避免覆盖。"""
+    if not os.path.exists(dst):
+        return dst
+    stem, ext = os.path.splitext(dst)
+    i = 1
+    while os.path.exists('%s-%d%s' % (stem, i, ext)):
+        i += 1
+    return '%s-%d%s' % (stem, i, ext)
+
+
+def plan_moves(root, by_date=False):
+    moves = []
+    for name in sorted(os.listdir(root)):
+        src = os.path.join(root, name)
+        if name.startswith('.') or not os.path.isfile(src):
+            continue
+        dst = os.path.join(root, bucket(src, by_date), name)
+        if os.path.normcase(os.path.abspath(dst)) == os.path.normcase(os.path.abspath(src)):
+            continue
+        moves.append((src, dst))
+    return moves
+
+
+def run(root, by_date=False, dry_run=False):
+    if not os.path.isdir(root):
+        raise SystemExit('目录不存在：%s' % root)
+    moves = plan_moves(root, by_date)
+    for src, dst in moves:
+        print('%s  -&gt;  %s' % (os.path.relpath(src, root), os.path.relpath(dst, root)))
+        if not dry_run:
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.move(src, unique_path(dst))
+    print('[%s] 计划 %d 个文件（%s）' % ('预演' if dry_run else '执行', len(moves),
+                                    '未改动磁盘' if dry_run else '已归档完成'))
+    return moves
+
+
+def selftest():
+    tmp = tempfile.mkdtemp(prefix='organize-selftest-')
+    for name in ('photo.JPG', 'report.pdf', 'pack.zip', 'note.txt', 'LICENSE'):
+        open(os.path.join(tmp, name), 'w', encoding='utf-8').write('x')
+    open(os.path.join(tmp, '.hidden'), 'w', encoding='utf-8').write('x')
+    os.makedirs(os.path.join(tmp, 'already-dir'))
+
+    before = run(tmp, dry_run=True)
+    assert len(before) == 5, before
+    assert os.path.isfile(os.path.join(tmp, 'photo.JPG')), '预演不应改动磁盘'
+
+    moved = run(tmp)
+    assert len(moved) == 5, moved
+    visible = sorted(x for x in os.listdir(tmp) if not x.startswith('.'))
+    assert visible == ['already-dir', '压缩包', '图片', '文档', '无扩展名'], os.listdir(tmp)
+    assert os.path.isfile(os.path.join(tmp, '图片', 'photo.JPG'))
+    assert os.path.isfile(os.path.join(tmp, '文档', 'report.pdf'))
+    assert os.path.isfile(os.path.join(tmp, '压缩包', 'pack.zip'))
+    assert os.path.isfile(os.path.join(tmp, '无扩展名', 'LICENSE'))
+    assert run(tmp) == [], '第二次应为空（已无顶层散文件）'
+
+    open(os.path.join(tmp, 'note.txt'), 'w', encoding='utf-8').write('y')
+    run(tmp)
+    assert os.path.isfile(os.path.join(tmp, '文档', 'note-1.txt')), '重名保护失效'
+    print('selftest OK：分类规则 / 预演不动盘 / 隐藏文件跳过 / 重名保护 / 幂等 全部通过')
+
+
+def main():
+    ap = argparse.ArgumentParser(description='批量文件整理（归类到子目录，只移动不删除）')
+    ap.add_argument('root', nargs='?', help='待整理目录')
+    ap.add_argument('--by-date', action='store_true', help='按修改月份归档（2026-09）')
+    ap.add_argument('--dry-run', action='store_true', help='只打印计划，不改动磁盘')
+    ap.add_argument('--self-test', action='store_true', help='零配置自测')
+    a = ap.parse_args()
+    if a.self_test or not a.root:
+        selftest()
+        return
+    run(a.root, a.by_date, a.dry_run)
+
+
+if __name__ == '__main__':
+    main()</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>notify_job.py</h3>
+    <p class="file-note">通知脚本：任务结束推送结果，示例用本地替身（不会真的发信），换成 SMTP 即上线。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="notify_job.py"><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""notify_job.py —— 定时任务执行 + 邮件通知（纯标准库，可直接运行）。
+
+用法：
+    python notify_job.py --self-test                      # 零配置自测：假 SMTP + 本地子命令
+    python notify_job.py --once -- python backup.py       # 只跑一次并把结果发邮件
+    python notify_job.py --every 3600 -- python backup.py # 每小时执行一次
+
+必须先改的配置项（用环境变量注入，不要把密码写进代码）：
+    SMTP_HOST   邮件服务器，如 smtp.qq.com
+    SMTP_PORT   端口，SSL 通常 465（默认 465）
+    SMTP_USER   发件账号
+    SMTP_PASS   授权码 / 应用专用密码
+    MAIL_TO     收件人，多个用英文逗号分隔
+没配置这些也能运行：任务照常执行并打印结果，只是邮件会跳过并给出提示。
+"""
+import argparse
+import os
+import smtplib
+import subprocess
+import sys
+import time
+from email.header import Header
+from email.mime.text import MIMEText
+from email.utils import formataddr
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+
+class Mailer:
+    """真实发信：SMTP over SSL。"""
+
+    def __init__(self, host, port, user, password, sender=None, timeout=20):
+        self.host, self.port = host, int(port)
+        self.user, self.password = user, password
+        self.sender = sender or user
+        self.timeout = timeout
+
+    def send(self, subject, body, to=None):
+        to = to or os.environ.get('MAIL_TO', '')
+        receivers = [x.strip() for x in to.split(',') if x.strip()]
+        if not receivers:
+            print('[邮件] 未配置 MAIL_TO，跳过发送')
+            return False
+        msg = MIMEText(body, 'plain', 'utf-8')
+        msg['Subject'] = Header(subject, 'utf-8')
+        msg['From'] = formataddr(('Job Notifier', self.sender))
+        msg['To'] = ','.join(receivers)
+        with smtplib.SMTP_SSL(self.host, self.port, timeout=self.timeout) as s:
+            s.login(self.user, self.password)
+            s.sendmail(self.sender, receivers, msg.as_string())
+        print('[邮件] 已发送给 %s' % ','.join(receivers))
+        return True
+
+
+class RecordingMailer(Mailer):
+    """自测替身：不发真邮件，只记录内容。"""
+
+    def __init__(self):
+        self.sent = []
+
+    def send(self, subject, body, to=None):
+        self.sent.append({'subject': subject, 'body': body, 'to': to or 'self-test@example.com'})
+        return True
+
+
+def mailer_from_env():
+    host = os.environ.get('SMTP_HOST', '').strip()
+    user = os.environ.get('SMTP_USER', '').strip()
+    password = os.environ.get('SMTP_PASS', '').strip()
+    if not (host and user and password):
+        return None
+    return Mailer(host, os.environ.get('SMTP_PORT', '465'), user, password)
+
+
+def run_job(cmd, timeout=600):
+    """执行子命令并返回结构化结果（供报告使用）。"""
+    start = time.time()
+    proc = subprocess.run(cmd, capture_output=True, text=True,
+                          encoding='utf-8', errors='replace', timeout=timeout)
+    return {'cmd': ' '.join(cmd), 'rc': proc.returncode,
+            'out': (proc.stdout or '')[-4000:], 'err': (proc.stderr or '')[-2000:],
+            'secs': round(time.time() - start, 2)}
+
+
+def format_report(name, job):
+    ok = job['rc'] == 0
+    subject = '[%s] %s（耗时 %.2fs，退出码 %d）' % ('成功' if ok else '失败', name, job['secs'], job['rc'])
+    body = ['任务：%s' % job['cmd'], '结果：%s' % ('成功' if ok else '失败'),
+            '耗时：%.2f 秒' % job['secs'], '退出码：%d' % job['rc'], '', '----- 标准输出 -----', job['out']]
+    if job['err']:
+        body += ['', '----- 标准错误 -----', job['err']]
+    return subject, '\n'.join(body)
+
+
+def selftest():
+    mailer = RecordingMailer()
+    good = run_job([sys.executable, '-c', 'print("backup ok")'])
+    assert good['rc'] == 0 and 'backup ok' in good['out'], good
+    subject, body = format_report('每日备份', good)
+    assert '成功' in subject and '退出码 0' in subject, subject
+    assert mailer.send(subject, body) is True
+    assert mailer.sent and mailer.sent[0]['subject'] == subject
+    bad = run_job([sys.executable, '-c', 'import sys; sys.stderr.write("boom"); sys.exit(3)'])
+    assert bad['rc'] == 3 and 'boom' in bad['err'], bad
+    assert '失败' in format_report('每日备份', bad)[0]
+    print('selftest OK：子进程执行 / 退出码捕获 / 报告生成 / 邮件发送(替身) 全部通过')
+
+
+def main():
+    ap = argparse.ArgumentParser(description='定时执行命令并邮件通知')
+    ap.add_argument('--every', type=int, default=0, help='循环间隔（秒）')
+    ap.add_argument('--once', action='store_true', help='只执行一次')
+    ap.add_argument('--name', default='定时任务', help='报告里的任务名')
+    ap.add_argument('--self-test', action='store_true', help='零配置自测')
+    ap.add_argument('cmd', nargs=argparse.REMAINDER, help='要执行的命令，如：python backup.py')
+    a = ap.parse_args()
+    if a.self_test:
+        selftest()
+        return
+    if not a.cmd:
+        ap.error('请提供要执行的命令，例如：python notify_job.py --once -- python backup.py')
+    mailer = mailer_from_env()
+    if mailer is None:
+        print('[提示] 未检测到 SMTP_HOST/SMTP_USER/SMTP_PASS，本次只执行任务不发邮件')
+    while True:
+        job = run_job(a.cmd)
+        print(format_report(a.name, job)[1])
+        if mailer is not None:
+            mailer.send(*format_report(a.name, job))
+        if not a.every or a.once:
+            break
+        time.sleep(a.every)
+
+
+if __name__ == '__main__':
+    main()</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：核心仅标准库；可选增强项已注明。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code># auto-tools 工程依赖清单
+# 本工程完全基于 Python 标准库（shutil / subprocess / smtplib / email / argparse），
+# 无需安装任何第三方包：要求 Python 3.8+ 即可直接运行。
+#
+# 若需要「更复杂的定时表达式」（如每周一 8:00），可选安装：
+# schedule&gt;=1.2.0
+# 若需要「HTML 邮件 + 模板渲染」，可选安装：
+# jinja2&gt;=3.1.0
+#
+# 安装可选依赖：pip install schedule jinja2</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">运行步骤、配置项清单与自测命令。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># auto-tools · 自动化开发工具集（可运行工程）
+
+两个独立的小工具，覆盖「批量文件整理」与「定时任务 + 邮件通知」两类最常见的自动化场景。
+
+## 目录结构
+```
+auto-tools/
+├── organize.py        # 按扩展名或月份批量归档文件（只移动，不删除）
+├── notify_job.py      # 定时执行任意命令并把结果发邮件
+├── requirements.txt   # 依赖清单（标准库即可，无需安装）
+└── README.md
+```
+
+## 运行环境
+- Python 3.8+，无需第三方依赖；Windows / macOS / Linux 均可。
+
+## 快速开始
+```bash
+# 1) 自测（不碰真实文件、不发真邮件，10 秒内跑完）
+python organize.py --self-test
+python notify_job.py --self-test
+
+# 2) 整理一个目录（先预演，确认后再真跑）
+python organize.py "D:/Downloads" --dry-run
+python organize.py "D:/Downloads"
+
+# 3) 每 1 小时跑一次备份脚本，并把结果发到你的邮箱
+python notify_job.py --every 3600 -- python backup.py
+```
+
+## 需先改的配置项
+| 配置项 | 位置 | 说明 |
+|---|---|---|
+| 目标目录 | 命令行第一个参数 | 例如 `D:/Downloads`，务必先 `--dry-run` 确认 |
+| 归档规则 | `organize.py` 顶部 `RULES` | 增删扩展名/分类名即可定制 |
+| SMTP_HOST / SMTP_PORT | 环境变量 | 如 `smtp.qq.com` / `465` |
+| SMTP_USER / SMTP_PASS | 环境变量 | 发件账号与**授权码**（不是登录密码） |
+| MAIL_TO | 环境变量 | 收件人，多个用英文逗号分隔 |
+
+Windows 下临时设置环境变量：
+```powershell
+$env:SMTP_HOST="smtp.qq.com"; $env:SMTP_USER="you@qq.com"; $env:SMTP_PASS="授权码"; $env:MAIL_TO="you@qq.com"
+python notify_job.py --once -- python backup.py
+```
+
+## 安全提示
+- 密码只放环境变量，不要写进 `notify_job.py`。
+- `organize.py` 只调用 `shutil.move`，同名文件自动加 `-1` 后缀，不会覆盖或删除数据。</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><p><strong>需先改的配置项（3 处）：</strong></p><ul><li><code>organize.py</code> 的 <code>RULES</code>：按你的目录习惯调整扩展名分类规则</li><li><code>notify_job.py</code> 的 <code>SMTP_HOST / SMTP_USER / SMTP_PASS</code>：默认走本地替身，填真实值才会发信</li><li>定时执行：Windows 用「任务计划程序」、Linux 用 crontab 调用 <code>python organize.py</code> 即可</li></ul></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#proj-auto-tools">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://docs.python.org/zh-cn/3/library/pathlib.html" target="_blank" rel="noopener">Python 官方文档 · pathlib（路径与文件操作）</a>
+<a href="https://docs.python.org/zh-cn/3/library/shutil.html" target="_blank" rel="noopener">Python 官方文档 · shutil（复制/移动与覆盖保护）</a>
+<a href="https://docs.python.org/zh-cn/3/library/smtplib.html" target="_blank" rel="noopener">Python 官方文档 · smtplib（邮件通知）</a>
+<a href="https://docs.python.org/zh-cn/3/library/subprocess.html" target="_blank" rel="noopener">Python 官方文档 · subprocess（外部命令与退出码）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -120,6 +484,7 @@ while True:
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/auto-tools.js"></script>
 </body>
 </html>

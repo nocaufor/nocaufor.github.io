@@ -9,7 +9,7 @@
   <meta name="description" content="Pillow 批量缩放、压缩质量与添加文字 / 图片水印，节省存储空间。" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)" />
@@ -54,6 +54,54 @@
           <span class="tag">来源：GitHub 参考</span>
         </div>
       </div>
+<section class="code-section"><h2>在线演示</h2>
+<div class="demo-panel" id="ib-demo">
+  <div class="demo-grid">
+    <div class="demo-field" style="grid-column:1/-1">
+      <label for="ib-files">选择图片（可多选，全部在浏览器本地处理，不上传）</label>
+      <input id="ib-files" class="demo-input" type="file" accept="image/*" multiple />
+    </div>
+    <div class="demo-field">
+      <label for="ib-w">目标宽度（0 = 保持原宽）</label>
+      <input id="ib-w" class="demo-input" type="number" min="0" step="10" value="800" />
+    </div>
+    <div class="demo-field">
+      <label for="ib-h">目标高度（0 = 按比例自适应）</label>
+      <input id="ib-h" class="demo-input" type="number" min="0" step="10" value="0" />
+    </div>
+    <div class="demo-field">
+      <label for="ib-fmt">输出格式</label>
+      <select id="ib-fmt" class="demo-input">
+        <option value="keep">保持原格式</option>
+        <option value="image/webp">WebP（体积更小）</option>
+        <option value="image/jpeg">JPEG</option>
+        <option value="image/png">PNG</option>
+      </select>
+    </div>
+    <div class="demo-field">
+      <label for="ib-q">输出质量（JPEG / WebP 生效）</label>
+      <input id="ib-q" class="demo-input" type="range" min="40" max="100" step="5" value="82" />
+    </div>
+    <div class="demo-field" style="align-self:end">
+      <label><input id="ib-gray" type="checkbox" /> 转灰度</label>
+    </div>
+  </div>
+  <div class="demo-actions">
+    <button type="button" class="btn" id="ib-run">批量处理</button>
+    <button type="button" class="btn btn-outline" id="ib-sample">生成示例图片</button>
+    <button type="button" class="btn btn-outline" id="ib-clear">清空</button>
+  </div>
+  <div class="demo-kpis" style="margin-top:16px">
+    <div class="demo-kpi"><b id="ib-k-count">0</b><span>处理张数</span></div>
+    <div class="demo-kpi"><b id="ib-k-in">0 B</b><span>输入总大小</span></div>
+    <div class="demo-kpi"><b id="ib-k-out">0 B</b><span>输出总大小</span></div>
+    <div class="demo-kpi"><b id="ib-k-save">0%</b><span>体积变化</span></div>
+  </div>
+  <div class="demo-output" id="ib-out"></div>
+  <div id="ib-tblwrap" style="display:none;margin-top:14px"></div>
+  <p class="demo-status" id="ib-status">等待操作：点“生成示例图片”可直接体验，或选择你本地的图片再点“批量处理”。</p>
+</div>
+</section>
 <section class="code-section"><h2>项目简介</h2><div class="code-card"><p>产品图、公众号配图、摄影原片，批量处理是刚需。本页用 Pillow 实现<strong>批量压缩与水印</strong>：统一缩放最大边、按质量压缩 JPEG / WebP、叠加文字水印或 Logo，最后统计节省空间比例，适合接入图片上传流水线。</p></div></section><section class="code-section"><h2>代码示例：批量压缩与水印</h2><div class="code-block"><span class="code-lang-badge">py</span><pre><code>from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -84,7 +132,315 @@ def batch(root: Path, out_root: Path) -&gt; None:
     saved = 0
     for p in root.glob("*.{jpg,jpeg,png,webp}"):
         saved += process_one(p, out_root)
-    print(f"saved {saved / 1024 / 1024:.1f} MB")</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li><code>pip install Pillow</code> 后运行 <code>python image_batch.py 输入目录 输出目录</code>。</li><li>调整 <code>MAX_EDGE</code> / <code>QUALITY</code> 权衡体积与画质；透明 PNG 建议输出 WebP 保留 alpha。</li><li>水印文字可替换为 Logo 图片：<code>img.paste(logo, (px, py), logo)</code>。</li></ol></div></section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>GitHub 关键词：<code>pillow-batch-compress</code>、<code>image-watermark-cli</code>（链接可替换为实际仓库地址）。</p></div></section>
+    print(f"saved {saved / 1024 / 1024:.1f} MB")</code></pre></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li><code>pip install Pillow</code> 后运行 <code>python image_batch.py 输入目录 输出目录</code>。</li><li>调整 <code>MAX_EDGE</code> / <code>QUALITY</code> 权衡体积与画质；透明 PNG 建议输出 WebP 保留 alpha。</li><li>水印文字也可改用 Logo 图片：<code>img.paste(logo, (px, py), logo)</code>。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
+<div class="deploy-project" id="deploy-image-batch">
+  <div class="deploy-summary"><span class="deploy-badge warn">需装 Pillow</span><span class="deploy-badge info">Python 3.8+</span></div>
+  <div class="code-card"><p>完整工程（非片段）：<code>batch_image.py</code> 打通「收集 → 计算目标尺寸 → 转换 → 体积统计」全流程，并带 <code>--dry-run</code> 预演与 <code>--selftest</code> 自检，不是只贴一段 <code>resize()</code> 片段。</p></div>
+  <div class="deploy-tree">image-batch/<br>&nbsp;&nbsp;├── batch_image.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 收集 / 缩放 / 灰度 / 转格式 / 统计<br>&nbsp;&nbsp;├── test_batch_image.py&nbsp;# 最小用例回归<br>&nbsp;&nbsp;├── requirements.txt&nbsp;&nbsp;&nbsp;&nbsp;# Pillow<br>&nbsp;&nbsp;└── README.md</div>
+  <div class="deploy-file">
+    <h3>batch_image.py</h3>
+    <p class="file-note">核心实现：collect / plan_size / process / selftest，含 --dry-run。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="batch_image.py"><code>#!/usr/bin/env python3
+"""批量图片处理：缩放 / 灰度 / 格式转换 / 体积统计（依赖 Pillow）
+
+用法：
+    python batch_image.py --src ./in --out ./out --width 800 --format webp --quality 82
+    python batch_image.py --src ./in --out ./out --width 800 --gray --dry-run
+    python batch_image.py --src ./in --out ./out --json
+    python batch_image.py --selftest
+"""
+import argparse
+import json
+import sys
+from pathlib import Path
+
+try:
+    from PIL import Image
+except ImportError:                                   # 给出可执行的修复指引，而不是抛栈
+    print("缺少依赖 Pillow：请先执行  python -m pip install -r requirements.txt", file=sys.stderr)
+    raise SystemExit(3)
+
+SUFFIX = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
+FMT_EXT = {"jpeg": ".jpg", "jpg": ".jpg", "png": ".png", "webp": ".webp"}
+
+
+def collect(src, recursive=False):
+    p = Path(src)
+    if not p.exists():
+        raise SystemExit("输入路径不存在：%s" % p)
+    if p.is_file():
+        return [p]
+    it = p.rglob("*") if recursive else p.glob("*")
+    return sorted(f for f in it if f.is_file() and f.suffix.lower() in SUFFIX)
+
+
+def plan_size(w, h, tw, th):
+    """0 表示该维度自适应，保持宽高比；两者都为 0 则尺寸不变。"""
+    if not tw and not th:
+        return w, h
+    if tw and not th:
+        return tw, max(1, round(h * tw / w))
+    if not tw and th:
+        return max(1, round(w * th / h)), th
+    return tw, th
+
+
+def process(path, out_dir, width=0, height=0, gray=False, fmt=None, quality=82, dry=False):
+    with Image.open(path) as im:
+        im.load()
+        src_fmt = (im.format or "").lower()
+        src_mode = im.mode
+        tw, th = plan_size(im.width, im.height, width, height)
+        out_fmt = (fmt or src_fmt or "png").lower()
+        if out_fmt == "jpg":
+            out_fmt = "jpeg"
+        ext = FMT_EXT.get(out_fmt, ".png")
+        target = Path(out_dir) / (path.stem + ext)
+
+        rec = {
+            "file": str(path), "out": str(target), "format": out_fmt,
+            "src_size": [im.width, im.height], "out_size": [tw, th],
+            "src_bytes": path.stat().st_size, "gray": bool(gray), "dry_run": bool(dry),
+        }
+        if dry:
+            return rec
+
+        work = im.convert("L") if gray else im.convert("RGB") if out_fmt == "jpeg" else im
+        if (tw, th) != (im.width, im.height):
+            work = work.resize((tw, th), Image.LANCZOS)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        save_kw = {}
+        if out_fmt in ("jpeg", "webp"):
+            save_kw["quality"] = quality
+        if out_fmt == "webp":
+            save_kw["method"] = 6
+        work.save(target, out_fmt.upper() if out_fmt != "jpeg" else "JPEG", **save_kw)
+        rec["out_bytes"] = target.stat().st_size
+        rec["saved_ratio"] = round(1 - rec["out_bytes"] / rec["src_bytes"], 4) if rec["src_bytes"] else 0.0
+        rec["src_mode"] = src_mode
+        return rec
+
+
+def selftest():
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        src = td / "in"; out = td / "out"; src.mkdir()
+        Image.new("RGB", (1200, 600), (30, 90, 220)).save(src / "a.png")
+        Image.new("RGB", (640, 480), (220, 60, 60)).save(src / "b.jpg", quality=95)
+
+        assert plan_size(1200, 600, 800, 0) == (800, 400)          # 等比缩放
+        assert plan_size(1200, 600, 0, 0) == (1200, 600)           # 不缩放
+
+        r = process(src / "a.png", out, width=800, quality=82)
+        assert r["out_size"] == [800, 400], r
+        with Image.open(r["out"]) as im:
+            assert im.size == (800, 400) and im.mode == "RGB"
+
+        r2 = process(src / "b.jpg", out, width=320, gray=True, fmt="webp", quality=60)
+        with Image.open(r2["out"]) as im:
+            assert im.size == (320, 240), im.size
+            assert im.format == "WEBP", im.format
+            px = im.convert("RGB").getpixel((10, 10))
+            assert px[0] == px[1] == px[2], px          # WebP 走 lossy 时会落成 RGB，但像素须为灰
+        assert r2["out_bytes"] &gt; 0
+
+        r2b = process(src / "b.jpg", out, width=320, gray=True, fmt="png")
+        with Image.open(r2b["out"]) as im:
+            assert im.mode == "L", im.mode                # PNG 支持 8 位灰度，应保留 L 模式
+
+        r3 = process(src / "a.png", td / "out_dry", width=100, dry=True)
+        assert r3["dry_run"] and not Path(r3["out"]).exists()
+
+        assert len(collect(src)) == 2
+        print("selftest OK：等比缩放 / 灰度 / 格式转换 / dry-run 不改盘 用例通过")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="批量图片处理（缩放 / 灰度 / 格式转换）")
+    ap.add_argument("--src", required=False, help="源文件或目录")
+    ap.add_argument("--out", help="输出目录（默认 ./out）")
+    ap.add_argument("--width", type=int, default=0, help="目标宽度，0 = 自适应")
+    ap.add_argument("--height", type=int, default=0, help="目标高度，0 = 自适应")
+    ap.add_argument("--gray", action="store_true", help="转灰度")
+    ap.add_argument("--format", choices=["jpeg", "jpg", "png", "webp"], help="输出格式，默认保持原格式")
+    ap.add_argument("--quality", type=int, default=82, help="JPEG/WebP 质量，默认 82")
+    ap.add_argument("--recursive", action="store_true", help="递归处理子目录")
+    ap.add_argument("--dry-run", action="store_true", help="只输出处理计划，不写盘")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args(argv)
+
+    if a.selftest:
+        selftest()
+        return 0
+    if not a.src:
+        ap.error("请给出 --src")
+
+    files = collect(a.src, a.recursive)
+    if not files:
+        raise SystemExit("没有找到图片文件（支持 %s）。" % ", ".join(sorted(SUFFIX)))
+
+    results = [process(f, a.out or "./out", a.width, a.height, a.gray, a.format, a.quality, a.dry_run) for f in files]
+    if a.json:
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+        return 0
+
+    total_in = sum(r["src_bytes"] for r in results)
+    total_out = sum(r.get("out_bytes", 0) for r in results)
+    print("%s %d 张图片 → %s" % ("计划处理" if a.dry_run else "已处理", len(results), a.out or "./out"))
+    for r in results:
+        line = "  %s  %dx%d → %dx%d  %s" % (Path(r["file"]).name, r["src_size"][0], r["src_size"][1],
+                                            r["out_size"][0], r["out_size"][1], r["format"])
+        if not a.dry_run:
+            line += "  %d → %d 字节（省 %.1f%%）" % (r["src_bytes"], r["out_bytes"], r["saved_ratio"] * 100)
+        print(line)
+    if not a.dry_run and total_in:
+        print("合计 %d → %d 字节，整体变化 %.1f%%" % (total_in, total_out, (total_out - total_in) / total_in * 100))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>test_batch_image.py</h3>
+    <p class="file-note">unittest 回归：等比缩放、灰度与 WebP、dry-run 不落盘、质量与体积关系。</p>
+    <div class="code-block"><span class="code-lang-badge">python</span><pre data-file="test_batch_image.py"><code>"""batch_image.py 最小用例回归（标准库 unittest + Pillow）"""
+import tempfile
+import unittest
+from pathlib import Path
+
+from PIL import Image
+
+from batch_image import collect, plan_size, process
+
+
+class TestBatchImage(unittest.TestCase):
+    def setUp(self):
+        self.td = tempfile.TemporaryDirectory()
+        self.src = Path(self.td.name) / "in"
+        self.out = Path(self.td.name) / "out"
+        self.src.mkdir()
+        Image.new("RGB", (1000, 500), (10, 120, 200)).save(self.src / "wide.png")
+        Image.new("RGB", (300, 300), (200, 40, 40)).save(self.src / "square.jpg", quality=95)
+
+    def tearDown(self):
+        self.td.cleanup()
+
+    def test_plan_size_keeps_ratio(self):
+        self.assertEqual(plan_size(1000, 500, 400, 0), (400, 200))
+        self.assertEqual(plan_size(1000, 500, 0, 250), (500, 250))
+        self.assertEqual(plan_size(1000, 500, 0, 0), (1000, 500))
+
+    def test_resize_writes_target_size(self):
+        r = process(self.src / "wide.png", self.out, width=400)
+        with Image.open(r["out"]) as im:
+            self.assertEqual(im.size, (400, 200))
+
+    def test_gray_and_webp(self):
+        r = process(self.src / "square.jpg", self.out, width=150, gray=True, fmt="webp", quality=60)
+        with Image.open(r["out"]) as im:
+            self.assertEqual(im.format, "WEBP")
+            self.assertEqual(im.size, (150, 150))
+            px = im.convert("RGB").getpixel((5, 5))
+            self.assertEqual(px[0], px[1])                # WebP lossy 落成 RGB，但像素应为灰
+            self.assertEqual(px[1], px[2])
+
+    def test_gray_png_keeps_l_mode(self):
+        r = process(self.src / "square.jpg", self.out, width=150, gray=True, fmt="png")
+        with Image.open(r["out"]) as im:
+            self.assertEqual(im.mode, "L")
+
+    def test_dry_run_does_not_write(self):
+        r = process(self.src / "wide.png", self.out, width=100, dry=True)
+        self.assertTrue(r["dry_run"])
+        self.assertFalse(Path(r["out"]).exists())
+
+    def test_collect_filters_images(self):
+        (self.src / "note.txt").write_text("x", encoding="utf-8")
+        names = sorted(p.name for p in collect(self.src))
+        self.assertEqual(names, ["square.jpg", "wide.png"])
+
+    def test_quality_affects_size(self):
+        lo = process(self.src / "wide.png", self.out / "lo", fmt="jpeg", quality=40)
+        hi = process(self.src / "wide.png", self.out / "hi", fmt="jpeg", quality=95)
+        self.assertLess(lo["out_bytes"], hi["out_bytes"])
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>requirements.txt</h3>
+    <p class="file-note">依赖清单：Pillow>=10.0。</p>
+    <div class="code-block"><span class="code-lang-badge">text</span><pre data-file="requirements.txt"><code>Pillow&gt;=10.0
+</code></pre></div>
+  </div>
+  <div class="deploy-file">
+    <h3>README.md</h3>
+    <p class="file-note">尺寸规则表、格式与质量说明、安全约定。</p>
+    <div class="code-block"><span class="code-lang-badge">markdown</span><pre data-file="README.md"><code># 批量图片处理（image-batch）
+
+把一个目录里的图片一次性缩放 / 转灰度 / 换格式，并统计体积变化。基于 Pillow，逻辑与网页上的在线演示一致。
+
+## 文件说明
+
+| 文件 | 作用 |
+|---|---|
+| `batch_image.py` | 收集 / 计算目标尺寸 / 转换 / 统计 + CLI 入口 |
+| `test_batch_image.py` | unittest 最小用例回归 |
+| `requirements.txt` | 依赖清单（Pillow） |
+
+## 安装与运行
+
+```bash
+python -m pip install -r requirements.txt
+python batch_image.py --src ./in --out ./out --width 800 --format webp --quality 82
+python batch_image.py --src ./in --out ./out --width 800 --gray --quality 80
+python batch_image.py --src ./in --out ./out --width 1200 --dry-run     # 只看计划，不写盘
+python batch_image.py --src ./in --out ./out --json
+python batch_image.py --selftest
+python test_batch_image.py
+```
+
+## 尺寸规则
+
+| `--width` | `--height` | 结果 |
+|---|---|---|
+| 800 | 0 | 宽固定 800，高按原比例自适应 |
+| 0 | 400 | 高固定 400，宽按原比例自适应 |
+| 800 | 600 | 强制 800×600（可能变形） |
+| 0 | 0 | 尺寸不变，仅换格式 / 灰度 |
+
+## 输出格式与体积
+
+- `--format` 不传时保持原格式（`jpg` 会归一为 `jpeg` 保存）。
+- `--quality` 只对 JPEG / WebP 生效，默认 82；WebP 额外使用 `method=6` 以取得更小体积。
+- 灰度会输出 `L` 模式（8 位单通道），体积通常下降明显。
+- 每张图都会打印「原始字节 → 输出字节（省 x%）」，末尾给出整体变化率。
+
+## 安全约定
+
+- `--dry-run` 只输出计划、不写任何文件；
+- 输出目录不存在时自动创建，文件名沿用原文件名（仅换扩展名），**不会覆盖源目录中的文件**（除非 `--out` 指向源目录本身）。
+</code></pre></div>
+  </div>
+  <div class="deploy-steps code-card"><h3>运行标注</h3><ol><li><b>可直接运行</b>（需先装依赖）：<code>python -m pip install -r requirements.txt</code>，然后 <code>python batch_image.py --src ./in --out ./out --width 800 --format webp</code>。</li><li><b>需先改哪些配置项</b>：无需改代码。<code>--src</code>（源目录/文件）与 <code>--out</code>（输出目录）是必填语义；尺寸用 <code>--width</code> / <code>--height</code>，格式用 <code>--format</code>，质量用 <code>--quality</code>。</li><li>首次跑建议加 <code>--dry-run</code> 预览计划，确认输出路径无误后再正式执行。</li><li>本页在线演示与工程区脚本处理同一类任务（缩放 / 灰度 / 格式转换），但演示跑在浏览器 Canvas、脚本跑在 Pillow，二者参数语义一致。</li><li>自测：<code>python batch_image.py --selftest</code>（或 <code>python test_batch_image.py</code>），6 个用例应全部通过。</li></ol></div>
+  <div class="copy-project-bar">
+    <button type="button" class="btn" data-copy-project="#deploy-image-batch">一键复制整份工程</button>
+    <span class="copy-project-note">复制结果为 <code># ===== 文件名 =====</code> 分隔的多文件文本，按文件名分别保存即可；也可逐块用右上角“复制代码”单独取用。</span>
+  </div>
+</div>
+</section><section class="code-section"><h2>来源参考</h2><div class="code-card"><p>实现与部署所依据的官方文档 / 仓库（均可直接访问）：</p>
+<div class="src-links">
+<a href="https://pillow.readthedocs.io/en/stable/" target="_blank" rel="noopener">Pillow 官方文档（本工程使用的图像库）</a>
+<a href="https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html" target="_blank" rel="noopener">Pillow Handbook · 各格式的保存参数（quality / method）</a>
+<a href="https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.resize" target="_blank" rel="noopener">Pillow API · Image.resize（LANCZOS 重采样）</a>
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob" target="_blank" rel="noopener">MDN · Canvas toBlob（页面演示的导出实现）</a>
+</div></div></section>
       <div class="fun-footer">
         <a href="index.html" class="btn btn-outline" data-i18n="fun_back">← 返回代码开发合集</a>
       </div>
@@ -107,6 +463,7 @@ def batch(root: Path, out_root: Path) -&gt; None:
 
   <script src="../assets/js/i18n.js"></script>
   <script src="js/fun-common.js"></script>
+  <script src="js/code-copy.js"></script>
   <script src="js/image-batch.js"></script>
 </body>
 </html>

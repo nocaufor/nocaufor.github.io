@@ -52,14 +52,14 @@
         .ms-panel{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
         .ms-ctrl{display:flex;align-items:center;gap:8px}
         .ms-ctrl select,.ms-ctrl button{font-size:0.85rem}
-        .ms-board{display:grid;gap:1px;background:var(--color-border,#333);padding:2px;border-radius:8px;touch-action:pan-x pan-y;--n:9;--cell:38px;grid-template-columns:repeat(var(--n),var(--cell));width:max-content;max-width:none;margin:0 auto}
+        .ms-board{display:grid;gap:1px;background:var(--color-border);padding:2px;border-radius:8px;touch-action:pan-x pan-y;--n:9;--cell:38px;grid-template-columns:repeat(var(--n),var(--cell));width:max-content;max-width:none;margin:0 auto}
         .ms-board.wide{margin-right:auto;align-self:flex-start}
-        .ms-cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:600;cursor:pointer;user-select:none;border-radius:4px;background:var(--color-card,#1e1e24);color:var(--color-text,#e8e8ea);transition:background .1s}
-        .ms-cell:not(.open):hover{background:var(--color-accent,#7aa2f7)}
-        .ms-cell.open{background:var(--color-bg,#121216);cursor:default}
+        .ms-cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:600;cursor:pointer;user-select:none;border-radius:4px;background:var(--color-card);color:var(--color-text);transition:background .1s}
+        .ms-cell:not(.open):hover{background:var(--color-accent)}
+        .ms-cell.open{background:var(--color-bg);cursor:default}
         .ms-cell.mine-hit{background:#e06c75;color:#fff}
         .ms-cell .flag{color:#e5c07b;font-size:1rem}
-        .ms-cell.c1{color:#7aa2f7}.ms-cell.c2{color:#98c379}.ms-cell.c3{color:#e06c75}.ms-cell.c4{color:#c678dd}.ms-cell.c5{color:#e5c07b}.ms-cell.c6{color:#56b6c2}.ms-cell.c7{color:#d19a66}.ms-cell.c8{color:#abb2bf}
+        .ms-cell.c1{color:var(--info,#7aa2f7)}.ms-cell.c2{color:var(--ok,#98c379)}.ms-cell.c3{color:var(--danger,#e06c75)}.ms-cell.c4{color:#c678dd}.ms-cell.c5{color:#e5c07b}.ms-cell.c6{color:#56b6c2}.ms-cell.c7{color:#d19a66}.ms-cell.c8{color:#abb2bf}
         .ms-status{font-size:0.9rem;min-height:1.2em;text-align:center}
         .ms-help{font-size:0.8rem;opacity:.75;text-align:center;line-height:1.6}
       </style>

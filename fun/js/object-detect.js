@@ -18,10 +18,10 @@
   function loadModel() {
     if (modelReady) return Promise.resolve();
     if (modelPromise) return modelPromise;
-    setStatus("加载 COCO-SSD 模型（首次约 4~6MB）…");
-    modelPromise = window.cocoSsd.load()
+    setStatus("加载 COCO-SSD 本地模型（首次约 4~6MB）…");
+    modelPromise = window.cocoSsd.load({ base: "l1", modelUrl: "../assets/models/coco-ssd/model.json" })
       .then(function (m) { modelReady = true; setStatus("模型已就绪，可开始检测。"); return m; })
-      .catch(function (e) { console.error(e); setStatus("模型加载失败：请检查网络后刷新重试（需访问 cdn.jsdelivr.net）。", true); throw e; });
+      .catch(function (e) { console.error(e); setStatus("模型加载失败：请检查本地模型文件后刷新重试。", true); throw e; });
     return modelPromise;
   }
   function drawImageScaled(img) {
@@ -34,7 +34,7 @@
     return { w: w, h: h };
   }
   async function detect(img) {
-    if (!readyLib()) { setStatus("TensorFlow.js 库未加载（CDN 不可用或离线）。", true); return; }
+    if (!readyLib()) { setStatus("TensorFlow.js 库未加载（本地库文件缺失）。", true); return; }
     var size = drawImageScaled(img);
     try {
       var model = await loadModel();
