@@ -55,6 +55,30 @@
         </div>
       </div>
       
+      <section class="code-section"><h2>在线演示：登录与支付安全链路</h2>
+<div class="demo-panel" id="ml-demo">
+  <div class="demo-actions">
+    <button type="button" class="btn" id="ml-login">① 模拟登录（wx.login → code2session → 签发 token）</button>
+    <button type="button" class="btn btn-outline" id="ml-verify">② 校验 token</button>
+    <button type="button" class="btn btn-outline" id="ml-tamper">③ 篡改 token（应被拒）</button>
+    <button type="button" class="btn btn-outline" id="ml-expire">④ 模拟过期（应被拒）</button>
+  </div>
+  <div class="demo-kpis" style="margin-top:16px">
+    <div class="demo-kpi"><b id="ml-openid">-</b><span>openid</span></div>
+    <div class="demo-kpi"><b id="ml-token-status">未登录</b><span>token 状态</span></div>
+  </div>
+  <div style="margin-top:16px">
+    <p class="demo-status" style="margin:0 0 8px">支付签名演示：模拟后端统一下单签名，再伪造回调验证「验签 + 金额核对」两道防线。演示用 SHA-256（浏览器 crypto.subtle），规则与微信支付 v2 的 MD5 签名一致。</p>
+    <div class="demo-actions" style="margin-top:0">
+      <button type="button" class="btn" id="ml-sign">⑤ 统一下单签名</button>
+      <button type="button" class="btn btn-outline" id="ml-forge">⑥ 伪造回调（应被拦截）</button>
+      <button type="button" class="btn btn-outline" id="ml-forge-amt">⑦ 伪造回调·改金额（应被拦截）</button>
+    </div>
+  </div>
+  <div class="demo-log" id="ml-log" style="margin-top:16px" aria-live="polite"></div>
+  <p class="demo-status" id="ml-status">等待操作：按 ① → ②/③/④ 验证登录态，再 ⑤ → ⑥/⑦ 验证支付安全。</p>
+</div>
+</section>
       
       <section class="code-section"><h2>代码示例：登录封装（小程序端）</h2>
 <div class="code-block"><span class="code-lang-badge">js</span><pre><code>// utils/auth.js —— 微信小程序登录态封装

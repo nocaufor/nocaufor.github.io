@@ -55,6 +55,21 @@
         </div>
       </div>
       
+      <section class="code-section"><h2>在线演示：Canvas 2D 海报绘制</h2>
+<div class="demo-panel" id="mp-demo">
+  <div class="demo-actions">
+    <button type="button" class="btn" id="mp-draw">生成海报（渐变背景 / 圆形头像 / 昵称 / 二维码）</button>
+    <button type="button" class="btn btn-outline" id="mp-download" disabled>下载 PNG</button>
+  </div>
+  <div class="demo-preview" style="margin-top:16px">
+    <figure style="width:min(300px,100%);margin:0">
+      <canvas id="mp-canvas" width="600" height="900" style="width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:var(--bg-soft)" aria-label="海报预览画布"></canvas>
+      <figcaption>离屏画布 600×900（演示），真机按 DPR 缩放导出</figcaption>
+    </figure>
+  </div>
+  <p class="demo-status" id="mp-status">等待操作：点击「生成海报」在画布上绘制，再点「下载 PNG」导出。</p>
+</div>
+</section>
       
       <section class="code-section"><h2>代码示例：离屏海报绘制</h2>
 <div class="code-block"><span class="code-lang-badge">js</span><pre><code>// utils/poster.js —— Canvas 2D 分享海报生成

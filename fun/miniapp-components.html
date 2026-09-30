@@ -55,6 +55,29 @@
         </div>
       </div>
       
+      <section class="code-section"><h2>在线演示：评分组件 + 防抖按钮</h2>
+<div class="demo-panel" id="mc-demo">
+  <div class="demo-kpis">
+    <div class="demo-kpi"><b id="mc-score">3</b><span>当前评分</span></div>
+    <div class="demo-kpi"><b id="mc-percent">60%</b><span>评分百分比</span></div>
+    <div class="demo-kpi"><b id="mc-tapped">0</b><span>点击次数</span></div>
+    <div class="demo-kpi"><b id="mc-fired">0</b><span>实际触发</span></div>
+  </div>
+  <div style="margin-top:16px">
+    <p class="demo-status" style="margin:0 0 8px">评分组件：点击星星打分，点击当前分值可清零（toggle）。</p>
+    <div id="mc-stars" role="radiogroup" aria-label="评分演示"></div>
+  </div>
+  <div style="margin-top:16px">
+    <p class="demo-status" style="margin:0 0 8px">防抖按钮（窗口 800ms，leading + trailing）：狂点按钮，观察「点击次数」与「实际触发」的区别。</p>
+    <div class="demo-actions" style="margin-top:0">
+      <button type="button" class="btn" id="mc-deb-btn">提交（狂点试试）</button>
+      <button type="button" class="btn btn-outline" id="mc-reset">重置统计</button>
+    </div>
+  </div>
+  <div class="demo-log" id="mc-log" style="margin-top:16px" aria-live="polite"></div>
+  <p class="demo-status" id="mc-status">等待操作：先点星星评分，再狂点防抖按钮。</p>
+</div>
+</section>
       
       <section class="code-section"><h2>代码示例：评分组件</h2>
 <div class="code-block"><span class="code-lang-badge">js</span><pre><code>// components/rating/rating.js —— 可复用评分组件
