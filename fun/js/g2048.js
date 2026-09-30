@@ -51,15 +51,21 @@
 
   function render() {
     boardEl.innerHTML = "";
+    /* 按棋盘实际可用宽（content-box）像素精确布局，避免绝对定位
+       百分比相对 padding-box 计算导致第 4 列右溢被裁（移动端 375px 实测右溢 28px） */
+    var pad = 10;      /* 与 .g-board padding 一致 */
+    var gap = 10;      /* 相邻格子间距 */
+    var avail = boardEl.clientWidth - pad * 2;
+    var size = (avail - gap * (SIZE - 1)) / SIZE;
     for (var r = 0; r < SIZE; r++) {
       for (var c = 0; c < SIZE; c++) {
         var val = grid[r][c];
         var div = document.createElement("div");
         div.className = "g-cell" + (val ? " t" + val : "");
-        div.style.left = "calc(" + (c * (100 / 4)) + "% + " + (c * 10 + 10) + "px)";
-        div.style.top = "calc(" + (r * (100 / 4)) + "% + " + (r * 10 + 10) + "px)";
-        div.style.width = "calc((100% - 50px)/4)";
-        div.style.height = "calc((100% - 50px)/4)";
+        div.style.left = (pad + c * (size + gap)) + "px";
+        div.style.top = (pad + r * (size + gap)) + "px";
+        div.style.width = size + "px";
+        div.style.height = size + "px";
         if (val) div.textContent = val;
         boardEl.appendChild(div);
       }

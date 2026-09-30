@@ -10,6 +10,17 @@
   var score = 0, shots = 0;
   var mouse = { x: -100, y: -100 };
   var aimActive = false;
+  var crosshair = document.getElementById("laser-crosshair");
+  var HALF_CROSS = 17; // 34px 半径
+  if (crosshair) crosshair.style.display = "none";
+  function placeCrosshair(x, y) {
+    if (!crosshair) return;
+    x = Math.max(HALF_CROSS, Math.min(W - HALF_CROSS, x));
+    y = Math.max(HALF_CROSS, Math.min(H - HALF_CROSS, y));
+    crosshair.style.left = x + "px";
+    crosshair.style.top = y + "px";
+    if (crosshair.style.display === "none") crosshair.style.display = "";
+  }
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -116,10 +127,19 @@
     mouse.x = e.clientX - rect.left;
     mouse.y = e.clientY - rect.top;
     aimActive = true;
+    placeCrosshair(mouse.x, mouse.y);
   });
   canvas.addEventListener("mouseleave", function () { aimActive = false; });
   canvas.addEventListener("click", fire);
-  canvas.addEventListener("pointerdown", function (e) { if (e.pointerType === "touch") fire(); });
+  canvas.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "touch") {
+      var rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+      placeCrosshair(mouse.x, mouse.y);
+      fire();
+    }
+  });
 
   resize();
   spawnMosq(true);

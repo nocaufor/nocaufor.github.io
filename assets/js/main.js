@@ -235,8 +235,9 @@
     document.body.appendChild(glow);
     document.body.classList.add("cursor-on");
 
-    var mx = 0, my = 0, cx = 0, cy = 0;
+    var mx = window.innerWidth / 2, my = window.innerHeight / 2, cx = mx, cy = my;
     var hoverable = "a, button, .filter-btn, .skill-tag, .tag, .theme-toggle, .project-link, .back-to-top, input, textarea, .contact-method";
+    glow.style.transform = "translate3d(" + mx + "px, " + my + "px, 0)";
 
     var raf = null;
     function loop() {
