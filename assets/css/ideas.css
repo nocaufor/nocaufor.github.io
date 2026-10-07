@@ -570,3 +570,16 @@ html[data-theme="light"] .idea-panel-body pre { background: #f2f4f6; }
   .idea-zone-btn { transition: none; }
   .idea-card.filtered-in { animation: none; }
 }
+
+/* =========================================================
+   详情弹窗 fade+scale 缓动（统一 0.24s cubic-bezier，覆盖旧 panel-fade/panel-rise）
+   ========================================================= */
+.idea-panel-overlay { animation: panel-fade 0.24s var(--ease) both; }
+.idea-panel { animation: idea-pop 0.24s var(--ease) both; }
+@keyframes idea-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .idea-panel-overlay, .idea-panel { animation: none; }
+}

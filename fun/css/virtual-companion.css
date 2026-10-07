@@ -179,3 +179,20 @@
   .vc-panel { position: static; max-height: none; }
   .vc-chat { min-height: 480px; max-height: 62vh; }
 }
+
+/* ---------- 快捷按钮玻璃悬浮（与全站统一） ---------- */
+.vc-quick-btn {
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  background: color-mix(in srgb, var(--bg-card) 72%, transparent);
+  transition: transform var(--transition), box-shadow var(--transition),
+              background var(--transition), border-color var(--transition),
+              color var(--transition);
+}
+.vc-quick-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--btn-hover-shadow, 0 8px 20px rgba(0, 0, 0, 0.18));
+}
+@media (prefers-reduced-motion: reduce) {
+  .vc-quick-btn { transform: none !important; box-shadow: none; transition: none; }
+}

@@ -1989,3 +1989,76 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
   .lb-panel, .lb-panel-wide { padding: 20px; }
   .lb-grid { grid-template-columns: 1fr; }
 }
+
+/* =========================================================
+   全站按钮透明悬浮 + 弹窗缓动动画（统一动效层）
+   原则：只动 transform / box-shadow / background，不改变布局与点击区域
+   ========================================================= */
+:root, [data-theme="dark"] {
+  --btn-hover-shadow: 0 8px 22px rgba(0, 0, 0, 0.38), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+[data-theme="light"] {
+  --btn-hover-shadow: 0 8px 22px rgba(20, 24, 30, 0.1), 0 2px 8px rgba(20, 24, 30, 0.06);
+}
+
+/* ---------- 按钮玻璃悬浮（半透明毛玻璃 + hover 上浮柔和阴影） ---------- */
+.btn, .btn-outline, .btn-primary, .btn-lg, .filter-btn, .vote-btn,
+.btn-ghost, .icon-btn, .btn-add {
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  background: color-mix(in srgb, var(--bg-card) 74%, transparent);
+  transition: transform var(--transition), box-shadow var(--transition),
+              background var(--transition), border-color var(--transition),
+              color var(--transition), backdrop-filter var(--transition);
+}
+.btn-primary {
+  background: color-mix(in srgb, var(--text) 84%, transparent);
+}
+.btn:hover, .btn-outline:hover, .btn-primary:hover, .btn-lg:hover,
+.filter-btn:hover, .vote-btn:hover, .btn-ghost:hover, .icon-btn:hover, .btn-add:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--btn-hover-shadow);
+}
+
+/* ---------- 截图灯箱 fade+scale 缓动（:target 纯 CSS 灯箱） ---------- */
+.shot-lightbox {
+  display: flex;
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.24s var(--ease), transform 0.24s var(--ease),
+              visibility 0s linear 0.24s;
+  pointer-events: none;
+}
+.shot-lightbox:target {
+  visibility: visible;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.24s var(--ease), transform 0.24s var(--ease);
+  pointer-events: auto;
+}
+.lb-panel {
+  transform: scale(0.97);
+  transition: transform 0.24s var(--ease);
+}
+.shot-lightbox:target .lb-panel {
+  transform: scale(1);
+}
+
+/* ---------- 无障碍：减弱动效降级 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .shot-lightbox, .shot-lightbox:target {
+    transition: none;
+    transform: none;
+  }
+  .lb-panel, .shot-lightbox:target .lb-panel {
+    transform: none;
+    transition: none;
+  }
+  .btn, .btn-outline, .btn-primary, .btn-lg, .filter-btn, .vote-btn,
+  .btn-ghost, .icon-btn, .btn-add {
+    transform: none !important;
+    box-shadow: none;
+    transition: none;
+  }
+}

@@ -148,6 +148,33 @@
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
   .modal-actions button { width: auto; margin: 0; padding: 9px 18px; }
   .modal-actions .btn-ghost { color: var(--text-2); }
+
+  /* ===== 弹窗缓动动画 + 按钮玻璃悬浮（与全站统一） ===== */
+  .modal-overlay { animation: wb-fade 0.24s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .modal { animation: wb-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes wb-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes wb-pop {
+    from { opacity: 0; transform: translateY(10px) scale(0.96); }
+    to { opacity: 1; transform: none; }
+  }
+  .icon-btn, .btn-ghost, .btn-add {
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    backdrop-filter: blur(10px) saturate(150%);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                background 0.25s, border-color 0.25s, color 0.25s;
+  }
+  .icon-btn:hover, .btn-ghost:hover, .btn-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  .icon-btn { background: rgba(255, 255, 255, 0.08); }
+  .btn-ghost { background: rgba(255, 255, 255, 0.06); }
+  .btn-add { background: rgba(111, 179, 168, 0.2); }
+  @media (prefers-reduced-motion: reduce) {
+    .modal-overlay, .modal { animation: none; }
+    .icon-btn, .btn-ghost, .btn-add { transform: none !important; box-shadow: none; }
+  }
 </style>
 </head>
 <body>

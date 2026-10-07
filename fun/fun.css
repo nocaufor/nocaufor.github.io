@@ -651,3 +651,32 @@ textarea.demo-input {
   .demo-table td code { word-break: break-all; }
   .ws-log { white-space: pre-wrap; word-break: break-all; overflow-wrap: anywhere; }
 }
+
+/* =========================================================
+   fun 页按钮玻璃悬浮（与主站统一：半透明毛玻璃 + hover 上浮柔和阴影）
+   ========================================================= */
+.code-copy-btn, .fun-filters .btn, .style-picker .btn,
+.demo-actions .btn, .copy-project-bar .btn, .snake-overlay .btn,
+.fun-controls .btn {
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  background: color-mix(in srgb, var(--bg-card) 72%, transparent);
+  transition: transform var(--transition), box-shadow var(--transition),
+              background var(--transition), border-color var(--transition),
+              color var(--transition);
+}
+.code-copy-btn:hover, .fun-filters .btn:hover, .style-picker .btn:hover,
+.demo-actions .btn:hover, .copy-project-bar .btn:hover, .snake-overlay .btn:hover,
+.fun-controls .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--btn-hover-shadow, 0 8px 20px rgba(0, 0, 0, 0.18));
+}
+@media (prefers-reduced-motion: reduce) {
+  .code-copy-btn, .fun-filters .btn, .style-picker .btn,
+  .demo-actions .btn, .copy-project-bar .btn, .snake-overlay .btn,
+  .fun-controls .btn {
+    transform: none !important;
+    box-shadow: none;
+    transition: none;
+  }
+}
