@@ -99,7 +99,7 @@
             <input type="text" id="vc-input" class="form-control" data-vc-ph="inputPh" placeholder="输入你想说的话…" autocomplete="off" />
             <button type="button" id="vc-send" class="btn btn-primary" data-vc-key="send">发送</button>
           </div>
-          <p class="chat-hint" data-vc-key="hint">本地规则引擎无需网络；右侧「引擎」页签配置 API Key 后可切换大模型回复。</p>
+          <p class="chat-hint" data-vc-key="hint">本地规则引擎无需网络；大模型需在右侧「引擎」页签配置接口地址与 API Key 后启用，未配置时无法发送。</p>
         </section>
 
         <!-- 设定面板 -->
@@ -231,7 +231,7 @@
             </div>
             <div class="vc-field">
               <label class="vc-label" data-vc-key="lblBase">接口地址（OpenAI 兼容）</label>
-              <input type="text" id="cfg-base" class="form-control" data-vc-ph="basePh" placeholder="https://api.openai.com/v1" maxlength="120" />
+              <input type="text" id="cfg-base" class="form-control" data-vc-ph="basePh" placeholder="https://your-provider.example/v1（填入你的服务地址）" maxlength="120" />
             </div>
             <div class="vc-field">
               <label class="vc-label" data-vc-key="lblKey">API Key</label>
@@ -245,7 +245,7 @@
               <button type="button" class="btn btn-primary vc-save" data-vc-key="saveEngine">保存引擎配置</button>
               <button type="button" class="btn btn-outline" id="vc-test-llm" data-vc-key="testLlm">测试连接</button>
             </div>
-            <p class="vc-sub" data-vc-key="llmHint">Key 仅保存在本机浏览器 localStorage，不会上传到任何服务器；请求直接发往你填写的接口地址。</p>
+            <p class="vc-sub" data-vc-key="llmHint">Key 仅保存在本机浏览器 localStorage，不会上传到任何服务器；请求只发往你填写的接口地址，未填写地址前不会发起任何请求。</p>
           </div>
         </aside>
       </div>
@@ -395,7 +395,7 @@ if (typeof document !== "undefined") {
         sendBtn = document.getElementById("send"), personaSel = document.getElementById("persona"),
         styleSel = document.getElementById("style"), engineBtn = document.getElementById("engine"),
         barsEl = document.getElementById("bars"), hint = document.getElementById("hint");
-    var intimacy = 0, useLLM = false, cfg = { endpoint: "https://api.openai.com/v1/chat/completions", apiKey: "", model: "gpt-4o-mini", persona: "温柔", style: "日常口语" };
+    var intimacy = 0, useLLM = false, cfg = { endpoint: "", apiKey: "", model: "gpt-4o-mini", persona: "温柔", style: "日常口语" };
 
     var row = document.createElement("div");
     row.className = "bar";
@@ -418,13 +418,17 @@ if (typeof document !== "undefined") {
       if (!text) return;
       bubble(text, "me");
       input.value = "";
-      if (useLLM &amp;&amp; cfg.apiKey) {
+      if (useLLM) {
+        if (!cfg.endpoint || !cfg.apiKey) {
+          bubble("（请先配置 API 接口：在 app.js 的 cfg 中填写 endpoint / apiKey / model）", "pet");
+          paint();
+          return;
+        }
         try {
           var out = await llmReply(text, cfg);
           bubble(out, "pet");
         } catch (e) {
-          bubble("（大模型接口调用失败：" + e.message + "，已回落本地规则）", "pet");
-          bubble(reply(text, { persona: personaSel.value, style: styleSel.value, intimacy: intimacy }).text, "pet");
+          bubble("（大模型接口调用失败：" + e.message + "）", "pet");
         }
       } else {
         var r = reply(text, { persona: personaSel.value, style: styleSel.value, intimacy: intimacy });
@@ -439,7 +443,7 @@ if (typeof document !== "undefined") {
       useLLM = !useLLM;
       engineBtn.textContent = useLLM ? "引擎：大模型 API" : "引擎：本地规则";
       hint.textContent = useLLM
-        ? "已切换到大模型引擎：需在 app.js 的 cfg 中填入 endpoint / apiKey / model，否则自动回落本地规则。"
+        ? "已切换到大模型引擎：需在 app.js 的 cfg 中填入 endpoint / apiKey / model，否则无法发送。"
         : "当前为本地规则引擎：无网络、无 API Key 也能跑。";
     });
     personaSel.addEventListener("change", function () { bubble("（性格已切换为：" + personaSel.options[personaSel.selectedIndex].text + "）", "pet"); });
@@ -509,7 +513,7 @@ canvas { width: 100%; display: block; border-radius: 10px; }
 2. 逻辑自测：`node -e "const m=require('./app.js');console.log(m.classify('今天好累'), m.reply('今天好累',{persona:'warm'}).kind)"` → 期望 `care care`
 
 ## 接大模型（可选）
-在 `app.js` 的 `cfg` 中填入 `endpoint` / `apiKey` / `model`，再点「引擎」按钮切换；接口失败会自动回落本地规则。
+在 `app.js` 的 `cfg` 中填入 `endpoint` / `apiKey` / `model`（`endpoint` 为你实际使用的 OpenAI 兼容服务地址，默认为空、不会直连 api.openai.com），再点「引擎」按钮切换；未配置或接口失败时不会伪造回复，会明确提示。
 - 兼容 OpenAI Chat Completions 协议的服务均可（如各家云厂商的兼容网关）
 - 注意：浏览器直连会暴露 Key，生产环境应改为由你的后端转发
 

@@ -92,6 +92,12 @@
 .vc-quick-btn:hover { color: var(--text); border-color: var(--text); }
 
 .vc-chat-input { display: flex; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.vc-chat-input #vc-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
 
 /* ---------- 设定面板 ---------- */
 .vc-panel {

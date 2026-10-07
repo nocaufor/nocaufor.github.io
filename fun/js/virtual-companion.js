@@ -35,7 +35,9 @@
       statMood: "情绪", statIntimacy: "亲密度", statTurns: "轮次",
       quick1: "打个招呼", quick2: "我今天有点累", quick3: "换个话题聊聊", quick4: "你还记得我",
       inputPh: "输入你想说的话…", send: "发送",
-      hint: "本地规则引擎无需网络；右侧「引擎」页签配置 API Key 后可切换大模型回复。",
+      hint: "本地规则引擎无需网络；大模型需在右侧「引擎」页签配置接口地址与 API Key 后启用，未配置时无法发送。",
+      cfgNeeded: "请先配置 API 接口",
+      cfgNeededHint: "大模型模式已开启，但尚未配置接口：请在右侧「引擎」页签填写接口地址与 API Key 后重试。",
       tabRole: "角色", tabStyle: "性格风格", tabMemory: "记忆", tabEngine: "引擎",
       lblName: "姓名", lblGender: "性别 / 形象（不限定男女，可自定义）", lblIdentity: "身份", lblWorld: "世界观",
       lblCatch: "口头禅", lblSeed: "记忆起点", lblImage: "形象描述（影响大模型回复的语气想象）",
@@ -58,10 +60,10 @@
       lblState: "当前状态", reset: "重置角色与记忆",
       lblEngineMode: "回复模式", modeRule: "内置规则引擎", modeLlm: "大模型 API",
       modeHint: "默认规则引擎零依赖；配置 API 后切换为 LLM 回复，更聪明自然。",
-      lblBase: "接口地址（OpenAI 兼容）", basePh: "https://api.openai.com/v1",
+      lblBase: "接口地址（OpenAI 兼容）", basePh: "https://your-provider.example/v1（填入你的服务地址）",
       lblKey: "API Key", keyPh: "sk-...", lblModel: "模型名", saveEngine: "保存引擎配置",
       testLlm: "测试连接",
-      llmHint: "Key 仅保存在本机浏览器 localStorage，不会上传到任何服务器；请求直接发往你填写的接口地址。",
+      llmHint: "Key 仅保存在本机浏览器 localStorage，不会上传到任何服务器；请求只发往你填写的接口地址，未填写地址前不会发起任何请求。",
       secArch: "整体框架",
       archText: "角色设定系统（性别/形象/人设/世界观）→ 性格与风格配置（特质权重/语言风格/称呼/中英）→ 对话引擎（关键词规则 + 上下文拼接 + 模板轮换）→ 记忆系统（短期上下文 + 长期重要事项）→ 情绪状态（随对话变化影响语气）→ 关系度/亲密度（随互动积累）→ 情感反馈与开场白 → 本地持久化（localStorage）；可切换 LLM API 增强。",
       moodNeutral: "中性", moodCheerful: "开心", moodWarm: "温暖", moodConcerned: "担忧", moodSomber: "低落", moodPlayful: "俏皮", moodCalm: "平静",
@@ -82,7 +84,9 @@
       statMood: "Mood", statIntimacy: "Bond", statTurns: "Turns",
       quick1: "Say hi", quick2: "I'm tired today", quick3: "Change topic", quick4: "Do you remember me",
       inputPh: "Type your message…", send: "Send",
-      hint: "Local rule engine needs no network. Configure API Key in the Engine tab to switch to LLM replies.",
+      hint: "Local rule engine needs no network. For LLM replies, configure the API base URL and key in the Engine tab; sending is disabled until configured.",
+      cfgNeeded: "Please configure the API first",
+      cfgNeededHint: "LLM mode is on but not configured: fill in the API base URL and key in the Engine tab, then try again.",
       tabRole: "Role", tabStyle: "Style", tabMemory: "Memory", tabEngine: "Engine",
       lblName: "Name", lblGender: "Gender / Image (not limited to male/female)", lblIdentity: "Identity", lblWorld: "Worldview",
       lblCatch: "Catchphrase", lblSeed: "Memory seed", lblImage: "Image description (influences LLM tone)",
@@ -105,10 +109,10 @@
       lblState: "Current state", reset: "Reset role & memory",
       lblEngineMode: "Reply mode", modeRule: "Built-in rule engine", modeLlm: "LLM API",
       modeHint: "Rule engine is zero-dependency. Configure API and switch to LLM for smarter replies.",
-      lblBase: "Base URL (OpenAI compatible)", basePh: "https://api.openai.com/v1",
+      lblBase: "Base URL (OpenAI compatible)", basePh: "https://your-provider.example/v1 (fill your service)",
       lblKey: "API Key", keyPh: "sk-...", lblModel: "Model", saveEngine: "Save Engine",
       testLlm: "Test connection",
-      llmHint: "The key is stored only in your browser localStorage and sent only to the URL you entered.",
+      llmHint: "The key is stored only in your browser localStorage; requests go only to the URL you entered, and no request is made before a URL is set.",
       secArch: "Architecture",
       archText: "Role system (gender/image/persona/world) → Personality & style config (trait weights/language/call) → Chat engine (keyword rules + context + template rotation) → Memory (short context + long-term facts) → Emotion (changes with chat, affects tone) → Bond/Intimacy (accumulates) → Affective feedback & openers → localStorage persistence; optional LLM API.",
       moodNeutral: "Neutral", moodCheerful: "Cheerful", moodWarm: "Warm", moodConcerned: "Concerned", moodSomber: "Low", moodPlayful: "Playful", moodCalm: "Calm",
@@ -559,9 +563,13 @@
     }
     return msgs;
   }
+  function engineConfigured() {
+    return !!(state.engine.mode === "llm" && state.engine.base && state.engine.base.trim() && state.engine.key && state.engine.key.trim() && state.engine.model && state.engine.model.trim());
+  }
   function llmReply(text) {
-    var base = (state.engine.base || "").replace(/\/+$/, "");
-    if (!base) { base = "https://api.openai.com/v1"; }
+    var base = (state.engine.base || "").trim().replace(/\/+$/, "");
+    if (!base) return Promise.reject(new Error(T("cfgNeeded")));
+    if (!state.engine.key || !state.engine.key.trim()) return Promise.reject(new Error(T("cfgNeeded")));
     var url = base + "/chat/completions";
     return fetch(url, {
       method: "POST",
@@ -616,29 +624,34 @@
   }
   function sendUser(text) {
     text = (text || "").trim();
-    if (!text) return;
+    if (!text) return false;
     addMsg(text, "user");
     pushShort("user", text);
     lastUserText = text;
     renderStatus();
+    if (state.engine.mode === "llm" && !engineConfigured()) {
+      addMsg("(" + T("cfgNeeded") + ")", "sys");
+      updateSendState();
+      return false;
+    }
     setThinking(true);
     var delay = 420 + Math.random() * 480;
     setTimeout(function () {
-      var useLLM = state.engine.mode === "llm" && state.engine.key;
-      if (useLLM) {
+      if (state.engine.mode === "llm") {
         llmReply(text).then(function (r) {
           setThinking(false);
           botTurn(r);
-        }).catch(function () {
+        }).catch(function (e) {
           setThinking(false);
-          addMsg("(" + T("llmOff") + ")", "sys");
-          botTurn(ruleReply(text));
+          addMsg("(" + T("llmFail") + (e && e.message ? "：" + e.message : "") + ")", "sys");
+          updateSendState();
         });
       } else {
         setThinking(false);
         botTurn(ruleReply(text));
       }
     }, delay);
+    return true;
   }
   function greeting() {
     if (state.relation.turns === 0) {
@@ -755,6 +768,13 @@
     $("#cfg-base").value = state.engine.base || "";
     $("#cfg-key").value = state.engine.key || "";
     $("#cfg-model").value = state.engine.model || "";
+    updateSendState();
+  }
+  function updateSendState() {
+    var needCfg = state.engine.mode === "llm" && !engineConfigured();
+    sendBtn.disabled = needCfg;
+    var hintEl = $(".chat-hint");
+    if (hintEl) hintEl.textContent = needCfg ? T("cfgNeededHint") : T("hint");
   }
   function renderStatus() {
     var n = $("#vc-name");
@@ -773,8 +793,8 @@
      12. 事件绑定
      ============================================================ */
   function bindEvents() {
-    sendBtn.addEventListener("click", function () { sendUser(input.value); input.value = ""; });
-    input.addEventListener("keydown", function (e) { if (e.key === "Enter") { sendUser(input.value); input.value = ""; } });
+    sendBtn.addEventListener("click", function () { if (sendUser(input.value)) input.value = ""; });
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") { if (sendUser(input.value)) input.value = ""; } });
 
     /* 快捷标签 */
     $$(".vc-quick-btn").forEach(function (b) {
@@ -814,6 +834,7 @@
           b.classList.add("active");
           assign(b);
           save();
+          updateSendState();
         });
       });
     }
@@ -858,6 +879,7 @@
       state.engine.key = $("#cfg-key").value.trim();
       state.engine.model = $("#cfg-model").value.trim() || "gpt-4o-mini";
       save();
+      updateSendState();
       addMsg("(" + T("saveEngine") + " ✓)", "sys");
     });
 
@@ -872,9 +894,14 @@
 
     /* 测试连接 */
     $("#vc-test-llm").addEventListener("click", function () {
-      var base = ($("#cfg-base").value.trim() || "https://api.openai.com/v1").replace(/\/+$/, "");
+      var base = ($("#cfg-base").value.trim() || "").replace(/\/+$/, "");
       var key = $("#cfg-key").value.trim();
       var model = $("#cfg-model").value.trim() || "gpt-4o-mini";
+      if (!base || !key) {
+        addMsg("(" + T("cfgNeeded") + ")", "sys");
+        updateSendState();
+        return;
+      }
       addMsg("(LLM …)", "sys");
       fetch(base + "/chat/completions", {
         method: "POST",
@@ -901,7 +928,7 @@
     /* 语言切换（页面级文案 + 状态栏） */
     $$("[data-lang-toggle]").forEach(function (b) {
       b.addEventListener("click", function () {
-        setTimeout(function () { applyTexts(); renderStatus(); renderMemory(); }, 60);
+        setTimeout(function () { applyTexts(); renderStatus(); renderMemory(); updateSendState(); }, 60);
       });
     });
   }
