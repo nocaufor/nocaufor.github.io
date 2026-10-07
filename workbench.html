@@ -6,67 +6,158 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Private</title>
 <style>
+  /* 沿用站点 style.css 的 CSS 变量体系（assets/css/style.css :root / [data-theme=dark] / [data-theme=light]） */
   :root { color-scheme: dark; }
+  :root, [data-theme="dark"] {
+    --bg: #0b0d0f; --bg-soft: #121518; --bg-card: #15181c;
+    --text: #e8eaed; --text-2: #a7adb5; --text-3: #8b929c; --text-soft: #8b929c;
+    --border: rgba(255, 255, 255, 0.14); --line: rgba(255, 255, 255, 0.08); --line-strong: rgba(255, 255, 255, 0.14);
+    --brand: #6fb3a8; --brand-text: #8fd4c6; --brand-soft: rgba(111, 179, 168, 0.35);
+    --radius: 14px; --radius-sm: 9px;
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    --green: #5fd08a; --orange: #e6a23c; --red: #f47067;
+  }
+  [data-theme="light"] {
+    color-scheme: light;
+    --bg: #f6f7f8; --bg-soft: #eef0f2; --bg-card: #ffffff;
+    --text: #1a1d21; --text-2: #555c66; --text-3: #5f6873; --text-soft: #5f6873;
+    --border: rgba(20, 24, 30, 0.16); --line: rgba(20, 24, 30, 0.09); --line-strong: rgba(20, 24, 30, 0.16);
+    --brand-text: #1c6659;
+    --shadow: 0 20px 50px rgba(20, 24, 30, 0.07);
+    --green: #1e9e50; --orange: #b5740c; --red: #c73e34;
+  }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
     min-height: 100vh;
-    background: #0e1116;
-    color: #e6e6e6;
-    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Roboto,
+      "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC",
+      "Microsoft YaHei UI", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 28px 16px 48px;
+    transition: background-color 0.4s ease, color 0.4s ease;
   }
   .card {
-    width: 100%; max-width: 420px;
-    background: #161b22;
-    border: 1px solid #2d333b;
-    border-radius: 12px;
-    padding: 32px 28px;
-    box-shadow: 0 18px 48px rgba(0,0,0,.45);
+    width: 100%; max-width: 880px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 26px;
+    box-shadow: var(--shadow);
   }
-  .brand { font-size: 14px; letter-spacing: .35em; color: #7d8590; text-transform: uppercase; margin-bottom: 8px; }
-  h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; }
-  .sub { font-size: 13px; color: #8b949e; margin: 0 0 22px; }
-  label { display: block; font-size: 13px; color: #adbac7; margin: 14px 0 6px; }
-  input {
+  .card-top { display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-size: 13px; letter-spacing: .3em; color: var(--text-3); text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 22px; margin: 0 0 4px; font-weight: 650; }
+  .sub { font-size: 13px; color: var(--text-2); margin: 0 0 20px; }
+  label { display: block; font-size: 13px; color: var(--text-2); margin: 14px 0 6px; }
+  input, select, textarea {
     width: 100%; padding: 10px 12px;
-    background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
-    color: #e6e6e6; font-size: 14px; outline: none;
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); font-size: 14px; outline: none; font-family: inherit;
   }
-  input:focus { border-color: #58a6ff; }
+  textarea { min-height: 84px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { border-color: var(--brand); }
   button {
     width: 100%; margin-top: 22px; padding: 11px 12px;
-    background: #1f6feb; color: #fff; border: 0; border-radius: 8px;
-    font-size: 14px; font-weight: 600; cursor: pointer;
+    background: var(--brand); color: #fff; border: 0; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: filter var(--transition);
   }
-  button:hover { background: #388bfd; }
+  button:hover { filter: brightness(1.08); }
   button:disabled { opacity: .55; cursor: not-allowed; }
-  .msg { min-height: 18px; margin-top: 12px; font-size: 13px; color: #f47067; }
-  .hint { margin-top: 18px; font-size: 12px; color: #6e7681; border-top: 1px solid #21262d; padding-top: 14px; }
+  .msg { min-height: 18px; margin-top: 12px; font-size: 13px; color: var(--red); }
+  .hint { margin-top: 18px; font-size: 12px; color: var(--text-3); border-top: 1px solid var(--line-strong); padding-top: 14px; }
+
   /* 工作台视图 */
   .hidden { display: none !important; }
-  .dash-header { display: flex; align-items: center; justify-content: space-between; }
-  .dash-user { font-size: 14px; color: #adbac7; margin-bottom: 20px; word-break: break-all; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
-  .tile {
-    background: #0d1117; border: 1px solid #21262d; border-radius: 10px;
-    padding: 16px 14px; min-height: 96px;
+  .dash-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .dash-actions { display: flex; align-items: center; gap: 8px; }
+  .dash-user { font-size: 14px; color: var(--text-2); margin: 14px 0 6px; word-break: break-all; }
+  .icon-btn {
+    width: 34px; height: 34px; margin: 0; padding: 0;
+    background: var(--bg-soft); color: var(--text-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 15px; line-height: 1;
   }
-  .tile h3 { margin: 0 0 6px; font-size: 14px; color: #58a6ff; }
-  .tile p { margin: 0; font-size: 12px; color: #7d8590; line-height: 1.6; }
   .btn-ghost {
     width: auto; margin: 0; padding: 8px 14px; background: transparent;
-    border: 1px solid #30363d; color: #adbac7; font-weight: 500; font-size: 13px;
+    border: 1px solid var(--border); color: var(--text-2); font-weight: 500; font-size: 13px;
   }
-  .btn-ghost:hover { background: #21262d; color: #e6e6e6; }
+  .btn-ghost:hover { background: var(--bg-soft); color: var(--text); }
+  .notice {
+    margin: 12px 0; padding: 10px 12px; font-size: 13px; color: var(--orange);
+    background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  }
+
+  /* 四模块网格 */
+  .modules { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+  @media (max-width: 640px) { .modules { grid-template-columns: 1fr; } .card { padding: 20px 16px; } }
+  .module {
+    background: var(--bg-soft); border: 1px solid var(--line-strong); border-radius: var(--radius);
+    padding: 14px 14px 10px;
+  }
+  .module-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .module-head h2 { margin: 0; font-size: 15px; font-weight: 650; color: var(--text); }
+  .btn-add {
+    width: auto; margin: 0; padding: 6px 12px;
+    background: var(--brand-soft); color: var(--brand-text); border: 1px solid var(--brand-soft);
+    border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;
+  }
+  .items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .row {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .row-main { flex: 1; min-width: 0; }
+  .row-title { font-size: 14px; font-weight: 600; color: var(--text); word-break: break-word; }
+  .row-sub { font-size: 12.5px; color: var(--text-2); margin-top: 2px; word-break: break-all; }
+  .row-sub a { color: var(--brand-text); text-decoration: none; }
+  .row-sub a:hover { text-decoration: underline; }
+  .row-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; word-break: break-all; }
+  .row-value { font-size: 15px; font-weight: 650; color: var(--brand-text); margin-top: 2px; }
+  .row-ops { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .row-ops button {
+    width: auto; margin: 0; padding: 3px 9px; font-size: 12px; font-weight: 500;
+    background: transparent; border: 1px solid var(--border); color: var(--text-2); border-radius: 6px;
+  }
+  .row-ops button:hover { background: var(--bg-soft); color: var(--text); }
+  .empty { margin: 0; font-size: 12.5px; color: var(--text-3); padding: 6px 0; }
+  .badge {
+    display: inline-block; padding: 1px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: 1px;
+  }
+  .badge.ok, .badge.done { color: var(--green); background: color-mix(in srgb, var(--green) 15%, transparent); }
+  .badge.warn, .badge.paused { color: var(--orange); background: color-mix(in srgb, var(--orange) 15%, transparent); }
+  .badge.over, .badge.hold { color: var(--red); background: color-mix(in srgb, var(--red) 15%, transparent); }
+  .badge.run { color: var(--brand-text); background: color-mix(in srgb, var(--brand) 18%, transparent); }
+
+  /* 弹层 */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal {
+    width: 100%; max-width: 440px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px 22px 8px; box-shadow: var(--shadow);
+  }
+  .modal h3 { margin: 0 0 4px; font-size: 17px; font-weight: 650; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .modal-actions button { width: auto; margin: 0; padding: 9px 18px; }
+  .modal-actions .btn-ghost { color: var(--text-2); }
 </style>
 </head>
 <body>
   <div class="card">
     <!-- ========== 登录视图 ========== -->
     <div id="login-view">
-      <div class="brand">Private</div>
+      <div class="card-top">
+        <div class="brand">Private</div>
+        <button class="icon-btn" id="theme-btn-login" type="button" title="切换深浅主题">◐</button>
+      </div>
       <h1>Sign in</h1>
       <p class="sub">仅限授权账户访问</p>
       <form id="login-form" autocomplete="on">
@@ -80,100 +171,84 @@
       <div class="hint" id="config-hint"></div>
     </div>
 
-    <!-- ========== 工作台视图（登录后骨架） ========== -->
+    <!-- ========== 工作台视图（登录后，四模块 CRUD） ========== -->
     <div id="dash-view" class="hidden">
       <div class="dash-header">
         <div class="brand">Workbench</div>
-        <button class="btn-ghost" id="logout-btn" type="button">退出</button>
+        <div class="dash-actions">
+          <button class="icon-btn" id="theme-btn-dash" type="button" title="切换深浅主题">◐</button>
+          <button class="btn-ghost" id="logout-btn" type="button">退出</button>
+        </div>
       </div>
       <h1>工作台</h1>
       <p class="dash-user" id="dash-user"></p>
-      <div class="grid">
-        <div class="tile"><h3>快捷入口</h3><p>待接入：常用链接与工具入口</p></div>
-        <div class="tile"><h3>私有数据</h3><p>待接入：Supabase 私有表数据</p></div>
-        <div class="tile"><h3>最近记录</h3><p>待接入：最近更新/日志</p></div>
-        <div class="tile"><h3>状态</h3><p>待接入：服务与任务状态</p></div>
+      <div class="notice hidden" id="config-notice"></div>
+      <div class="modules">
+        <section class="module">
+          <header class="module-head">
+            <h2>项目状态</h2>
+            <button class="btn-add" type="button" data-kind="project">＋ 新增</button>
+          </header>
+          <ul class="items" id="items-project"></ul>
+          <p class="empty hidden" id="empty-project">暂无记录</p>
+        </section>
+        <section class="module">
+          <header class="module-head">
+            <h2>API 余额</h2>
+            <button class="btn-add" type="button" data-kind="balance">＋ 新增</button>
+          </header>
+          <ul class="items" id="items-balance"></ul>
+          <p class="empty hidden" id="empty-balance">暂无记录</p>
+        </section>
+        <section class="module">
+          <header class="module-head">
+            <h2>快捷链接</h2>
+            <button class="btn-add" type="button" data-kind="link">＋ 新增</button>
+          </header>
+          <ul class="items" id="items-link"></ul>
+          <p class="empty hidden" id="empty-link">暂无记录</p>
+        </section>
+        <section class="module">
+          <header class="module-head">
+            <h2>备忘</h2>
+            <button class="btn-add" type="button" data-kind="note">＋ 新增</button>
+          </header>
+          <ul class="items" id="items-note"></ul>
+          <p class="empty hidden" id="empty-note">暂无记录</p>
+        </section>
       </div>
       <div class="msg" id="dash-msg"></div>
     </div>
   </div>
 
+  <!-- ========== 新增 / 编辑弹层 ========== -->
+  <div class="modal-overlay hidden" id="modal">
+    <div class="modal">
+      <h3 id="modal-title">新增</h3>
+      <form id="item-form" autocomplete="off">
+        <label for="f-title">标题</label>
+        <input id="f-title" type="text" maxlength="120" required>
+        <div id="f-status-wrap" class="hidden">
+          <label for="f-status">状态</label>
+          <select id="f-status"></select>
+        </div>
+        <div id="f-value-wrap">
+          <label id="f-value-label" for="f-value">数值</label>
+          <input id="f-value" type="text" maxlength="300">
+        </div>
+        <label for="f-detail">备注</label>
+        <textarea id="f-detail" maxlength="2000"></textarea>
+        <div class="modal-actions">
+          <button class="btn-ghost" id="modal-cancel" type="button">取消</button>
+          <button id="modal-save" type="submit">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Supabase 客户端（本地化构建产物，禁止外链 CDN） -->
   <script src="assets/vendor/supabase/supabase.js"></script>
-  <script>
-    (function () {
-      "use strict";
-
-      /* ===== 占位配置：等待用户提供项目 URL 与 anon key 后替换 ===== */
-      var SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
-      var SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
-
-      var loginView = document.getElementById("login-view");
-      var dashView = document.getElementById("dash-view");
-      var loginForm = document.getElementById("login-form");
-      var loginBtn = document.getElementById("login-btn");
-      var loginMsg = document.getElementById("login-msg");
-      var configHint = document.getElementById("config-hint");
-      var dashUser = document.getElementById("dash-user");
-      var dashMsg = document.getElementById("dash-msg");
-      var logoutBtn = document.getElementById("logout-btn");
-
-      var configured = SUPABASE_URL.indexOf("PASTE_") === -1 && SUPABASE_ANON_KEY.indexOf("PASTE_") === -1;
-      if (!configured) {
-        configHint.textContent = "后端配置未就绪：请提供 Supabase 项目 URL 与 anon key 后启用登录。";
-        loginBtn.disabled = true;
-        return;
-      }
-
-      var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-      function showDash(user) {
-        loginView.classList.add("hidden");
-        dashView.classList.remove("hidden");
-        dashUser.textContent = "已登录：" + (user && user.email ? user.email : "—");
-        dashMsg.textContent = "";
-      }
-      function showLogin(msg) {
-        dashView.classList.add("hidden");
-        loginView.classList.remove("hidden");
-        if (msg) loginMsg.textContent = msg;
-      }
-
-      /* 恢复会话 */
-      client.auth.getSession().then(function (res) {
-        if (res && res.data && res.data.session) showDash(res.data.session.user);
-      }).catch(function () {});
-
-      client.auth.onAuthStateChange(function (event, session) {
-        if (event === "SIGNED_IN" && session) showDash(session.user);
-        else if (event === "SIGNED_OUT") showLogin("");
-      });
-
-      loginForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        var email = document.getElementById("email").value.trim();
-        var password = document.getElementById("password").value;
-        loginMsg.textContent = "";
-        loginBtn.disabled = true;
-        client.auth.signInWithPassword({ email: email, password: password })
-          .then(function (res) {
-            loginBtn.disabled = false;
-            if (res.error) {
-              loginMsg.textContent = res.error.message || "登录失败，请检查邮箱与密码。";
-              return;
-            }
-            showDash(res.data.user);
-          })
-          .catch(function (err) {
-            loginBtn.disabled = false;
-            loginMsg.textContent = err && err.message ? err.message : "登录失败，请稍后重试。";
-          });
-      });
-
-      logoutBtn.addEventListener("click", function () {
-        client.auth.signOut().catch(function () {});
-      });
-    })();
-  </script>
+  <!-- 工作台应用逻辑（外部 JS，遵守站点 CSP script-src 'self'） -->
+  <script src="assets/js/workbench-app.js"></script>
 </body>
 </html>
