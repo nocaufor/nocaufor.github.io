@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Private</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #0e1116;
+    color: #e6e6e6;
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    width: 100%; max-width: 420px;
+    background: #161b22;
+    border: 1px solid #2d333b;
+    border-radius: 12px;
+    padding: 32px 28px;
+    box-shadow: 0 18px 48px rgba(0,0,0,.45);
+  }
+  .brand { font-size: 14px; letter-spacing: .35em; color: #7d8590; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; }
+  .sub { font-size: 13px; color: #8b949e; margin: 0 0 22px; }
+  label { display: block; font-size: 13px; color: #adbac7; margin: 14px 0 6px; }
+  input {
+    width: 100%; padding: 10px 12px;
+    background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
+    color: #e6e6e6; font-size: 14px; outline: none;
+  }
+  input:focus { border-color: #58a6ff; }
+  button {
+    width: 100%; margin-top: 22px; padding: 11px 12px;
+    background: #1f6feb; color: #fff; border: 0; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  button:hover { background: #388bfd; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .msg { min-height: 18px; margin-top: 12px; font-size: 13px; color: #f47067; }
+  .hint { margin-top: 18px; font-size: 12px; color: #6e7681; border-top: 1px solid #21262d; padding-top: 14px; }
+  /* 工作台视图 */
+  .hidden { display: none !important; }
+  .dash-header { display: flex; align-items: center; justify-content: space-between; }
+  .dash-user { font-size: 14px; color: #adbac7; margin-bottom: 20px; word-break: break-all; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+  .tile {
+    background: #0d1117; border: 1px solid #21262d; border-radius: 10px;
+    padding: 16px 14px; min-height: 96px;
+  }
+  .tile h3 { margin: 0 0 6px; font-size: 14px; color: #58a6ff; }
+  .tile p { margin: 0; font-size: 12px; color: #7d8590; line-height: 1.6; }
+  .btn-ghost {
+    width: auto; margin: 0; padding: 8px 14px; background: transparent;
+    border: 1px solid #30363d; color: #adbac7; font-weight: 500; font-size: 13px;
+  }
+  .btn-ghost:hover { background: #21262d; color: #e6e6e6; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <!-- ========== 登录视图 ========== -->
+    <div id="login-view">
+      <div class="brand">Private</div>
+      <h1>Sign in</h1>
+      <p class="sub">仅限授权账户访问</p>
+      <form id="login-form" autocomplete="on">
+        <label for="email">邮箱</label>
+        <input id="email" type="email" name="email" required autocomplete="username" placeholder="you@example.com">
+        <label for="password">密码</label>
+        <input id="password" type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+        <button id="login-btn" type="submit">登录</button>
+      </form>
+      <div class="msg" id="login-msg"></div>
+      <div class="hint" id="config-hint"></div>
+    </div>
+
+    <!-- ========== 工作台视图（登录后骨架） ========== -->
+    <div id="dash-view" class="hidden">
+      <div class="dash-header">
+        <div class="brand">Workbench</div>
+        <button class="btn-ghost" id="logout-btn" type="button">退出</button>
+      </div>
+      <h1>工作台</h1>
+      <p class="dash-user" id="dash-user"></p>
+      <div class="grid">
+        <div class="tile"><h3>快捷入口</h3><p>待接入：常用链接与工具入口</p></div>
+        <div class="tile"><h3>私有数据</h3><p>待接入：Supabase 私有表数据</p></div>
+        <div class="tile"><h3>最近记录</h3><p>待接入：最近更新/日志</p></div>
+        <div class="tile"><h3>状态</h3><p>待接入：服务与任务状态</p></div>
+      </div>
+      <div class="msg" id="dash-msg"></div>
+    </div>
+  </div>
+
+  <!-- Supabase 客户端（本地化构建产物，禁止外链 CDN） -->
+  <script src="assets/vendor/supabase/supabase.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      /* ===== 占位配置：等待用户提供项目 URL 与 anon key 后替换 ===== */
+      var SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
+      var SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
+
+      var loginView = document.getElementById("login-view");
+      var dashView = document.getElementById("dash-view");
+      var loginForm = document.getElementById("login-form");
+      var loginBtn = document.getElementById("login-btn");
+      var loginMsg = document.getElementById("login-msg");
+      var configHint = document.getElementById("config-hint");
+      var dashUser = document.getElementById("dash-user");
+      var dashMsg = document.getElementById("dash-msg");
+      var logoutBtn = document.getElementById("logout-btn");
+
+      var configured = SUPABASE_URL.indexOf("PASTE_") === -1 && SUPABASE_ANON_KEY.indexOf("PASTE_") === -1;
+      if (!configured) {
+        configHint.textContent = "后端配置未就绪：请提供 Supabase 项目 URL 与 anon key 后启用登录。";
+        loginBtn.disabled = true;
+        return;
+      }
+
+      var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      function showDash(user) {
+        loginView.classList.add("hidden");
+        dashView.classList.remove("hidden");
+        dashUser.textContent = "已登录：" + (user && user.email ? user.email : "—");
+        dashMsg.textContent = "";
+      }
+      function showLogin(msg) {
+        dashView.classList.add("hidden");
+        loginView.classList.remove("hidden");
+        if (msg) loginMsg.textContent = msg;
+      }
+
+      /* 恢复会话 */
+      client.auth.getSession().then(function (res) {
+        if (res && res.data && res.data.session) showDash(res.data.session.user);
+      }).catch(function () {});
+
+      client.auth.onAuthStateChange(function (event, session) {
+        if (event === "SIGNED_IN" && session) showDash(session.user);
+        else if (event === "SIGNED_OUT") showLogin("");
+      });
+
+      loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var email = document.getElementById("email").value.trim();
+        var password = document.getElementById("password").value;
+        loginMsg.textContent = "";
+        loginBtn.disabled = true;
+        client.auth.signInWithPassword({ email: email, password: password })
+          .then(function (res) {
+            loginBtn.disabled = false;
+            if (res.error) {
+              loginMsg.textContent = res.error.message || "登录失败，请检查邮箱与密码。";
+              return;
+            }
+            showDash(res.data.user);
+          })
+          .catch(function (err) {
+            loginBtn.disabled = false;
+            loginMsg.textContent = err && err.message ? err.message : "登录失败，请稍后重试。";
+          });
+      });
+
+      logoutBtn.addEventListener("click", function () {
+        client.auth.signOut().catch(function () {});
+      });
+    })();
+  </script>
+</body>
+</html>
