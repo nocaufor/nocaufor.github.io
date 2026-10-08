@@ -102,7 +102,7 @@ agent.register_tool("search_web", search_web)
 # 记忆可直接持久化到 JSONL，实现跨会话记忆</code></pre></div></section><section class="code-section"><h2>待完成方向</h2><div class="code-card"><ul><li>工具调用输出改为 JSON Schema 严格校验，避免解析漂移。</li><li>加入规划器（Planner）+ 执行器（Executor）分离的 Plan-and-Execute 结构。</li><li>记忆增加向量检索（FAISS / Chroma），支持长程上下文。</li><li>接入真实 LLM 后跑通多工具编排的完整 Demo。</li></ul></div></section><section class="code-section"><h2>操作步骤</h2><div class="code-card"><ol><li><code>pip install openai</code> 或本地模型，把 <code>offline_llm</code> 替换为真实调用。</li><li>先跑通“任务→行动→工具→结果”的最小循环，再加第二个工具。</li><li>观察 ReAct 提示词设计对结果稳定性的影响，迭代 prompt 模板。</li></ol></div></section><section class="code-section"><h2>完整可运行工程</h2>
 <div class="deploy-project" id="proj-github-agent">
   <div class="deploy-summary"><span class="deploy-badge info">可直接运行</span><span class="deploy-badge">零第三方依赖</span><span class="deploy-badge">含越权拦截</span></div>
-  <div class="code-card"><p>运行环境：Python 3.8+，<strong>仅标准库</strong>（内置确定性 offline_llm，离线即可复现完整 Agent 循环）。先执行 <code>python agent.py --self-test</code> 验证「工具闭环 / 越权拦截 / 未知工具 / 参数校验 / 步数上限 / schema 导出」；再执行 <code>python agent.py --sandbox ./work "读取 data.txt 并统计行数"</code> 跑一次完整任务（<code>--llm rule</code> 为离线替身；默认 <code>--llm openai</code> 需先配 <code>OPENAI_API_KEY</code>）。</p></div>
+  <div class="code-card"><p>运行环境：Python 3.8+，<strong>仅标准库</strong>（内置确定性 offline_llm，离线即可复现完整 Agent 循环）。先执行 <code>python agent.py --self-test</code> 验证「工具闭环 / 越权拦截 / 未知工具 / 参数校验 / 步数上限 / schema 导出」；再执行 <code>python agent.py --sandbox ./work "读取 data.txt 并统计行数"</code> 跑一次完整任务（<code>--llm rule</code> 为离线替身；默认 <code>--llm openai</code> 需先配 <code>OPENAI_API_KEY</code> 与 <code>OPENAI_BASE_URL</code>，未配置会明确提示退出，不会直连 api.openai.com）。</p></div>
   <div class="deploy-tree">github-agent/
 ├── agent.py           ReAct 主循环：规划 -> 调工具 -> 观察 -> 收敛
 ├── tools.py           工具注册表（GitHub API 替身 + 白名单/越权校验）
@@ -122,7 +122,7 @@ agent.register_tool("search_web", search_web)
 
 需先改的配置项（仅当接真实 LLM 时）：
     OPENAI_API_KEY   必填
-    OPENAI_BASE_URL  可选，兼容 OpenAI 协议的网关（如 https://api.deepseek.com/v1）
+    OPENAI_BASE_URL  必填（不默认直连 api.openai.com），兼容 OpenAI 协议的网关（如 https://api.deepseek.com/v1）
     --model          模型名，默认 gpt-4o-mini
 """
 import argparse
@@ -181,18 +181,23 @@ class RuleLLM(LLM):
 
 
 class OpenAIChatLLM(LLM):
-    """真实 LLM：用标准库直接调 OpenAI 兼容的 /chat/completions（无需装 openai 包）。"""
+    """真实 LLM：用标准库直接调 OpenAI 兼容的 /chat/completions（无需装 openai 包）。
+
+    base_url 必须显式配置（环境变量 OPENAI_BASE_URL 或构造参数），不默认直连 api.openai.com；
+    api_key / base_url 任一未配置时直接退出并提示，绝不静默回落、绝不伪造回复。
+    """
 
     name = 'openai'
 
     def __init__(self, model='gpt-4o-mini', api_key=None, base_url=None, timeout=60):
         self.model = model
         self.api_key = api_key or os.environ.get('OPENAI_API_KEY', '')
-        self.base_url = (base_url or os.environ.get('OPENAI_BASE_URL')
-                         or 'https://api.openai.com/v1').rstrip('/')
+        self.base_url = (base_url or os.environ.get('OPENAI_BASE_URL') or '').rstrip('/')
         self.timeout = timeout
         if not self.api_key:
             raise SystemExit('缺少 OPENAI_API_KEY，请在环境变量中配置后再试')
+        if not self.base_url:
+            raise SystemExit('缺少 OPENAI_BASE_URL，请配置 OpenAI 兼容接口地址（如 https://api.deepseek.com/v1）后再试；未配置不会发送请求，也不会伪造回复')
 
     def chat(self, messages):
         payload = json.dumps({'model': self.model, 'messages': messages,
@@ -446,7 +451,7 @@ if __name__ == '__main__':
 # 要求 Python 3.8+。
 #
 # 真实 LLM 模式同样不需要第三方包（agent.py 用 urllib 直接调 OpenAI 兼容接口），
-# 只需配置环境变量 OPENAI_API_KEY（可选 OPENAI_BASE_URL）。
+# 需配置环境变量 OPENAI_API_KEY 与 OPENAI_BASE_URL（不默认直连 api.openai.com）。
 #
 # 可选增强（想让工具更丰富时再装）：
 # requests&gt;=2.31.0        # 替换 urllib 发请求
@@ -479,7 +484,9 @@ github-agent/
 python agent.py --self-test
 
 # 2) 接真实模型（OpenAI 或任何兼容 /chat/completions 的网关）
+#    接口地址必须显式配置，未配置时程序会明确提示退出，不会默认直连 api.openai.com
 set OPENAI_API_KEY=sk-xxxx
+set OPENAI_BASE_URL=https://api.openai.com/v1
 python agent.py --sandbox ./work "读取 data.txt 并统计行数写入 out.txt"
 
 # 3) 接国内兼容网关
@@ -491,7 +498,7 @@ python agent.py --llm openai --model deepseek-chat "..."
 | 配置项 | 位置 | 说明 |
 |---|---|---|
 | OPENAI_API_KEY | 环境变量 | 真实 LLM 模式必填，**不要写进代码** |
-| OPENAI_BASE_URL | 环境变量 | 可选，第三方兼容网关地址 |
+| OPENAI_BASE_URL | 环境变量 | 真实 LLM 模式必填，兼容网关地址（如 https://api.deepseek.com/v1）；不默认直连 api.openai.com |
 | --model | 命令行 | 模型名，默认 `gpt-4o-mini` |
 | --sandbox | 命令行 | Agent 可操作目录，默认 `./sandbox`，所有路径都被限制在该目录内 |
 | 工具集 | `tools.py` 的 `@tool` 装饰器 | 增删工具即可扩展能力，Schema 自动导出 |

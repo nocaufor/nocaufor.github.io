@@ -1,0 +1,334 @@
+/* ============================================================
+   NOCAU 图标设计样板页 · logo-preview.css
+   独立样板样式（未并入站点）：缎面金属地球 + 轨道环绕 + 双手捧起定格
+   主题与全站一致（html[data-theme] + style.css 变量）
+   包含 prefers-reduced-motion 静态降级与低端设备静态定格降级
+   零依赖、零构建，GitHub Pages 直接可用。
+   ============================================================ */
+
+:root {
+  --lp-hand-hi: #f4f6fa;
+  --lp-hand-mid: #9ca6b2;
+  --lp-hand-lo: #4e5762;
+}
+
+html[data-theme="light"] {
+  --lp-hand-hi: #ffffff;
+  --lp-hand-mid: #ccd3dc;
+  --lp-hand-lo: #7d8793;
+}
+
+html[data-theme="dark"] {
+  --lp-hand-hi: #f4f6fa;
+  --lp-hand-mid: #9ca6b2;
+  --lp-hand-lo: #4e5762;
+}
+
+body.lp-body {
+  background: var(--bg, #0c0e12);
+  color: var(--text, #e6e9ee);
+  min-height: 100vh;
+}
+
+/* ---------- 顶部导航（样板页独立） ---------- */
+.lp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--bg, #0c0e12) 78%, transparent);
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+}
+.lp-nav-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.lp-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text, #e6e9ee);
+  text-decoration: none;
+}
+.lp-badge {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--text-2, #9aa3ad);
+  border: 1px dashed var(--border, rgba(255,255,255,0.18));
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.lp-nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lp-back {
+  font-size: 0.85rem;
+  color: var(--text-2, #9aa3ad);
+  text-decoration: none;
+  border: 1px solid var(--border, rgba(255,255,255,0.16));
+  border-radius: 8px;
+  padding: 5px 12px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.lp-back:hover { color: var(--text, #e6e9ee); border-color: var(--text-2, #9aa3ad); }
+.tk-theme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--border, rgba(255,255,255,0.16));
+  background: transparent;
+  color: var(--text, #e6e9ee);
+  cursor: pointer;
+}
+.tk-theme svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 11px;
+  border-radius: 9px;
+  border: 1px solid var(--border, rgba(255,255,255,0.16));
+  background: transparent;
+  color: var(--text, #e6e9ee);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.lang-toggle:hover { color: var(--text, #e6e9ee); border-color: var(--text-2, #9aa3ad); }
+
+/* ---------- 主舞台 ---------- */
+.lp-main { padding: 34px 20px 48px; }
+.lp-stage-wrap { max-width: 1080px; margin: 0 auto; text-align: center; }
+
+.lp-card {
+  position: relative;
+  width: min(640px, 100%);
+  aspect-ratio: 1 / 1.02;
+  margin: 0 auto;
+  border-radius: 26px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 8%, color-mix(in srgb, var(--bg-card, #171a20) 0%, transparent) 0%, color-mix(in srgb, var(--bg-card, #171a20) 88%, transparent) 100%),
+    var(--bg-card, #171a20);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  box-shadow: 0 30px 80px -30px rgba(0,0,0,0.55);
+}
+
+.lp-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.lp-model {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  --progress-bar-color: color-mix(in srgb, var(--text) 42%, transparent);
+  --progress-mask: transparent;
+  --poster-color: transparent;
+  outline: none;
+}
+
+/* ---------- 静态降级占位（WebGL 不可用 / 加载期间，与 3D 同构图） ---------- */
+.lp-static {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+.lp-stage.is-ready .lp-static { opacity: 0; }
+.lp-static-earth {
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, rgba(255,255,255,0.5), transparent 22%),
+    linear-gradient(135deg, var(--lp-hand-mid), var(--lp-hand-lo));
+  box-shadow: inset -18px -14px 40px rgba(0,0,0,0.45), 0 24px 48px -22px rgba(0,0,0,0.6);
+  position: relative;
+}
+.lp-static-earth::after {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 34%, #5c7a4e 0 26%, transparent 27%),
+    radial-gradient(circle at 66% 22%, #6f8f5e 0 18%, transparent 19%),
+    radial-gradient(circle at 56% 62%, #5c7a4e 0 24%, transparent 25%),
+    radial-gradient(circle at 78% 70%, #6f8f5e 0 14%, transparent 15%),
+    #35506b;
+  opacity: 0.92;
+  border-radius: 50%;
+}
+.lp-static-ring {
+  position: absolute;
+  width: 74%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--lp-hand-mid) 55%, transparent);
+  transform: rotateX(68deg) rotateZ(-10deg);
+}
+
+/* ---------- 双手捧起层 ---------- */
+.lp-hands {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  pointer-events: none;
+  transform: translateY(118%);
+  transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lp-card.is-finale .lp-hands { transform: translateY(0); }
+.lp-hands-svg {
+  display: block;
+  width: 88%;
+  height: auto;
+  margin: 0 auto;
+  filter: drop-shadow(0 18px 30px rgba(0,0,0,0.38));
+}
+/* 双手渐变随主题联动（SVG stop 颜色以 CSS 变量注入，属性不支持 var()） */
+.lp-hands-svg #lp-hand-g stop:nth-child(1) { stop-color: var(--lp-hand-hi); }
+.lp-hands-svg #lp-hand-g stop:nth-child(2) { stop-color: var(--lp-hand-mid); }
+.lp-hands-svg #lp-hand-g stop:nth-child(3) { stop-color: var(--lp-hand-lo); }
+
+/* ---------- LOGO 定格文字 ---------- */
+.lp-logo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 11%;
+  z-index: 4;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.9s ease 0.55s, transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s;
+  pointer-events: none;
+}
+.lp-card.is-finale .lp-logo { opacity: 1; transform: none; }
+.lp-logo-word {
+  display: block;
+  font-size: clamp(1.6rem, 4.6vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  color: var(--text, #e6e9ee);
+  text-shadow: 0 4px 18px rgba(0,0,0,0.35);
+}
+.lp-logo-sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  color: var(--text-2, #9aa3ad);
+}
+
+/* ---------- 相位提示 ---------- */
+.lp-phase {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  color: var(--text-2, #9aa3ad);
+  background: color-mix(in srgb, var(--bg, #0c0e12) 55%, transparent);
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  border-radius: 999px;
+  padding: 5px 14px;
+  white-space: nowrap;
+  transition: opacity 0.5s ease;
+}
+.lp-card.is-finale .lp-phase { opacity: 0; }
+
+.lp-note {
+  margin-top: 16px;
+  font-size: 0.86rem;
+  color: var(--text-2, #9aa3ad);
+  line-height: 1.7;
+}
+.lp-note b { color: var(--text, #e6e9ee); }
+
+/* ---------- 三阶段示意 ---------- */
+.lp-desc { max-width: 1080px; margin: 44px auto 0; }
+.lp-desc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.lp-desc-item {
+  text-align: left;
+  padding: 20px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  background: var(--bg-card, #171a20);
+}
+.lp-desc-num {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--brand, #7aa2f7);
+  margin-bottom: 8px;
+}
+.lp-desc-item h3 { font-size: 1rem; margin: 0 0 8px; color: var(--text, #e6e9ee); }
+.lp-desc-item p { font-size: 0.84rem; line-height: 1.7; color: var(--text-2, #9aa3ad); margin: 0; }
+.lp-desc-meta {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.lp-desc-meta span {
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  color: var(--text-2, #9aa3ad);
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 720px) {
+  .lp-badge { display: none; }
+  .lp-card { width: min(520px, 100%); }
+  .lp-desc-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- 动效减弱 / 低端设备：静态定格（手与 LOGO 直接呈现，无过渡） ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .lp-hands,
+  .lp-logo {
+    transition: none !important;
+  }
+  .lp-card.is-finale .lp-hands,
+  .lp-card.is-finale .lp-logo { transform: none; }
+}

@@ -254,7 +254,22 @@
       star_db_empty_title: "没有找到匹配的星星",
       star_db_empty_desc: "换个关键词或清除筛选条件再试试。",
       star_db_empty_reset: "清空筛选",
-      star_db_count: "共 144 颗星星"
+      star_db_count: "共 144 颗星星",
+      lp_badge: "图标设计样板 · PREVIEW · 未并入站点",
+      lp_stage_aria: "图标设计样板 3D 预览",
+      lp_desc_aria: "设计说明",
+      lp_note: "样板页为独立设计预览：<b>未并入</b>站点导航与主页。经确认后再正式接入。点击 3D 区域可拖拽查看，松手后自动续接。",
+      lp_desc1_t: "缎面金属地球",
+      lp_desc1_p: "太阳球体替换为地球：程序化大陆/海洋贴图 + 缎面金属材质（清漆高光 / 环境反射 / 双主题材质联动），资源全部本地化。",
+      lp_desc2_t: "环绕 · 视角转变",
+      lp_desc2_p: "延续质感球体旋转环绕：细线轨道 + 月球公转；相机由平视匀速转向俯视俯瞰，加载后自动进入，可拖拽交互。",
+      lp_desc3_t: "双手捧起定格",
+      lp_desc3_p: "视角转变完成后，一双缎面金属大手自底部升起捧住地球，动画收敛为最终 LOGO 画面：双手捧地球 + NOCAU。",
+      lp_meta_csp: "CSP：script-src 'self'（无 CDN / 无内联脚本）",
+      lp_meta_theme: "深浅双主题联动",
+      lp_meta_motion: "prefers-reduced-motion 静态降级",
+      lp_meta_weak: "低端设备（weak）静态定格降级",
+      lp_model_alt: "NOCAU 图标设计：缎面金属地球沿细线轨道自转，视角由平视转向俯视后，一双大手自底部升起捧起地球，定格为 LOGO"
     },
     en: {
       nav_home: "Home",
@@ -505,7 +520,22 @@
       star_db_empty_title: "No matching stars",
       star_db_empty_desc: "Try another keyword or clear the filters.",
       star_db_empty_reset: "Clear filters",
-      star_db_count: "144 stars in total"
+      star_db_count: "144 stars in total",
+      lp_badge: "Logo Design Preview · PREVIEW · Not in Site Nav",
+      lp_stage_aria: "Logo design preview 3D stage",
+      lp_desc_aria: "Design notes",
+      lp_note: "This preview page is a standalone design sample: <b>not merged</b> into the site navigation or homepage yet. It will be officially integrated after confirmation. Drag the 3D area to look around; the animation resumes automatically after release.",
+      lp_desc1_t: "Satin Metal Earth",
+      lp_desc1_p: "The sun sphere is replaced by Earth: procedural continent/ocean textures + satin metal material (gloss highlights / environment reflections / dual-theme material sync), all assets local.",
+      lp_desc2_t: "Orbit · View Shift",
+      lp_desc2_p: "Keeps the textured sphere spin-and-orbit: thin ring + moon revolution; the camera eases from level view to top-down view, with drag interaction.",
+      lp_desc3_t: "Hands Hold the Logo",
+      lp_desc3_p: "When the view shift completes, a pair of satin metal hands rises from the bottom to hold the Earth, converging to the final logo frame: hands holding Earth + NOCAU.",
+      lp_meta_csp: "CSP: script-src 'self' (no CDN / no inline script)",
+      lp_meta_theme: "Dual light/dark themes",
+      lp_meta_motion: "prefers-reduced-motion static fallback",
+      lp_meta_weak: "Low-end device (weak) static fallback",
+      lp_model_alt: "NOCAU logo design: a satin metal Earth spins along a thin orbit; as the view shifts from level to top-down, a pair of large hands rises from the bottom to hold the Earth, freezing into the logo"
     }
   };
 
