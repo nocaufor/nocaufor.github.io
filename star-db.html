@@ -142,13 +142,13 @@
 
   <button id="back-to-top" class="back-to-top" aria-label="回到顶部" data-i18n-attr="aria-label=back_aria"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
 
-  <script src="assets/js/i18n.js"></script>
-  <script src="assets/js/main.js"></script>
-  <script src="assets/js/star-data.js"></script>
+  <script defer src="assets/js/i18n.js"></script>
+  <script defer src="assets/js/main.js"></script>
+  <script defer src="assets/js/star-data.js"></script>
   <!-- WebGL 深空背景必须先于 star-db.js 执行：初始化成功则置 window.__starDbWebGLBg=true，
        star-db.js 据此跳过 2D buildBg/drawBand 背景链；失败则隐藏背景画布并走 2D fallback -->
-  <script src="assets/js/star-db-bg-webgl.js"></script>
-  <script src="assets/js/star-db.js"></script>
-<script src="assets/js/workbench.js"></script>
+  <script defer src="assets/js/star-db-bg-webgl.js"></script>
+  <script defer src="assets/js/star-db.js"></script>
+<script defer src="assets/js/workbench.js"></script>
 </body>
 </html>
