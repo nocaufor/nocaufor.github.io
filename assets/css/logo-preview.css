@@ -10,18 +10,37 @@
   --lp-hand-hi: #f4f6fa;
   --lp-hand-mid: #9ca6b2;
   --lp-hand-lo: #4e5762;
+  /* 2D 平面图标（最终 favicon 级扁平 LOGO） */
+  --lp-i-e-hi: #8db8e6;
+  --lp-i-e-lo: #33618f;
+  --lp-i-land: #9cc47f;
+  --lp-i-hand: #c6d0dc;
+  --lp-i-stroke: #4e5762;
+  --lp-i-track: #7aa2f7;
 }
 
 html[data-theme="light"] {
   --lp-hand-hi: #ffffff;
   --lp-hand-mid: #ccd3dc;
-  --lp-hand-lo: #7d8793;
+  --lp-hand-lo: #56606c;
+  --lp-i-e-hi: #a8cdf0;
+  --lp-i-e-lo: #3a6ea5;
+  --lp-i-land: #a3cd84;
+  --lp-i-hand: #8d97a5;
+  --lp-i-stroke: #56606c;
+  --lp-i-track: #5f86d8;
 }
 
 html[data-theme="dark"] {
   --lp-hand-hi: #f4f6fa;
   --lp-hand-mid: #9ca6b2;
   --lp-hand-lo: #4e5762;
+  --lp-i-e-hi: #8db8e6;
+  --lp-i-e-lo: #33618f;
+  --lp-i-land: #9cc47f;
+  --lp-i-hand: #c6d0dc;
+  --lp-i-stroke: #4e5762;
+  --lp-i-track: #7aa2f7;
 }
 
 body.lp-body {
@@ -146,7 +165,10 @@ body.lp-body {
   --progress-mask: transparent;
   --poster-color: transparent;
   outline: none;
+  transition: opacity 0.85s ease 0.18s, filter 0.9s ease 0.18s;
 }
+/* 3D → 2D 平面化：3D 场景失焦淡出（blur 增强“立体收敛进图标”的电影感） */
+.lp-card.is-flat .lp-model { opacity: 0; filter: blur(10px); }
 
 /* ---------- 静态降级占位（WebGL 不可用 / 加载期间，与 3D 同构图） ---------- */
 .lp-static {
@@ -202,9 +224,11 @@ body.lp-body {
   z-index: 3;
   pointer-events: none;
   transform: translateY(118%);
-  transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.7s ease 0.35s;
 }
 .lp-card.is-finale .lp-hands { transform: translateY(0); }
+/* 3D → 2D：3D 双手随场景淡出（2D 图标内置扁平双手） */
+.lp-card.is-flat .lp-hands { opacity: 0; }
 .lp-hands-svg {
   display: block;
   width: 88%;
@@ -216,6 +240,23 @@ body.lp-body {
 .lp-hands-svg #lp-hand-g stop:nth-child(1) { stop-color: var(--lp-hand-hi); }
 .lp-hands-svg #lp-hand-g stop:nth-child(2) { stop-color: var(--lp-hand-mid); }
 .lp-hands-svg #lp-hand-g stop:nth-child(3) { stop-color: var(--lp-hand-lo); }
+/* 双手剪影与细节线：深色描边/细线随主题联动，增强轮廓质感 */
+.lp-hands-svg .lp-hand-sil { stroke: var(--lp-hand-lo); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.lp-hands-svg .lp-hand-det { stroke: var(--lp-hand-lo); stroke-width: 4; fill: none; stroke-linecap: round; opacity: 0.42; }
+/* 手指 / 拇指 / 前臂：深色底衬 + 渐变面线，形成体积感圆润指形（随主题联动） */
+.lp-hands-svg .lp-hand-arm { stroke: url(#lp-hand-g); stroke-width: 28; fill: none; stroke-linecap: round; }
+.lp-hands-svg .lp-hand-arm-bg { stroke: var(--lp-hand-lo); stroke-width: 34; fill: none; stroke-linecap: round; opacity: 0.6; }
+.lp-hands-svg .lp-hand-finger { stroke: url(#lp-hand-g); stroke-width: 22; fill: none; stroke-linecap: round; }
+.lp-hands-svg .lp-hand-finger-bg { stroke: var(--lp-hand-lo); stroke-width: 28; fill: none; stroke-linecap: round; opacity: 0.65; }
+.lp-hands-svg .lp-hand-thumb { stroke: url(#lp-hand-g); stroke-width: 32; fill: none; stroke-linecap: round; }
+.lp-hands-svg .lp-hand-thumb-bg { stroke: var(--lp-hand-lo); stroke-width: 38; fill: none; stroke-linecap: round; opacity: 0.65; }
+/* 指节线：比细节线更粗更实，强化手指关节感 */
+.lp-hands-svg .lp-hand-knuckle { stroke: var(--lp-hand-lo); stroke-width: 7; fill: none; stroke-linecap: round; opacity: 0.7; }
+/* 接触阴影：指尖与球底之间的投影短线，消除悬浮感 */
+.lp-hands-svg .lp-hand-shadow { stroke: var(--lp-hand-lo); stroke-width: 6; fill: none; stroke-linecap: round; opacity: 0.5; }
+/* 高光线：手指/拇指内缘高光，增强体积感（深色主题明显，浅色主题降低避免过曝） */
+.lp-hands-svg .lp-hand-hl { stroke: var(--lp-hand-hi); stroke-width: 4; fill: none; stroke-linecap: round; opacity: 0.5; }
+html[data-theme="light"] .lp-hands-svg .lp-hand-hl { opacity: 0.32; }
 
 /* ---------- LOGO 定格文字 ---------- */
 .lp-logo {

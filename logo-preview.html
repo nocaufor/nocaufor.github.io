@@ -76,30 +76,131 @@
           <div class="lp-hands" id="lp-hands" aria-hidden="true">
             <svg class="lp-hands-svg" viewBox="0 0 1000 660" preserveAspectRatio="xMidYMax meet">
               <defs>
-                <linearGradient id="lp-hand-g" x1="0" y1="0" x2="0" y2="1">
+                <!-- 双手缎面渐变：userSpaceOnUse 令手掌/指片/拇指/前臂共享同一纵向渐变，接缝连续；stop 色值由 CSS 变量注入随主题联动 -->
+                <linearGradient id="lp-hand-g" gradientUnits="userSpaceOnUse" x1="500" y1="180" x2="500" y2="660">
                   <stop offset="0" stop-color="#f4f6fa"/>
-                  <stop offset="0.5" stop-color="#9ca6b2"/>
+                  <stop offset="0.38" stop-color="#b3bcc9"/>
                   <stop offset="1" stop-color="#4e5762"/>
                 </linearGradient>
               </defs>
-              <!-- 左手（掌心朝上、四指拢向右上），右手为同形镜像，两手自底部升起捧住地球 -->
-              <g id="lp-hand-left" stroke="url(#lp-hand-g)" fill="none" stroke-linecap="round">
-                <path d="M262 660 C 254 578, 254 516, 260 466" stroke-width="64"/>
-                <rect x="194" y="348" width="152" height="136" rx="54" fill="url(#lp-hand-g)" stroke="none"/>
-                <path d="M210 350 L 182 222" stroke-width="30"/>
-                <path d="M252 332 L 232 190" stroke-width="30"/>
-                <path d="M296 328 L 290 182" stroke-width="30"/>
-                <path d="M340 340 L 338 202" stroke-width="30"/>
-                <path d="M356 436 C 404 412, 434 374, 446 336 C 452 310, 442 292, 424 300" stroke-width="34"/>
+              <!-- 左手：短指弧线贴球底左侧弧承托，四指自掌缘内扣（带指节线），拇指外展对握，前臂自画面底部伸入 -->
+              <g id="lp-hand-left">
+                <path class="lp-hand-arm-bg" d="M 322 660 C 316 638, 316 628, 328 624"/>
+                <path class="lp-hand-arm" d="M 322 660 C 316 638, 316 628, 328 624"/>
+                <path class="lp-hand-sil" d="M 246 636 C 224 612, 226 580, 260 566 C 286 554, 348 558, 376 574 C 398 588, 398 610, 376 624 C 346 640, 278 644, 246 636 Z" fill="url(#lp-hand-g)"/>
+                <path class="lp-hand-finger-bg" d="M 410 590 C 428 572, 420 566, 400 556"/>
+                <path class="lp-hand-finger" d="M 410 590 C 428 572, 420 566, 400 556"/>
+                <path class="lp-hand-finger-bg" d="M 372 588 C 390 570, 382 556, 356 546"/>
+                <path class="lp-hand-finger" d="M 372 588 C 390 570, 382 556, 356 546"/>
+                <path class="lp-hand-finger-bg" d="M 332 584 C 348 568, 340 548, 312 530"/>
+                <path class="lp-hand-finger" d="M 332 584 C 348 568, 340 548, 312 530"/>
+                <path class="lp-hand-finger-bg" d="M 292 580 C 304 566, 296 540, 272 506"/>
+                <path class="lp-hand-finger" d="M 292 580 C 304 566, 296 540, 272 506"/>
+                <path class="lp-hand-thumb-bg" d="M 256 596 C 224 580, 190 544, 178 500 C 172 482, 178 468, 190 468 C 204 472, 218 502, 228 532 C 236 556, 246 576, 258 592"/>
+                <path class="lp-hand-thumb" d="M 256 596 C 224 580, 190 544, 178 500 C 172 482, 178 468, 190 468 C 204 472, 218 502, 228 532 C 236 556, 246 576, 258 592"/>
+                <path class="lp-hand-knuckle" d="M 414 574 L 424 580"/>
+                <path class="lp-hand-knuckle" d="M 412 566 L 422 572"/>
+                <path class="lp-hand-knuckle" d="M 380 574 L 390 580"/>
+                <path class="lp-hand-knuckle" d="M 378 564 L 388 570"/>
+                <path class="lp-hand-knuckle" d="M 344 568 L 354 574"/>
+                <path class="lp-hand-knuckle" d="M 344 560 L 354 566"/>
+                <path class="lp-hand-knuckle" d="M 304 566 L 314 572"/>
+                <path class="lp-hand-knuckle" d="M 306 556 L 316 562"/>
+                <path class="lp-hand-knuckle" d="M 218 536 L 228 548"/>
+                <path class="lp-hand-knuckle" d="M 204 500 L 214 512"/>
+                <path class="lp-hand-det" d="M 280 596 C 302 610, 340 610, 362 594"/>
+                <path class="lp-hand-det" d="M 404 574 C 412 570, 418 570, 424 574"/>
+                <path class="lp-hand-det" d="M 366 570 C 374 566, 380 566, 386 570"/>
+                <path class="lp-hand-det" d="M 328 568 C 336 564, 342 564, 348 568"/>
+                <path class="lp-hand-det" d="M 288 570 C 296 566, 302 566, 308 570"/>
+                <path class="lp-hand-hl" d="M 408 580 C 422 566, 416 560, 398 552"/>
+                <path class="lp-hand-hl" d="M 370 578 C 384 564, 378 550, 354 540"/>
+                <path class="lp-hand-hl" d="M 330 574 C 344 560, 336 544, 310 526"/>
+                <path class="lp-hand-hl" d="M 292 572 C 302 558, 294 536, 270 502"/>
+                <path class="lp-hand-hl" d="M 224 566 C 200 540, 196 520, 204 502"/>
+                <path class="lp-hand-shadow" d="M 392 562 L 410 562"/>
+                <path class="lp-hand-shadow" d="M 350 552 L 366 552"/>
+                <path class="lp-hand-shadow" d="M 306 536 L 320 536"/>
+                <path class="lp-hand-shadow" d="M 266 512 L 280 512"/>
               </g>
-              <g id="lp-hand-right" transform="translate(1000,0) scale(-1,1)" stroke="url(#lp-hand-g)" fill="none" stroke-linecap="round">
-                <path d="M262 660 C 254 578, 254 516, 260 466" stroke-width="64"/>
-                <rect x="194" y="348" width="152" height="136" rx="54" fill="url(#lp-hand-g)" stroke="none"/>
-                <path d="M210 350 L 182 222" stroke-width="30"/>
-                <path d="M252 332 L 232 190" stroke-width="30"/>
-                <path d="M296 328 L 290 182" stroke-width="30"/>
-                <path d="M340 340 L 338 202" stroke-width="30"/>
-                <path d="M356 436 C 404 412, 434 374, 446 336 C 452 310, 442 292, 424 300" stroke-width="34"/>
+              <!-- 右手：左手镜像（scale(-1,1)），短指弧线贴球底右侧弧承托 -->
+              <g id="lp-hand-right" transform="translate(1000,0) scale(-1,1)">
+                <path class="lp-hand-arm-bg" d="M 322 660 C 316 638, 316 628, 328 624"/>
+                <path class="lp-hand-arm" d="M 322 660 C 316 638, 316 628, 328 624"/>
+                <path class="lp-hand-sil" d="M 246 636 C 224 612, 226 580, 260 566 C 286 554, 348 558, 376 574 C 398 588, 398 610, 376 624 C 346 640, 278 644, 246 636 Z" fill="url(#lp-hand-g)"/>
+                <path class="lp-hand-finger-bg" d="M 410 590 C 428 572, 420 566, 400 556"/>
+                <path class="lp-hand-finger" d="M 410 590 C 428 572, 420 566, 400 556"/>
+                <path class="lp-hand-finger-bg" d="M 372 588 C 390 570, 382 556, 356 546"/>
+                <path class="lp-hand-finger" d="M 372 588 C 390 570, 382 556, 356 546"/>
+                <path class="lp-hand-finger-bg" d="M 332 584 C 348 568, 340 548, 312 530"/>
+                <path class="lp-hand-finger" d="M 332 584 C 348 568, 340 548, 312 530"/>
+                <path class="lp-hand-finger-bg" d="M 292 580 C 304 566, 296 540, 272 506"/>
+                <path class="lp-hand-finger" d="M 292 580 C 304 566, 296 540, 272 506"/>
+                <path class="lp-hand-thumb-bg" d="M 256 596 C 224 580, 190 544, 178 500 C 172 482, 178 468, 190 468 C 204 472, 218 502, 228 532 C 236 556, 246 576, 258 592"/>
+                <path class="lp-hand-thumb" d="M 256 596 C 224 580, 190 544, 178 500 C 172 482, 178 468, 190 468 C 204 472, 218 502, 228 532 C 236 556, 246 576, 258 592"/>
+                <path class="lp-hand-knuckle" d="M 414 574 L 424 580"/>
+                <path class="lp-hand-knuckle" d="M 412 566 L 422 572"/>
+                <path class="lp-hand-knuckle" d="M 380 574 L 390 580"/>
+                <path class="lp-hand-knuckle" d="M 378 564 L 388 570"/>
+                <path class="lp-hand-knuckle" d="M 344 568 L 354 574"/>
+                <path class="lp-hand-knuckle" d="M 344 560 L 354 566"/>
+                <path class="lp-hand-knuckle" d="M 304 566 L 314 572"/>
+                <path class="lp-hand-knuckle" d="M 306 556 L 316 562"/>
+                <path class="lp-hand-knuckle" d="M 218 536 L 228 548"/>
+                <path class="lp-hand-knuckle" d="M 204 500 L 214 512"/>
+                <path class="lp-hand-det" d="M 280 596 C 302 610, 340 610, 362 594"/>
+                <path class="lp-hand-det" d="M 404 574 C 412 570, 418 570, 424 574"/>
+                <path class="lp-hand-det" d="M 366 570 C 374 566, 380 566, 386 570"/>
+                <path class="lp-hand-det" d="M 328 568 C 336 564, 342 564, 348 568"/>
+                <path class="lp-hand-det" d="M 288 570 C 296 566, 302 566, 308 570"/>
+                <path class="lp-hand-hl" d="M 408 580 C 422 566, 416 560, 398 552"/>
+                <path class="lp-hand-hl" d="M 370 578 C 384 564, 378 550, 354 540"/>
+                <path class="lp-hand-hl" d="M 330 574 C 344 560, 336 544, 310 526"/>
+                <path class="lp-hand-hl" d="M 292 572 C 302 558, 294 536, 270 502"/>
+                <path class="lp-hand-hl" d="M 224 566 C 200 540, 196 520, 204 502"/>
+                <path class="lp-hand-shadow" d="M 392 562 L 410 562"/>
+                <path class="lp-hand-shadow" d="M 350 552 L 366 552"/>
+                <path class="lp-hand-shadow" d="M 306 536 L 320 536"/>
+                <path class="lp-hand-shadow" d="M 266 512 L 280 512"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- LOGO 2D 平面图标层：3D 场景平滑演变为最终 2D 图标（扁平地球+双手捧起，可作 favicon/品牌图标） -->
+          <div class="lp-icon2d" id="lp-icon2d" aria-hidden="true">
+            <svg class="lp-icon2d-svg" viewBox="0 0 256 256" role="img" aria-label="NOCAU icon: hands holding earth">
+              <defs>
+                <!-- 扁平地球渐变：stop 色由 CSS 变量注入随主题联动 -->
+                <linearGradient id="lp-i-earth" gradientUnits="userSpaceOnUse" x1="72" y1="72" x2="184" y2="184">
+                  <stop offset="0" stop-color="#8db8e6"/>
+                  <stop offset="1" stop-color="#33618f"/>
+                </linearGradient>
+              </defs>
+              <!-- 轨道弧：品牌蓝，斜置椭圆 -->
+              <ellipse cx="128" cy="128" rx="94" ry="36" fill="none" stroke="#7aa2f7" stroke-width="3" opacity="0.85" transform="rotate(-16 128 128)"/>
+              <!-- 扁平地球：圆 + 简化大陆斑 + 高光弧 -->
+              <circle cx="128" cy="128" r="56" fill="url(#lp-i-earth)"/>
+              <path class="lp-i-land" d="M 96 108 C 88 96, 100 86, 112 90 C 122 94, 120 106, 112 112 C 104 118, 94 116, 96 108 Z"/>
+              <path class="lp-i-land" d="M 138 118 C 146 108, 162 108, 168 118 C 172 126, 164 132, 154 130 C 144 128, 138 124, 138 118 Z"/>
+              <path class="lp-i-land" d="M 112 78 C 118 72, 130 72, 134 80 C 136 88, 126 92, 116 88 C 108 84, 106 82, 112 78 Z"/>
+              <path class="lp-i-land" d="M 122 166 C 130 160, 142 164, 146 172 C 150 180, 140 188, 130 184 C 121 180, 116 174, 122 166 Z"/>
+              <path class="lp-i-hi" d="M 86 102 A 48 48 0 0 1 128 78"/>
+              <!-- 双手：扁平剪影，从两侧托举球底（与页面 3D 双手品牌语言一致：掌托+短指+拇指） -->
+              <g id="lp-i-hand-left">
+                <path class="lp-i-palm" d="M 44 216 C 38 204, 40 192, 52 188 C 64 184, 96 184, 108 190 C 118 196, 116 208, 106 214 C 88 220, 58 222, 44 216 Z"/>
+                <path class="lp-i-finger" d="M 62 188 C 60 180, 60 174, 64 170"/>
+                <path class="lp-i-finger" d="M 80 188 C 78 180, 78 174, 82 170"/>
+                <path class="lp-i-finger" d="M 96 190 C 96 182, 96 176, 100 172"/>
+                <path class="lp-i-finger" d="M 110 194 C 110 188, 110 184, 112 180"/>
+                <path class="lp-i-thumb" d="M 40 202 C 30 198, 26 190, 30 182"/>
+              </g>
+              <g id="lp-i-hand-right" transform="translate(256,0) scale(-1,1)">
+                <path class="lp-i-palm" d="M 44 216 C 38 204, 40 192, 52 188 C 64 184, 96 184, 108 190 C 118 196, 116 208, 106 214 C 88 220, 58 222, 44 216 Z"/>
+                <path class="lp-i-finger" d="M 62 188 C 60 180, 60 174, 64 170"/>
+                <path class="lp-i-finger" d="M 80 188 C 78 180, 78 174, 82 170"/>
+                <path class="lp-i-finger" d="M 96 190 C 96 182, 96 176, 100 172"/>
+                <path class="lp-i-finger" d="M 110 194 C 110 188, 110 184, 112 180"/>
+                <path class="lp-i-thumb" d="M 40 202 C 30 198, 26 190, 30 182"/>
               </g>
             </svg>
           </div>
