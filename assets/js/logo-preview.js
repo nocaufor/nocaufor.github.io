@@ -19,8 +19,8 @@
 
   /* ---------- 相位文案中英（与全站 nocau-lang 联动，语言切换时自动刷新） ---------- */
   var PHASE_TEXT = {
-    zh: { orbit: "轨道环绕 · 视角转变中…", finale: "双手捧起 · LOGO 定格", static: "静态定格（动效已减弱）" },
-    en: { orbit: "Orbiting · view shifting…", finale: "Hands hold · LOGO frozen", static: "Static frame (motion reduced)" }
+    zh: { orbit: "轨道环绕 · 视角转变中…", finale: "双手捧起 · LOGO 定格", flat: "立体收敛 · 平面定格", static: "静态定格（动效已减弱）" },
+    en: { orbit: "Orbiting · view shifting…", finale: "Hands hold · LOGO frozen", flat: "Flattening · icon freeze", static: "Static frame (motion reduced)" }
   };
   var phaseState = "orbit";
 
@@ -76,7 +76,7 @@
   var TRACK_LINE_HEX = { light: 0x2b2e33, dark: 0xe2e6ec };
   var EARTH_TINT = {
     light: [1.0, 1.0, 1.0, 1.0],
-    dark: [0.60, 0.68, 0.76, 1.0]
+    dark: [0.76, 0.83, 0.94, 1.0]
   };
   var THEMED_MATERIALS = {
     TrackLine: TRACK_LINE_HEX,
@@ -131,13 +131,16 @@
     mv.setAttribute("exposure", "1");
   }
 
-  /* ---------- 相机装配：平视 → 俯视 · 加速后匀速环绕 → 双手捧起定格 ----------
-     - 阶段一（0 ~ 6.8s）：phi 从平视 78° 指数收敛到俯视 26°；theta 沿加速曲线由慢到快匀速环绕（24deg/s）
-     - 阶段二（finale）：theta 缓动回到正面定格角 -27°，phi 微降收敛至 22°，glTF 动画倍速渐降为 0
-       同时由 CSS 驱动双手升起（.is-finale），LOGO 文字淡入，画面定格为最终 LOGO
+  /* ---------- 相机装配：平视 → 俯视 · 加速后匀速环绕 → 减速对准 → 3D→2D 平面化定格 ----------
+     - 阶段一（0 ~ 5.2s）：phi 从平视 78° 指数收敛到俯视；theta 沿加速曲线由慢到快匀速环绕（24deg/s）
+     - 减速窗口（5.2s ~ 6.8s）：环绕减速，theta 提前缓动对准正面定格角，phi 继续下沉，glTF 倍速渐降
+     - 阶段二（finale，6.8s ~ 9.2s）：theta/phi 收敛至定格姿态；镜头缓慢推近（radius 100%→90%）+
+       视场角收窄（30°→26°）形成电影感“长焦压缩 / 焦点聚拢”；双手升起、LOGO 文字淡入
+     - 平面化（finale 后 2.4s）：加 .is-flat —— 3D 场景失焦淡出（blur），2D 扁平图标层浮现定格，
+       完成“立体 3D → 二维 LOGO”无缝演变，最终画面即 favicon 级品牌图标
      - 用户拖拽时暂停自动驱动并跟随其姿态，松手 2s 后重新缓升（finale 已定格则不再恢复环绕）
-     - prefers-reduced-motion / weak：不启动驱动，直接静态定格最终画面
-     - 每帧写一次 camera-orbit（interpolation-decay=0 即时到位）与 time-scale，帧间连续无跳变 */
+     - prefers-reduced-motion / weak：不启动驱动，直接静态定格最终 2D 图标画面
+     - 每帧写一次 camera-orbit / field-of-view（interpolation-decay=0 即时到位）与 time-scale，帧间连续无跳变 */
   var CAM_PHI_LEVEL = 78;
   var CAM_PHI_TOP = 26;
   var CAM_PHI_TAU = 1.2;
@@ -145,9 +148,14 @@
   var CAM_ACCEL_TAU = 1.2;
   var CAM_GLTF_SCALE = 2;
   var CAM_FINALE_MS = 6800;     /* 阶段一总时长：环绕展示完成后进入定格 */
+  var CAM_DECEL_AT = 5200;      /* 环绕减速窗口：最后 ~1.6s 提前缓动对准正面，避免 finale 生硬急转 */
   var CAM_F_THETA = -27;        /* 定格方位角：回到正面 */
   var CAM_F_PHI = 22;           /* 定格俯角：略低于环绕俯视，令地球稍显托举感 */
   var CAM_F_TAU = 0.9;          /* 定格收敛时间常数（秒） */
+  var CAM_F_RADIUS_PCT = 90;    /* 定格推近：镜头从 100% 缓慢推近至 90%（电影感推镜） */
+  var CAM_FOV_START = 30;       /* 起始视场角（deg，model-viewer 默认） */
+  var CAM_FOV_END = 26;         /* 定格视场角：略收窄，产生长焦压缩 / 焦点聚拢感 */
+  var CAM_FLAT_MS = 2400;       /* finale 后多久进入 3D→2D 平面化过渡（ms） */
   var CAM_RESUME_MS = 2000;
   var CAM_RADIUS = "100%";
 
@@ -158,11 +166,13 @@
 
     mv.removeAttribute("auto-rotate");
 
-    /* 静态降级：reduced-motion 或低端设备 → 直接定格最终 LOGO 画面（无动画） */
+    /* 静态降级：reduced-motion 或低端设备 → 直接定格最终 2D 图标画面（无动画） */
     if (reduce || weak) {
-      mv.setAttribute("camera-orbit", CAM_F_THETA + "deg " + CAM_F_PHI + "deg " + CAM_RADIUS);
+      mv.setAttribute("camera-orbit", CAM_F_THETA + "deg " + CAM_F_PHI + "deg " + CAM_F_RADIUS_PCT + "%");
+      mv.setAttribute("field-of-view", CAM_FOV_END + "deg");
       try { mv.timeScale = 0; } catch (e) {}
       card.classList.add("is-finale");
+      card.classList.add("is-flat");
       phaseState = "static";
       applyPhaseText();
       return;
@@ -177,6 +187,9 @@
     var intent = false;
     var finale = false;
     var finaleAt = 0;
+    var flat = false;
+    var radiusPct = 100;
+    var fovDeg = CAM_FOV_START;
 
     function readOrbit() {
       if (typeof mv.getCameraOrbit !== "function") return null;
@@ -210,20 +223,42 @@
       }
 
       if (finale) {
-        /* 阶段二：收敛到正面定格角，动画倍速渐降为 0 */
+        /* 阶段二：收敛到正面定格角 + 镜头推近 + 视场角收窄（长焦聚拢），动画倍速渐降为 0 */
         var g = Math.min(1, dt / CAM_F_TAU);
         theta += (CAM_F_THETA - theta) * g;
         phi += (CAM_F_PHI - phi) * g;
+        radiusPct += (CAM_F_RADIUS_PCT - radiusPct) * g;
+        fovDeg += (CAM_FOV_END - fovDeg) * g;
         try {
           var curScale = mv.timeScale || 0;
           mv.timeScale = Math.max(0, curScale - dt * CAM_GLTF_SCALE / CAM_F_TAU);
         } catch (e) {}
-        mv.setAttribute("camera-orbit", theta.toFixed(2) + "deg " + phi.toFixed(2) + "deg " + CAM_RADIUS);
+        mv.setAttribute("camera-orbit", theta.toFixed(2) + "deg " + phi.toFixed(2) + "deg " + radiusPct.toFixed(2) + "%");
+        try { mv.setAttribute("field-of-view", fovDeg.toFixed(2) + "deg"); } catch (e2) {}
+        /* 3D → 2D 平面化：定格稳定后触发 2D 图标浮现、3D 场景失焦淡出 */
+        if (!flat && ts - finaleAt >= CAM_FLAT_MS) {
+          flat = true;
+          card.classList.add("is-flat");
+          phaseState = "flat";
+          applyPhaseText();
+        }
         return;
       }
 
       /* 阶段一：平视 → 俯视（指数收敛）+ 加速后匀速环绕 */
       var t = (ts - resumeAt) / 1000;
+      /* 环绕减速窗口：提前缓动对准正面定格角，避免 finale 生硬急转（电影感减速收镜） */
+      if (ts - resumeAt >= CAM_DECEL_AT) {
+        var dg = Math.min(1, dt / 0.95);
+        theta += (CAM_F_THETA - theta) * dg;
+        phi += (CAM_F_PHI - phi) * Math.min(1, dt / CAM_PHI_TAU);
+        try {
+          var ds = mv.timeScale || 0;
+          mv.timeScale = Math.max(0, ds - dt * CAM_GLTF_SCALE / 1.6);
+        } catch (e) {}
+        mv.setAttribute("camera-orbit", theta.toFixed(2) + "deg " + phi.toFixed(2) + "deg " + radiusPct.toFixed(2) + "%");
+        return;
+      }
       var ramp = t <= 0 ? 0 : 1 - Math.exp(-t / CAM_ACCEL_TAU);
       theta += CAM_SPIN_MAX * ramp * dt;
       if (phi > CAM_PHI_TOP + 0.05) {
@@ -232,7 +267,7 @@
         phi = CAM_PHI_TOP;
       }
       try { mv.timeScale = CAM_GLTF_SCALE * ramp; } catch (e) {}
-      mv.setAttribute("camera-orbit", theta.toFixed(2) + "deg " + phi.toFixed(2) + "deg " + CAM_RADIUS);
+      mv.setAttribute("camera-orbit", theta.toFixed(2) + "deg " + phi.toFixed(2) + "deg " + radiusPct.toFixed(2) + "%");
     }
 
     mv.addEventListener("pointerdown", function () { intent = true; }, { passive: true });
@@ -283,7 +318,7 @@
     function applyTheme() {
       var light = root.getAttribute("data-theme") === "light";
       if (!weak) {
-        mv.setAttribute("exposure", light ? "1.02" : "0.98");
+        mv.setAttribute("exposure", light ? "0.98" : "1.05");
         mv.setAttribute("shadow-intensity", light ? "1.15" : "1.45");
         mv.setAttribute("shadow-softness", light ? "0.85" : "0.70");
       }

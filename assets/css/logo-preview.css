@@ -8,24 +8,22 @@
 
 :root {
   --lp-hand-hi: #f4f6fa;
-  --lp-hand-mid: #9ca6b2;
-  --lp-hand-lo: #4e5762;
+  --lp-hand-mid: #a2b1c4;
+  --lp-hand-lo: #46546a;
   /* 2D 平面图标（最终 favicon 级扁平 LOGO） */
-  --lp-i-e-hi: #8db8e6;
-  --lp-i-e-lo: #33618f;
-  --lp-i-land: #9cc47f;
-  --lp-i-hand: #c6d0dc;
-  --lp-i-stroke: #4e5762;
+  --lp-i-earth: #7fa6d9;
+  --lp-i-land: #8fbc78;
+  --lp-i-hand: #b6c6d8;
+  --lp-i-stroke: #44516b;
   --lp-i-track: #7aa2f7;
 }
 
 html[data-theme="light"] {
   --lp-hand-hi: #ffffff;
-  --lp-hand-mid: #ccd3dc;
-  --lp-hand-lo: #56606c;
-  --lp-i-e-hi: #a8cdf0;
-  --lp-i-e-lo: #3a6ea5;
-  --lp-i-land: #a3cd84;
+  --lp-hand-mid: #c9d3de;
+  --lp-hand-lo: #5a6778;
+  --lp-i-earth: #4a7fb5;
+  --lp-i-land: #8fbf7e;
   --lp-i-hand: #8d97a5;
   --lp-i-stroke: #56606c;
   --lp-i-track: #5f86d8;
@@ -33,13 +31,12 @@ html[data-theme="light"] {
 
 html[data-theme="dark"] {
   --lp-hand-hi: #f4f6fa;
-  --lp-hand-mid: #9ca6b2;
-  --lp-hand-lo: #4e5762;
-  --lp-i-e-hi: #8db8e6;
-  --lp-i-e-lo: #33618f;
-  --lp-i-land: #9cc47f;
-  --lp-i-hand: #c6d0dc;
-  --lp-i-stroke: #4e5762;
+  --lp-hand-mid: #a2b1c4;
+  --lp-hand-lo: #46546a;
+  --lp-i-earth: #7fa6d9;
+  --lp-i-land: #8fbc78;
+  --lp-i-hand: #b6c6d8;
+  --lp-i-stroke: #44516b;
   --lp-i-track: #7aa2f7;
 }
 
@@ -244,19 +241,58 @@ body.lp-body {
 .lp-hands-svg .lp-hand-sil { stroke: var(--lp-hand-lo); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
 .lp-hands-svg .lp-hand-det { stroke: var(--lp-hand-lo); stroke-width: 4; fill: none; stroke-linecap: round; opacity: 0.42; }
 /* 手指 / 拇指 / 前臂：深色底衬 + 渐变面线，形成体积感圆润指形（随主题联动） */
-.lp-hands-svg .lp-hand-arm { stroke: url(#lp-hand-g); stroke-width: 28; fill: none; stroke-linecap: round; }
-.lp-hands-svg .lp-hand-arm-bg { stroke: var(--lp-hand-lo); stroke-width: 34; fill: none; stroke-linecap: round; opacity: 0.6; }
-.lp-hands-svg .lp-hand-finger { stroke: url(#lp-hand-g); stroke-width: 22; fill: none; stroke-linecap: round; }
-.lp-hands-svg .lp-hand-finger-bg { stroke: var(--lp-hand-lo); stroke-width: 28; fill: none; stroke-linecap: round; opacity: 0.65; }
-.lp-hands-svg .lp-hand-thumb { stroke: url(#lp-hand-g); stroke-width: 32; fill: none; stroke-linecap: round; }
-.lp-hands-svg .lp-hand-thumb-bg { stroke: var(--lp-hand-lo); stroke-width: 38; fill: none; stroke-linecap: round; opacity: 0.65; }
+.lp-hands-svg .lp-hand-arm { stroke: url(#lp-hand-g); stroke-width: 26; fill: none; stroke-linecap: round; }
+.lp-hands-svg .lp-hand-arm-bg { stroke: var(--lp-hand-lo); stroke-width: 32; fill: none; stroke-linecap: round; opacity: 0.6; }
+.lp-hands-svg .lp-hand-finger { stroke: url(#lp-hand-g); stroke-width: 20; fill: none; stroke-linecap: round; }
+.lp-hands-svg .lp-hand-finger-bg { stroke: var(--lp-hand-lo); stroke-width: 24; fill: none; stroke-linecap: round; opacity: 0.65; }
+.lp-hands-svg .lp-hand-thumb { stroke: url(#lp-hand-g); stroke-width: 30; fill: none; stroke-linecap: round; }
+.lp-hands-svg .lp-hand-thumb-bg { stroke: var(--lp-hand-lo); stroke-width: 34; fill: none; stroke-linecap: round; opacity: 0.65; }
 /* 指节线：比细节线更粗更实，强化手指关节感 */
-.lp-hands-svg .lp-hand-knuckle { stroke: var(--lp-hand-lo); stroke-width: 7; fill: none; stroke-linecap: round; opacity: 0.7; }
+.lp-hands-svg .lp-hand-knuckle { stroke: var(--lp-hand-lo); stroke-width: 5; fill: none; stroke-linecap: round; opacity: 0.7; }
 /* 接触阴影：指尖与球底之间的投影短线，消除悬浮感 */
-.lp-hands-svg .lp-hand-shadow { stroke: var(--lp-hand-lo); stroke-width: 6; fill: none; stroke-linecap: round; opacity: 0.5; }
+.lp-hands-svg .lp-hand-shadow { stroke: var(--lp-hand-lo); stroke-width: 5; fill: none; stroke-linecap: round; opacity: 0.5; }
 /* 高光线：手指/拇指内缘高光，增强体积感（深色主题明显，浅色主题降低避免过曝） */
-.lp-hands-svg .lp-hand-hl { stroke: var(--lp-hand-hi); stroke-width: 4; fill: none; stroke-linecap: round; opacity: 0.5; }
+.lp-hands-svg .lp-hand-hl { stroke: var(--lp-hand-hi); stroke-width: 3.5; fill: none; stroke-linecap: round; opacity: 0.5; }
 html[data-theme="light"] .lp-hands-svg .lp-hand-hl { opacity: 0.32; }
+
+/* ---------- 2D 平面图标层（3D → 2D 最终定格：扁平地球+双手，favicon 级） ---------- */
+.lp-icon2d {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(1.16) translateY(26px);
+  transition: opacity 0.85s ease 0.2s, transform 1.15s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+}
+/* 3D → 2D：2D 图标从“3D 近景位置”轻微收拢浮现，与 3D 淡出交叉形成无缝演变 */
+.lp-card.is-flat .lp-icon2d { opacity: 1; transform: none; }
+.lp-icon2d-svg {
+  width: 46%;
+  height: auto;
+  filter: drop-shadow(0 16px 30px rgba(0,0,0,0.35));
+}
+/* 扁平图标内部元素：大陆斑 / 高光弧 / 双手剪影（随主题联动） */
+.lp-icon2d-svg .lp-i-earth { fill: var(--lp-i-earth); }
+.lp-icon2d-svg .lp-i-land { fill: var(--lp-i-land); }
+.lp-icon2d-svg .lp-i-hi { fill: none; stroke: rgba(255,255,255,0.16); stroke-width: 5; stroke-linecap: round; }
+.lp-icon2d-svg .lp-i-palm {
+  fill: var(--lp-i-hand);
+  stroke: var(--lp-i-stroke);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.lp-icon2d-svg .lp-i-finger,
+.lp-icon2d-svg .lp-i-thumb {
+  fill: none;
+  stroke: var(--lp-i-hand);
+  stroke-width: 11;
+  stroke-linecap: round;
+}
+.lp-icon2d-svg .lp-i-finger { stroke-width: 9; }
 
 /* ---------- LOGO 定格文字 ---------- */
 .lp-logo {
@@ -364,12 +400,17 @@ html[data-theme="light"] .lp-hands-svg .lp-hand-hl { opacity: 0.32; }
   .lp-desc-grid { grid-template-columns: 1fr; }
 }
 
-/* ---------- 动效减弱 / 低端设备：静态定格（手与 LOGO 直接呈现，无过渡） ---------- */
+/* ---------- 动效减弱 / 低端设备：静态定格（直接呈现最终 2D 图标，无过渡） ---------- */
 @media (prefers-reduced-motion: reduce) {
   .lp-hands,
-  .lp-logo {
+  .lp-logo,
+  .lp-model,
+  .lp-icon2d {
     transition: none !important;
   }
   .lp-card.is-finale .lp-hands,
   .lp-card.is-finale .lp-logo { transform: none; }
+  .lp-card.is-flat .lp-icon2d { opacity: 1; transform: none; }
+  .lp-card.is-flat .lp-model,
+  .lp-card.is-flat .lp-hands { opacity: 0; }
 }
