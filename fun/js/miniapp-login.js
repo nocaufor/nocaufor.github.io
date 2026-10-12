@@ -4,10 +4,10 @@
 (function () {
   "use strict";
 
-  /* ⚠️ 仅演示密钥，禁止用于生产：此值仅为在线示例（DEMO）伪造 JWT 使用，
-     生产环境必须由 server/auth.js 读取独立随机密钥（.env 配置），严禁复用本值或注释声称的约定。 */
-  var DEMO_SECRET = "nocau-demo-jwt-secret-2026";
-  var API_V2_KEY = "NOCAU-DEMO-APIv2-KEY-0123456789";
+  /* ⚠️ 仅演示密钥，禁止用于生产：每次页面加载会话随机生成（不落盘、不可复用、刷新即失效），
+     仅用于在线示例（DEMO）伪造 JWT 与演示签名；生产环境必须由 server/auth.js 读取独立随机密钥（.env 配置）。 */
+  var DEMO_SECRET = randomHex(32);
+  var API_V2_KEY = randomHex(16);
   var APPID = "wx_demo_appid";
   var MCH_ID = "1900000000";
 

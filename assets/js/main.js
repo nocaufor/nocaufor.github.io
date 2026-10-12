@@ -186,7 +186,7 @@
       if (!name || name.length < 1 || name.length > 50) { setMsg("请输入 1-50 字的姓名。", "error"); return; }
       if (!email || email.length > 120 || !emailOk(email)) { setMsg("请输入有效的邮箱地址。", "error"); return; }
       if (!message || message.length < 5 || message.length > 1000) { setMsg("留言内容需在 5-1000 字之间。", "error"); return; }
-      setMsg("已收到，感谢留言。（静态站点演示，不会真的发送）", "success");
+      setMsg("演示表单：留言不会真的发送。如需联系，请使用页面顶部的邮箱或微信。", "success");
       form.reset();
     });
     function setMsg(t, cls) { if (msg) { msg.textContent = t; msg.className = "form-message " + cls; } }

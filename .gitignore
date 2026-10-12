@@ -35,3 +35,8 @@ desktop.ini
 .marvis-accept/
 # ---------- 验收截图目录（不入库）----------
 verify/
+
+# ---------- internal source/docs (removed from public Pages, kept locally only) ----------
+server/
+SECURITY-CHECKLIST.md
+docs/workbench-schema.sql
