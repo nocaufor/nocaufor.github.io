@@ -303,31 +303,55 @@
     var mem = navigator.deviceMemory || 8;
     var weak = cores <= 4 || mem <= 4;
 
-    var mv = tpl.content.firstElementChild.cloneNode(true);
-    clampViewer(mv, weak);
-    stage.appendChild(mv);
+    /* ---- 3D 展台（地球 + 环绕 + 双手捧起）----
+       v1 速度优化：model-viewer 组件改为按需动态 import。等待 window load 后延迟片刻
+       再加载组件（约 1.02MB）并实例化；期间保持 .lp-static 静态占位（程序化地球剪影 + 轨道），
+       不白屏、无布局跳动。模板 loading="lazy" 双保险：HDR/地球贴图（约 7MB）在组件进入视口后
+       才拉取，不再随页面初始请求下载。 */
+    function boot3D() {
+      import("../vendor/model-viewer/model-viewer.min.js").then(function () {
+        var mv = tpl.content.firstElementChild.cloneNode(true);
+        clampViewer(mv, weak);
+        stage.appendChild(mv);
 
-    var t0 = performance.now();
-    mv.addEventListener("load", function () {
-      mv.setAttribute("data-load-ms", String(Math.round(performance.now() - t0)));
-      stage.classList.add("is-ready");
-      paintTrackLine(mv, root.getAttribute("data-theme"));
-      initCameraRig(mv, weak);
-    });
+        var t0 = performance.now();
+        mv.addEventListener("load", function () {
+          mv.setAttribute("data-load-ms", String(Math.round(performance.now() - t0)));
+          stage.classList.add("is-ready");
+          paintTrackLine(mv, root.getAttribute("data-theme"));
+          initCameraRig(mv, weak);
+        });
 
-    function applyTheme() {
-      var light = root.getAttribute("data-theme") === "light";
-      if (!weak) {
-        mv.setAttribute("exposure", light ? "0.98" : "1.05");
-        mv.setAttribute("shadow-intensity", light ? "1.15" : "1.45");
-        mv.setAttribute("shadow-softness", light ? "0.85" : "0.70");
+        function applyTheme() {
+          var light = root.getAttribute("data-theme") === "light";
+          if (!weak) {
+            mv.setAttribute("exposure", light ? "0.98" : "1.05");
+            mv.setAttribute("shadow-intensity", light ? "1.15" : "1.45");
+            mv.setAttribute("shadow-softness", light ? "0.85" : "0.70");
+          }
+          paintTrackLine(mv, light ? "light" : "dark");
+        }
+        applyTheme();
+        if (window.MutationObserver) {
+          new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+        }
+      }).catch(function (err) {
+        /* 组件按需加载失败：保持 .lp-static 静态占位，零白屏、零未捕获报错 */
+        if (window.console) console.warn("model-viewer 按需加载失败，保持静态降级占位");
+      });
+    }
+
+    /* 触发时机：window load 完成后延迟 400ms（首屏内容先渲染；进入 3D 视图/交互后仍会正常加载渲染） */
+    function schedule3D() {
+      if (document.readyState === "complete") {
+        window.setTimeout(boot3D, 400);
+        return;
       }
-      paintTrackLine(mv, light ? "light" : "dark");
+      window.addEventListener("load", function () {
+        window.setTimeout(boot3D, 400);
+      }, { once: true });
     }
-    applyTheme();
-    if (window.MutationObserver) {
-      new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
-    }
+    schedule3D();
   }
 
   function init() {

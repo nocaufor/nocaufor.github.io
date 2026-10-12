@@ -63,7 +63,7 @@
             exposure="1.02" tone-mapping="neutral"
             camera-orbit="-27deg 78deg 100%" field-of-view="30deg"
             min-field-of-view="20deg" max-field-of-view="42deg"
-            loading="eager" reveal="auto"></model-viewer>
+            loading="lazy" reveal="auto"></model-viewer>
           </template>
 
           <!-- 静态降级占位（WebGL 不可用 / 加载期间）：程序化地球剪影 + 轨道，与 3D 主题一致 -->
@@ -233,8 +233,9 @@
     </section>
   </main>
 
-  <!-- 3D 组件（本地化：assets/vendor/model-viewer，与首页同源） -->
-  <script type="module" src="assets/vendor/model-viewer/model-viewer.min.js"></script>
+  <!-- 3D 组件（本地化：assets/vendor/model-viewer，与首页同源）
+       v1 速度优化：不再以 type=module 同步加载 1.02MB 组件，改由 logo-preview.js 在页面 load 后
+       延迟动态 import；HDR/地球贴图（约 7MB）随组件进入视口后才拉取，单页初始请求不再包含 -->
   <!-- 站内中英切换（全站共享词典与 lang-toggle 处理） -->
   <script defer src="assets/js/i18n.js"></script>
   <!-- 样板页交互：主题 / 3D 相机装配 / 双手捧起定格 / 降级（无内联脚本） -->
