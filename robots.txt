@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
 
+Disallow: /workbench.html
+
 Sitemap: https://www.nocau.com/sitemap.xml
