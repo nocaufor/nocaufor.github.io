@@ -14,13 +14,15 @@
   <!-- 首页专属样式：bento 布局与组件（公共文件不变） -->
   <link rel="stylesheet" href="assets/css/home-new.css" />
 
-  <!-- Tailwind（布局工具类）：defer 异步加载，不再阻塞首屏解析 -->
-  <script defer src="assets/js/tailwind-config.js"></script>
-  <script defer src="assets/vendor/tailwind.min.js"></script>
-
-  <!-- GSAP 入场与滚动动效：defer 异步加载，不阻塞首屏解析 -->
-  <script defer src="assets/vendor/gsap.min.js"></script>
-  <script defer src="assets/vendor/ScrollTrigger.min.js"></script>
+  <!-- Tailwind 运行时已移除：全站实际使用类仅 nav 上的 fixed / inset-x-0 / top-0 / z-50 / backdrop-blur-md，
+       以内联 CSS 提供等效样式（约 1KB）；.tk-nav 自身样式亦已覆盖同类效果，双保险 -->
+  <style>
+    .fixed{position:fixed}
+    .inset-x-0{left:0;right:0}
+    .top-0{top:0}
+    .z-50{z-index:50}
+    .backdrop-blur-md{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+  </style>
 
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data:; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
@@ -40,9 +42,6 @@
   <meta name="theme-color" content="#f6f7f8" media="(prefers-color-scheme: light)" />
 </head>
 <body>
-
-  <!-- 滚动进度条 -->
-  <div id="tk-progress" class="tk-progress" aria-hidden="true"></div>
 
   <!-- ==================== 顶部导航 ==================== -->
   <nav class="tk-nav fixed inset-x-0 top-0 z-50 backdrop-blur-md">

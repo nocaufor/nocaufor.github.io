@@ -45,77 +45,6 @@
     if (el) el.textContent = String(new Date().getFullYear());
   }
 
-  /* ---------- 柔光氛围：光晕随指针微移 + 卡片局部柔光 ---------- */
-  function initAmbient() {
-    if (reduce || !finePointer) return;
-
-    var glow = document.querySelector(".tk-orb-glow");
-    var panels = Array.prototype.slice.call(
-      document.querySelectorAll(".tk-card, .tk-skill, .tk-about-card, .tk-orb-panel, .tk-cta .tk-shell")
-    );
-    var raf = 0, px = 0, py = 0;
-    var stage = document.querySelector(".tk-orb-panel");
-
-    function render() {
-      raf = 0;
-      if (glow) {
-        glow.style.transform = "translate3d(" + (px * 16).toFixed(2) + "px," + (py * 11).toFixed(2) + "px,0)";
-      }
-      if (stage) {
-        /* 前景体积感：托盘随指针做极小 3D 倾斜，球面柔光同步游走 */
-        stage.style.setProperty("--tk-rx", (-py * 2.1).toFixed(2) + "deg");
-        stage.style.setProperty("--tk-ry", (px * 2.6).toFixed(2) + "deg");
-        stage.style.setProperty("--tk-lx", (px * 26).toFixed(1) + "px");
-        stage.style.setProperty("--tk-ly", (py * 22).toFixed(1) + "px");
-      }
-    }
-
-    window.addEventListener("pointermove", function (e) {
-      px = (e.clientX / window.innerWidth - 0.5) * 2;
-      py = (e.clientY / window.innerHeight - 0.5) * 2;
-      if (!raf) raf = window.requestAnimationFrame(render);
-    }, { passive: true });
-
-    panels.forEach(function (el) {
-      el.addEventListener("pointermove", function (e) {
-        var r = el.getBoundingClientRect();
-        if (!r.width || !r.height) return;
-        el.style.setProperty("--tk-mx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%");
-        el.style.setProperty("--tk-my", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%");
-      }, { passive: true });
-    });
-  }
-
-  /* ---------- GSAP 动效（缺失时静默降级，内容始终可见） ---------- */
-  function initMotion() {
-    if (!window.gsap || !window.ScrollTrigger) return;
-    if (reduce) return;
-    gsap.registerPlugin(ScrollTrigger);
-
-    gsap.utils.toArray(".tk-anim").forEach(function (el, i) {
-      gsap.fromTo(el,
-        { y: 26, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, delay: 0.08 * i + 0.1, ease: "power2.out", overwrite: true }
-      );
-    });
-
-    gsap.utils.toArray(".tk-anim-scroll").forEach(function (el) {
-      gsap.fromTo(el,
-        { y: 30, opacity: 0 },
-        {
-          y: 0, opacity: 1, duration: 0.7, ease: "power2.out",
-          scrollTrigger: { trigger: el, start: "top 88%", once: true }
-        }
-      );
-    });
-
-    gsap.to("#tk-progress", {
-      scaleX: 1,
-      ease: "none",
-      scrollTrigger: { start: 0, end: "max", scrub: 0.3 }
-    });
-  }
-
   /* ---------- 首屏 3D（本地 model-viewer 组件 + 站点自有 glTF 轨道几何，含降级与主题联动） ---------- */
   function webglSupported() {
     try {
@@ -341,8 +270,6 @@
   function init() {
     initTheme();
     initYear();
-    initAmbient();
-    initMotion();
     initModel();
   }
 
