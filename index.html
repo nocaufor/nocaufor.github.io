@@ -14,8 +14,8 @@
   <!-- 首页专属样式：bento 布局与组件（公共文件不变） -->
   <link rel="stylesheet" href="assets/css/home-new.css" />
 
-  <!-- Tailwind（布局工具类） -->
-  <script src="assets/vendor/tailwind.min.js"></script>
+  <!-- Tailwind（布局工具类）：defer 异步加载，不再阻塞首屏解析 -->
+  <script defer src="assets/vendor/tailwind.min.js"></script>
   <script>
     /* 本地脚本兜底：脚本未就绪时先占位，避免 ReferenceError 影响后续初始化 */
     window.tailwind = window.tailwind || {};
@@ -291,8 +291,9 @@
   <!-- 全站中英双语文案（只读复用，公共文件不变） -->
   <script defer src="assets/js/i18n.js"></script>
   <!-- 3D 首屏组件（本地化：@google/model-viewer 4.3.1，BSD-3-Clause，内嵌 three.js MIT）
-       几何素材为站点自有：assets/models/nocau-orbits/nocau-orbits.gltf（程序化生成，无第三方模型素材） -->
-  <script type="module" src="assets/vendor/model-viewer/model-viewer.min.js"></script>
+       几何素材为站点自有：assets/models/nocau-orbits/nocau-orbits.gltf（程序化生成，无第三方模型素材）
+       v1 速度优化：不再以 type=module 同步加载 1.02MB 组件，改由 home-new.js 在页面 load 后延迟动态 import，
+       首屏初始不再下载组件与 3D 资源（约 1.8MB → 按需），滚动/交互后仍正常渲染 -->
   <!-- 首页交互：主题切换 / 入场 / 滚动动效 / 进度条 / 3D 降级 -->
   <script defer src="assets/js/home-new.js"></script>
 <script defer src="assets/js/workbench.js"></script>
