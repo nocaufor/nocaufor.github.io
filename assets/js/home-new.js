@@ -282,37 +282,60 @@
     var mem = navigator.deviceMemory || 8;
     var weak = cores <= 4 || mem <= 4;
 
-    /* ---- 首屏主视觉：完整轨道系统 3D ---- */
-    var mv = tpl.content.firstElementChild.cloneNode(true);
-    clampViewer(mv, weak);
-    stage.appendChild(mv);
+    /* ---- 首屏主视觉：完整轨道系统 3D ----
+       v1 速度优化：model-viewer 组件由同步模块加载改为按需动态 import。
+       等待 window load（首屏文字/CSS 优先渲染）后再延迟片刻加载组件（约 1.02MB）并实例化；
+       期间保持 .tk-no-3d 静态占位，不白屏、无布局跳动。模板 loading="lazy" 双保险：
+       组件进入视口后才拉取 glTF/HDRI（首屏 3D 资源不再随页面初始请求下载，约 1.8MB → 按需）。 */
+    function boot3D() {
+      import("../vendor/model-viewer/model-viewer.min.js").then(function () {
+        var mv = tpl.content.firstElementChild.cloneNode(true);
+        clampViewer(mv, weak);
+        stage.appendChild(mv);
 
-    /* 首帧耗时观测：写入 data-load-ms，便于自检与汇报；同时让 CSS 静态占位淡出、交棒真 3D */
-    var t0 = performance.now();
-    mv.addEventListener("load", function () {
-      mv.setAttribute("data-load-ms", String(Math.round(performance.now() - t0)));
-      panel.classList.remove("tk-no-3d");
-      paintTrackLine(mv, root.getAttribute("data-theme"));
-      /* 模型就绪后接管相机：启动「平视 ⇄ 俯视」往复视角动画（模板初始姿态即平视，衔接处零跳变） */
-      initCameraRig(mv);
-    });
+        /* 首帧耗时观测：写入 data-load-ms，便于自检与汇报；同时让 CSS 静态占位淡出、交棒真 3D */
+        var t0 = performance.now();
+        mv.addEventListener("load", function () {
+          mv.setAttribute("data-load-ms", String(Math.round(performance.now() - t0)));
+          panel.classList.remove("tk-no-3d");
+          paintTrackLine(mv, root.getAttribute("data-theme"));
+          /* 模型就绪后接管相机：启动「平视 ⇄ 俯视」往复视角动画（模板初始姿态即平视，衔接处零跳变） */
+          initCameraRig(mv);
+        });
 
-    /* 主题联动：环境为本地摄影棚 HDRI（缎面金属：釉面高光 + 环境反射层次）。
-       浅色为高调白场（略提曝光、柔和接触阴影）；深色略降曝光、加强接触阴影并压低高光余量，避免金属过曝。
-       接触阴影同步加强，让球体与轨道在展台上"落得住"，强化三维立体纵深 */
-    function applyTheme() {
-      var light = root.getAttribute("data-theme") === "light";
-      if (!weak) {
-        mv.setAttribute("exposure", light ? "1.02" : "0.98");
-        mv.setAttribute("shadow-intensity", light ? "1.15" : "1.45");
-        mv.setAttribute("shadow-softness", light ? "0.85" : "0.70");
+        /* 主题联动：环境为本地摄影棚 HDRI（缎面金属：釉面高光 + 环境反射层次）。
+           浅色为高调白场（略提曝光、柔和接触阴影）；深色略降曝光、加强接触阴影并压低高光余量，避免金属过曝。
+           接触阴影同步加强，让球体与轨道在展台上"落得住"，强化三维立体纵深 */
+        function applyTheme() {
+          var light = root.getAttribute("data-theme") === "light";
+          if (!weak) {
+            mv.setAttribute("exposure", light ? "1.02" : "0.98");
+            mv.setAttribute("shadow-intensity", light ? "1.15" : "1.45");
+            mv.setAttribute("shadow-softness", light ? "0.85" : "0.70");
+          }
+          paintTrackLine(mv, light ? "light" : "dark");
+        }
+        applyTheme();
+        if (window.MutationObserver) {
+          new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+        }
+      }).catch(function (err) {
+        /* 组件按需加载失败：保持 .tk-no-3d 静态占位，零白屏、零未捕获报错 */
+        if (window.console) console.warn("model-viewer 按需加载失败，保持静态降级占位");
+      });
+    }
+
+    /* 触发时机：window load 完成后延迟 400ms（首屏内容先渲染；滚动/交互后仍会正常加载渲染） */
+    function schedule3D() {
+      if (document.readyState === "complete") {
+        window.setTimeout(boot3D, 400);
+        return;
       }
-      paintTrackLine(mv, light ? "light" : "dark");
+      window.addEventListener("load", function () {
+        window.setTimeout(boot3D, 400);
+      }, { once: true });
     }
-    applyTheme();
-    if (window.MutationObserver) {
-      new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
-    }
+    schedule3D();
   }
 
   function init() {
