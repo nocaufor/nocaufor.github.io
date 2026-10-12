@@ -13,14 +13,32 @@
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  function attrEscape(s) {
+    return esc(s).replace(/"/g, "&quot;");
+  }
+
+  function safeUrl(u) {
+    var t = (u || "").replace(/\s/g, "");
+    if (/^(https?:|mailto:)/i.test(t)) return u;
+    return "";
+  }
+
   function inline(src) {
     var s = esc(src);
     s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
     s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
     s = s.replace(/~~([^~]+)~~/g, "<del>$1</del>");
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (m, txt, url) {
+      var u = safeUrl(url);
+      if (!u) return m;
+      return '<a href="' + attrEscape(u) + '" target="_blank" rel="noopener">' + txt + '</a>';
+    });
+    s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function (m, alt, url) {
+      var u = safeUrl(url);
+      if (!u) return m;
+      return '<img src="' + attrEscape(u) + '" alt="' + attrEscape(alt) + '" />';
+    });
     return s;
   }
 

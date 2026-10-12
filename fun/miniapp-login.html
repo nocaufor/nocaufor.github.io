@@ -7,6 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
   <meta name="description" content="wx.login 登录态、支付签名与安全校验的完整封装示例。" />
+  <meta name="robots" content="noindex,nofollow" />
   <link rel="stylesheet" href="../assets/css/style.css" />
   <link rel="stylesheet" href="fun.css" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -392,18 +393,18 @@ module.exports = {
 
 module.exports = {
   // 小程序（微信公众平台 → 开发管理 → 开发设置）
-  appid: "wx1234567890abcdef",
-  secret: "填入 AppSecret（仅服务端使用，切勿下发前端）",
+  appid: "PASTE_APP_ID",
+  secret: "PASTE_APP_SECRET", // 填入真实 AppSecret（仅服务端使用，切勿下发前端）
 
   // 微信支付（商户平台 → 账户中心 → API 安全）
-  mchId: "1900000000",
-  apiV2Key: "32位APIv2密钥，在商户平台自行设置",
+  mchId: "PASTE_MCH_ID",
+  apiV2Key: "PASTE_API_V2_KEY", // 在商户平台自行设置 32 位 APIv2 密钥
 
   // 支付回调：必须公网可访问的 HTTPS 地址
-  notifyUrl: "https://your-domain.com/api/pay/notify",
+  notifyUrl: "PASTE_NOTIFY_URL", // 如 https://your-domain.com/api/pay/notify
 
   // 业务 token 签名密钥（自定义，建议 32 位以上随机串）
-  jwtSecret: "换成你自己的随机串"
+  jwtSecret: "PASTE_JWT_SECRET" // 建议 32 位以上随机串
 };
 </code></pre></div>
   </div>
@@ -463,7 +464,7 @@ module.exports = { login: login, getToken: getToken, logout: logout, checkSessio
     <p class="file-note">请求封装：统一鉴权头、401 自动重登并重试一次。</p>
     <div class="code-block"><span class="code-lang-badge">js</span><pre data-file="miniprogram/utils/request.js"><code>/* miniprogram/utils/request.js —— 请求封装：自动带 token，401 重登后重试一次 */
 "use strict";
-const BASE_URL = "https://your-domain.com"; // ← 需先改：你的后端地址（并在小程序后台配置合法域名）
+const BASE_URL = "PASTE_BASE_URL"; // ← 需先改：你的后端地址（并在小程序后台配置合法域名）
 
 function raw(url, method, data) {
   return new Promise(function (resolve, reject) {

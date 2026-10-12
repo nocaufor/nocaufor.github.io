@@ -2,5 +2,7 @@ User-agent: *
 Allow: /
 
 Disallow: /workbench.html
+Disallow: /fun/security-web.html
+Disallow: /fun/miniapp-login.html
 
 Sitemap: https://www.nocau.com/sitemap.xml

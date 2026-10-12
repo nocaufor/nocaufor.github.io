@@ -1,0 +1,8 @@
+Contact: https://github.com/nocau
+Expires: 2027-10-12T00:00:00.000Z
+Canonical: https://www.nocau.com/.well-known/security.txt
+
+# nocau.com 安全策略声明
+# 本站为纯静态个人作品集站点（GitHub Pages 托管）。如发现安全漏洞、
+# 钓鱼仿冒或内容滥用问题，请通过上方 GitHub 联系地址反馈，
+# 建议附上复现步骤、影响范围与修复建议。感谢协助维护站点安全。
