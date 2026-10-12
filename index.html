@@ -22,9 +22,9 @@
     tailwind.config = { darkMode: ['class', '[data-theme="dark"]'], theme: { extend: {} } };
   </script>
 
-  <!-- GSAP 入场与滚动动效 -->
-  <script src="assets/vendor/gsap.min.js"></script>
-  <script src="assets/vendor/ScrollTrigger.min.js"></script>
+  <!-- GSAP 入场与滚动动效：defer 异步加载，不阻塞首屏解析 -->
+  <script defer src="assets/vendor/gsap.min.js"></script>
+  <script defer src="assets/vendor/ScrollTrigger.min.js"></script>
 
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data:; worker-src 'self' blob:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
@@ -114,7 +114,7 @@
                 exposure="1.02" tone-mapping="neutral"
                 camera-orbit="-27deg 78deg 100%" field-of-view="30deg"
                 min-field-of-view="20deg" max-field-of-view="42deg"
-                loading="eager" reveal="auto"></model-viewer>
+                loading="lazy" reveal="auto"></model-viewer>
               </template>
             </div>
             <p class="tk-orb-handle">github.com/nocau</p>
