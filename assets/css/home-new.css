@@ -540,15 +540,15 @@ body {
 .tk-stat span { font-size: 0.82rem; color: var(--text-3); letter-spacing: 0.05em; }
 
 /* ---------- 分节 ---------- */
-.tk-section { padding: 104px 0 12px; }
-.tk-section-alt { margin-top: 44px; }
-.tk-head { max-width: 680px; margin-bottom: 44px; }
+.tk-section { padding: 80px 0 12px; }
+.tk-section-alt { margin-top: 32px; }
+.tk-head { max-width: 680px; margin-bottom: 32px; }
 
 /* ---------- Bento 网格 ---------- */
 .tk-bento {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 .tk-card {
@@ -556,10 +556,10 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 18px;
-  min-height: 156px;
-  padding: 26px;
-  border-radius: 24px;
+  gap: 14px;
+  min-height: 140px;
+  padding: 20px;
+  border-radius: 20px;
   border: 1px solid var(--tk-edge);
   background:
     radial-gradient(120% 80% at 14% 0%, var(--tk-sheen) 0%, transparent 58%),
@@ -588,25 +588,15 @@ body {
 
 .tk-card-body { min-width: 0; }
 
-.tk-ico {
-  width: 44px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  color: color-mix(in srgb, var(--brand) 88%, var(--text));
-  background: var(--tk-surface-sunken);
-  box-shadow: var(--tk-shadow-in-sm);
-}
 
-.tk-ico svg { width: 21px; height: 21px; }
+
+
 
 .tk-card h3 { font-size: 1.1rem; font-weight: 640; letter-spacing: -0.018em; color: var(--text); }
-.tk-card p { margin-top: 9px; font-size: 0.86rem; line-height: 1.75; color: var(--text-2); }
+.tk-card p { margin-top: 7px; font-size: 0.86rem; line-height: 1.65; color: var(--text-2); }
 
-.tk-card-lg .tk-ico { width: 50px; height: 50px; border-radius: 16px; }
-.tk-card-lg .tk-ico svg { width: 24px; height: 24px; }
+
+
 .tk-card-lg h3 { font-size: 1.4rem; }
 .tk-card-lg p { max-width: 430px; font-size: 0.9rem; }
 
@@ -655,8 +645,8 @@ body {
   .tk-stats-grid { padding: 20px 10px; gap: 8px; border-radius: 22px; }
   .tk-stat b { font-size: 1.7rem; }
   .tk-stat span { font-size: 0.74rem; letter-spacing: 0.02em; }
-  .tk-section { padding: 78px 0 8px; }
-  .tk-head { margin-bottom: 32px; }
+  .tk-section { padding: 64px 0 8px; }
+  .tk-head { margin-bottom: 26px; }
 }
 
 /* ---------- 技能三卡 ---------- */

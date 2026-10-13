@@ -152,7 +152,7 @@ h2 { font-size: clamp(1.15rem, 2vw, 1.4rem); font-weight: 660; letter-spacing: -
 h3 { font-size: clamp(1.05rem, 1.6vw, 1.2rem); font-weight: 650; letter-spacing: -0.015em; line-height: 1.4; }
 h4 { font-size: 1rem; font-weight: 620; letter-spacing: -0.01em; line-height: 1.45; }
 /* 正文 */
-p, .text { color: var(--text-2); font-size: 1rem; line-height: 1.8; text-wrap: pretty; }
+p, .text { color: var(--text-2); font-size: 1rem; line-height: 1.7; text-wrap: pretty; }
 /* 辅助文字 */
 .section-desc, .project-subtitle, .label, .role {
   color: var(--text-3);
@@ -175,7 +175,7 @@ p, .text { color: var(--text-2); font-size: 1rem; line-height: 1.8; text-wrap: p
 
 /* ============ 05 布局容器 ============ */
   padding: 64px 0;.section-alt { background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.section-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin-bottom: 52px; }
+.section-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin-bottom: 32px; }
 .section-tag {
   font-size: 0.72rem;
   letter-spacing: 0.22em;
@@ -326,7 +326,7 @@ html.js .reveal.parallax-live { transition: opacity 0.3s ease, transform 0.08s l
   background: var(--bg-card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 30px;
+  padding: 24px;
   transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition), background var(--transition);
   position: relative;
   overflow: hidden;
@@ -341,24 +341,24 @@ html.js .reveal.parallax-live { transition: opacity 0.3s ease, transform 0.08s l
 .feature-card p { font-size: 0.95rem; }
 
 .feature-icon {
-  width: 46px; height: 46px;
+  width: 40px; height: 40px;
   display: grid; place-items: center;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid var(--line);
   color: var(--text-2);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   transition: color var(--transition), border-color var(--transition);
 }
-.feature-icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.feature-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
 /* 项目卡片 */
 .project-cover {
   position: relative;
-  height: 190px;
+  height: 172px;
   border-radius: var(--radius-sm);
   display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
-  padding: 22px;
-  margin: -30px -30px 22px;
+  padding: 18px;
+  margin: -24px -24px 18px;
   overflow: hidden;
   background: linear-gradient(135deg, #1c2026, #262b33);
   border-bottom: 1px solid var(--line);
@@ -369,8 +369,8 @@ html.js .reveal.parallax-live { transition: opacity 0.3s ease, transform 0.08s l
 .cover-gradient-4 { background: linear-gradient(135deg, #1f242a, #2c343d 70%, #34505a); }
 .cover-gradient-5 { background: linear-gradient(135deg, #1e2426, #283337 70%, #2f534d); }
 .cover-gradient-6 { background: linear-gradient(135deg, #20232e, #2b3140 70%, #3c4666); }
-.cover-icon { position: absolute; top: 22px; right: 22px; width: 40px; height: 40px; fill: none; stroke: rgba(255, 255, 255, 0.55); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--transition), stroke var(--transition); }
-.project-card:hover .cover-icon { transform: translateY(-3px) rotate(-3deg); stroke: rgba(255, 255, 255, 0.9); }
+
+.project-card:hover 
 .cover-title { font-size: 1.5rem; font-weight: 720; letter-spacing: -0.02em; color: #f1f3f5; }
 .cover-en { font-size: 0.78rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
 .cover-index {
@@ -664,7 +664,7 @@ html.js .reveal.parallax-live { transition: opacity 0.3s ease, transform 0.08s l
 .timeline-item p { font-size: 0.93rem; }
 
 /* ============ 13 联系 ============ */
-.contact-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; align-items: start; }
+.contact-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 36px; align-items: start; }
 .contact-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .contact-methods .contact-tip { grid-column: 1 / -1; }
 .contact-method {
@@ -693,12 +693,12 @@ html.js .reveal.parallax-live { transition: opacity 0.3s ease, transform 0.08s l
   background: var(--bg-card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 34px;
+  padding: 28px;
   box-shadow: var(--shadow);
 }
 
 /* ============ 14 表单 ============ */
-.form-group { margin-bottom: 20px; }
+.form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; color: var(--text-2); }
 .form-control {
   width: 100%;
@@ -836,7 +836,7 @@ html.theme-switching * {
   .ideas-list { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
   .vote-summary { grid-template-columns: 1fr; gap: 16px; }
   .hero { padding: 88px 0 64px; }
-  .section { padding: 72px 0; }
+  .section { padding: 48px 0; }
   .nav-links {
     position: fixed;
     top: var(--header-h); left: 0; right: 0;
@@ -1575,7 +1575,6 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
 .cover-gradient-7 { background: linear-gradient(135deg, #20262a, #2a343c 70%, #38465a); }
 
 /* 手机视口截图（竖版，置于封面右侧） */
-.cover-shot .cover-icon { display: none; }
 .cover-shot .shot-img {
   position: absolute;
   top: 44px; right: 18px;
@@ -1757,8 +1756,7 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
 .project-cover .cover-title,
 .project-cover .cover-en { position: relative; z-index: 2; }
 .project-cover .cover-index,
-.project-cover .cover-meta,
-.project-cover .cover-icon { z-index: 2; }
+.project-cover .cover-meta { z-index: 2; }
 
 /* --- 衣件通：青系 · 衣架挂钩双圆环 --- */
 .cover-gradient-1 {
@@ -1789,14 +1787,6 @@ a.brand:hover .brand-logo { transform: rotate(90deg); border-color: var(--brand)
     linear-gradient(135deg, #1c1f29, #242938 55%, #343a5c 100%);
 }
 
-/* 升级卡图标：更清晰，带轻微投影，避免被装饰层淹没 */
-.cover-gradient-1 .cover-icon,
-.cover-gradient-2 .cover-icon,
-.cover-gradient-3 .cover-icon,
-.cover-gradient-6 .cover-icon {
-  stroke: rgba(255, 255, 255, 0.82);
-  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.35));
-}
 
 /* 浅色主题：深色封面在白色卡片上加淡白内描边，分隔更精致 */
 [data-theme="light"] .cover-gradient-1,
