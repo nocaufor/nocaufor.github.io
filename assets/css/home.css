@@ -47,7 +47,6 @@
 }
 .home-work-card:hover {
   border-color: var(--brand-soft);
-  transform: translateY(-3px);
   box-shadow: var(--shadow);
 }
 .home-work-card .home-work-code {
@@ -98,7 +97,6 @@
 }
 .home-skill-card:hover {
   border-color: var(--brand-soft);
-  transform: translateY(-3px);
   box-shadow: var(--shadow);
 }
 .home-skill-card .home-skill-head {
@@ -178,7 +176,6 @@
 }
 .home-quick-card:hover {
   border-color: var(--brand-soft);
-  transform: translateY(-3px);
   box-shadow: var(--shadow);
 }
 .home-quick-card:hover::after {

@@ -267,22 +267,9 @@ body {
   min-height: 88vh;
   display: flex;
   align-items: center;
-  padding: 120px 0 72px;
-}
+  padding: 96px 0 64px;}
 
 /* 柔光层：跟随指针做极小位移，营造 3D 光感氛围 */
-.tk-orb-glow {
-  position: absolute;
-  inset: -60px;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(780px 540px at 78% 6%, var(--tk-hi), transparent 78%),
-    radial-gradient(600px 460px at 94% 58%, color-mix(in srgb, var(--brand) 3%, transparent), transparent 72%),
-    radial-gradient(820px 560px at 4% 96%, color-mix(in srgb, var(--text) 4%, transparent), transparent 74%);
-  transition: transform 0.6s var(--ease);
-  will-change: transform;
-}
 
 .tk-hero-grid {
   display: grid;
@@ -585,21 +572,8 @@ body {
   overflow: hidden;
 }
 
-/* 指针经过时的柔光（由 home-new.js 写入 --tk-mx / --tk-my） */
-.tk-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  background: radial-gradient(260px 200px at var(--tk-mx, 50%) var(--tk-my, 0%),
-      color-mix(in srgb, var(--brand) 11%, transparent), transparent 70%);
-}
 
 .tk-card:hover {
-  transform: translateY(-5px);
   box-shadow: var(--tk-shadow-out-lg);
 }
 
@@ -851,24 +825,9 @@ body {
   .tk-footer-links { grid-template-columns: repeat(2, auto); row-gap: 14px; }
 }
 
-/* ---------- 进度条 ---------- */
-.tk-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 2px;
-  width: 100%;
-  background: linear-gradient(90deg, var(--brand), color-mix(in srgb, var(--brand) 45%, var(--text)));
-  transform-origin: 0 50%;
-  transform: scaleX(0);
-  z-index: 90;
-  pointer-events: none;
-}
 
 /* ---------- 无障碍：减弱动效 ---------- */
 @media (prefers-reduced-motion: reduce) {
   .tk-card, .tk-skill, .tk-btn { transform: none !important; }
   .tk-orb-panel { transform: none !important; }
-  .tk-orb-glow { transition: none !important; }
-  .tk-card::before { display: none; }
 }

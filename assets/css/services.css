@@ -98,7 +98,6 @@
 }
 .svc-dir-card:hover {
   border-color: var(--brand-soft);
-  transform: translateY(-3px);
   box-shadow: var(--shadow);
 }
 .svc-dir-head {
@@ -148,7 +147,6 @@
 }
 .svc-flow-step:hover {
   border-color: var(--brand-soft);
-  transform: translateY(-3px);
 }
 .svc-flow-num {
   display: inline-block;
@@ -191,7 +189,6 @@
 }
 .svc-kit-card:hover {
   border-color: var(--brand-soft);
-  transform: translateY(-3px);
   box-shadow: var(--shadow);
 }
 .svc-kit-icon {

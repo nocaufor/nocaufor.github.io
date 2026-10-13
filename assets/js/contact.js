@@ -9,24 +9,6 @@
   if (reduced) return;
   var fine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
 
-  /* ---------- 联系卡 tilt 3D ---------- */
-  if (fine) {
-    var cards = document.querySelectorAll('.contact-method');
-    Array.prototype.forEach.call(cards, function (card) {
-      card.addEventListener('mousemove', function (e) {
-        var r = card.getBoundingClientRect();
-        var px = (e.clientX - r.left) / r.width - 0.5;
-        var py = (e.clientY - r.top) / r.height - 0.5;
-        card.style.setProperty('--tilt-x', (px * 10).toFixed(2) + 'deg');
-        card.style.setProperty('--tilt-y', (-py * 10).toFixed(2) + 'deg');
-      }, { passive: true });
-      card.addEventListener('mouseleave', function () {
-        card.style.setProperty('--tilt-x', '0deg');
-        card.style.setProperty('--tilt-y', '0deg');
-      }, { passive: true });
-    });
-  }
-
   /* ---------- 表单焦点光晕 ---------- */
   var groups = document.querySelectorAll('.form-group');
   Array.prototype.forEach.call(groups, function (g) {
