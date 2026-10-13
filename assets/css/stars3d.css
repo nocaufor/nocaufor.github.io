@@ -12,10 +12,7 @@
   margin: 0;
   overflow: hidden;
   touch-action: none;
-  background:
-    radial-gradient(140% 105% at 50% 42%, rgba(24, 36, 76, 0.55) 0%, rgba(14, 20, 48, 0.68) 34%, rgba(7, 10, 26, 0.86) 66%, rgba(2, 3, 8, 0.97) 100%),
-    radial-gradient(90% 70% at 24% 16%, rgba(38, 60, 116, 0.16) 0%, rgba(30, 46, 92, 0.06) 46%, rgba(10, 12, 30, 0) 74%),
-    #04060e;
+  background: #0b0d0f;
 }
 #stars-canvas {
   position: absolute;

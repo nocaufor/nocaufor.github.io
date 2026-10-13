@@ -198,16 +198,6 @@ body {
   box-shadow: 0 0 0 3px rgba(111, 179, 168, 0.18);
 }
 
-/* ---------- 粒子散射层：覆盖星空，不拦截交互 ---------- */
-.star-particle-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 6;
-  pointer-events: none;
-}
-
 /* ---------- 空状态 ---------- */
 .star-db-empty {
   display: flex;
@@ -252,7 +242,7 @@ body {
 }
 .star-db-empty[hidden] { display: none; }
 
-/* ---------- 3D 星空舞台：铺满整个可视区（进入即沉浸） ---------- */
+/* ---------- 3D 星空舞台：铺满整个可视区（进入即沉浸；纯色极简背景跟随主题） ---------- */
 .star-db-stage {
   display: block;
   width: 100%;
@@ -264,6 +254,7 @@ body {
   border: none;
   position: relative;
   overflow: hidden;
+  background: var(--bg);
 }
 .star-db-stage #stars-canvas {
   width: 100%;
@@ -333,22 +324,6 @@ body {
   .star-db-toolbar { flex-wrap: nowrap; gap: 6px; }
   .star-db-count { white-space: nowrap; min-width: 0; }
   .star-db-sort-select { max-width: 132px; }
-}
-
-/* ---------- WebGL 深空背景层（垫底，位于 #stars-canvas / 粒子层之下） ---------- */
-#stars-bg-canvas {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  z-index: 1;
-  pointer-events: none;
-}
-/* WebGL 不可用/初始化失败时隐藏背景画布，回到 2D fallback 或纯底色 */
-#stars-bg-canvas.stars-bg-fallback {
-  display: none;
 }
 
 /* ---------- 减弱动效 ---------- */
